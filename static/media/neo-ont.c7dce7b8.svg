@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="32px" height="32px" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>neo-ont</title>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="画板" transform="translate(-202.000000, -444.000000)">
+            <g id="neo-ont" transform="translate(202.000000, 444.000000)">
+                <circle id="椭圆形" fill="#FFFFFF" cx="16" cy="16" r="16"></circle>
+                <g id="Neo-symbol" transform="translate(8.000000, 7.000000)" fill-rule="nonzero">
+                    <polygon id="路径" fill="#00E599" points="0 3.15121951 0 15.1756098 7.80487805 17.9756098 7.80487805 5.85365854 16.2487805 2.74146341 8.58536585 0"></polygon>
+                    <polygon id="路径" fill="#00AF92" points="8.44390244 6.2 8.44390244 12.7756098 16.2487805 15.5756098 16.2487805 3.31219512"></polygon>
+                </g>
+                <g id="ONT备份" transform="translate(18.000000, 18.000000)">
+                    <circle id="椭圆形" fill="#FFFFFF" cx="7" cy="7" r="7"></circle>
+                    <path d="M4.33525358,4.48531455 L3.3,3.45006097 L3.3,6.9845655 C3.3,8.41412598 4.1611713,9.70291513 5.48191393,10.2499819 C6.80265656,10.7970487 8.32289501,10.4946598 9.33375548,9.48381645 L4.33525358,4.48531455 Z M9.64430763,9.48381645 L10.6795612,10.51907 L10.6795612,6.9845655 C10.6795612,5.55500502 9.81838991,4.26621587 8.49764728,3.71914907 C7.17690465,3.17208228 5.6566662,3.4744712 4.64580573,4.48531455 L9.64430763,9.48381645 Z" id="形状" fill="#48A3FF" fill-rule="nonzero"></path>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>
