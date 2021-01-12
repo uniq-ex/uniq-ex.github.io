@@ -1,0 +1,62 @@
+.app {
+  font-family: DINPro, Avenir;
+}
+
+.main-wrapper {
+  position: relative;
+  width: 1000px;
+  margin: 0 auto;
+  padding: 100px 0 40px;
+}
+
+.connect-wallet-overlay {
+  position: fixed;
+  z-index: 20;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: black;
+}
+
+.connect-wrapper {
+  position: absolute;
+  width: 480px;
+  left: 50%;
+  top: 50%;
+  padding: 20px 40px 40px;
+  box-sizing: border-box;
+  border-radius: 8px;
+  transform: translate(-50%, -70%);
+  background: #fff;
+}
+
+.connect-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #2c2c2c;
+  margin-bottom: 20px;
+}
+
+.wallet-item {
+  padding: 12px 20px;
+  border: 1px solid #666;
+  border-radius: 4px;
+  color: #2c2c2c;
+  cursor: pointer;
+  background: #fff url('./assets/cyano.svg') 350px center / auto 24px no-repeat;
+}
+
+.wallet-item:hover {
+  border-color: RGBA(43, 190, 127, 1.00);
+}
+
+
+
+.intro-line {
+  color: #2c2c2c;
+}
+
+.intro-line a {
+  color: #2c2c2c;
+}

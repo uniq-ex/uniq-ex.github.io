@@ -1,0 +1,104 @@
+.modal-overlay {
+  position: fixed;
+  z-index: 21;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: black;
+}
+
+.modal-wrapper {
+  position: absolute;
+  min-width: 360px;
+  left: 50%;
+  top: 50%;
+  padding: 20px 40px 40px;
+  box-sizing: border-box;
+  border-radius: 8px;
+  transform: translate(-50%, -60%);
+  background: #fff;
+}
+
+.modal-wrapper.transparent-bg {
+  background: transparent;
+}
+
+.close-btn {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  background: url('../../assets/close.png') center center / 100% auto no-repeat;
+}
+
+.modal-icon {
+  height: 100px;
+  background: url('../../assets/success.png') center center / auto 64px no-repeat;
+}
+
+.modal-icon-error {
+  background-image: url('../../assets/info_alert.png');
+}
+
+.modal-icon-loading {
+  height: 128px;
+  background-image: url('../../assets/nlogo.svg');
+  animation: loading 2s linear infinite;
+}
+
+@-webkit-keyframes loading {
+  0% {
+    transform: rotate(0);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes loading {
+  0% {
+    transform: rotate(0);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.modal-text {
+  font-size: 24px;
+  font-weight: bold;
+  padding: 16px 0;
+  text-align: center;
+  color: #2c2c2c;
+}
+
+.modal-text.light {
+  color: white;
+}
+
+.modal-text-success {
+  color: RGBA(43, 190, 127, 1.00);
+}
+
+.modal-text-info {
+  color: rgb(23, 124, 255);
+}
+
+.modal-text-error {
+  color: RGBA(254, 51, 47, 1.00);
+}
+
+.modal-extra-text {
+  max-width: 400px;
+  text-align: center;
+  font-size: 16px;
+  color: #2c2c2c;
+  word-break: break-all;
+}
+
+.transaction-link {
+  color: #2c2c2c;
+}

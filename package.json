@@ -1,0 +1,60 @@
+{
+  "name": "uniq-ex",
+  "version": "0.1.0",
+  "private": false,
+  "dependencies": {
+    "@ont-dev/ontology-dapi": "^0.5.6",
+    "@testing-library/jest-dom": "^5.11.4",
+    "@testing-library/react": "^11.1.0",
+    "@testing-library/user-event": "^12.1.10",
+    "axios": "^0.20.0",
+    "bignumber.js": "^9.0.1",
+    "chart.js": "^2.9.4",
+    "ontology-ts-sdk": "^1.1.18",
+    "react": "^17.0.1",
+    "react-alert": "^7.0.2",
+    "react-alert-template-basic": "^1.0.0",
+    "react-chartjs-2": "^2.11.1",
+    "react-dom": "^17.0.1",
+    "react-router-dom": "^5.2.0",
+    "react-scripts": "4.0.1",
+    "react-select": "^3.1.1",
+    "react-tooltip": "^4.2.11",
+    "react-transition-group": "^4.4.1",
+    "redux": "^4.0.5",
+    "redux-react-hook": "^4.0.3",
+    "web-vitals": "^0.2.4"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "buildtest": "cp src/config.test.js src/config.js && npm run build && mv build testenv",
+    "buildlive": "cp src/config.live.js src/config.js && npm run build",
+    "aiobuild": "rm -rf testevn && npm run buildtest && npm run buildlive && mv testenv/index.html build/test.html && rsync -av testenv/ build/ && rm -rf testenv && cp src/config.test.js src/config.js",
+    "predeploy": "npm run aiobuild",
+    "deploy": "gh-pages -d build"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "gh-pages": "^3.1.0"
+  }
+}

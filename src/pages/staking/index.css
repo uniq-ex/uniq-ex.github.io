@@ -1,0 +1,92 @@
+.stake-container {
+  position: relative;
+  width: 1200px;
+  margin: 20px -100px 0;
+}
+
+.stake-pool .title {
+  height: 200px;
+  background: url('../../assets/stake.jpg') center center / auto 100% no-repeat;
+}
+
+.pool-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: 40px -10px 0;
+}
+
+.pool-list-item {
+  width: 32%;
+  box-sizing: border-box;
+  padding: 0 20px;
+  margin-bottom: 40px;
+  background-position: center 20px;
+  background-size: 48px auto;
+  background-repeat: no-repeat;
+}
+
+.item-detail {
+  padding: 40px 0;
+  font-size: 16px;
+  border-radius: 20px;
+  box-sizing: border-box;
+  box-shadow: 0 0 20px rgba(0, 0, 0, .07);
+  background: white;
+}
+
+.staking-token {
+  display: flex;
+}
+
+.staking-text {
+  flex: 1;
+  line-height: 58px;
+  padding: 0 24px;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.staking-token-icon {
+  flex: 1;
+  margin-left: 20px;
+  padding: 0 24px;
+  line-height: 58px;
+  text-align: right;
+  font-size: 20px;
+  font-weight: bold;
+  border-radius: 100px 0 0 100px;
+  background-color: RGBA(43, 190, 127, 0.1);
+  background-position: 6px center;
+  background-size: 48px auto;
+  background-repeat: no-repeat;
+}
+
+.earn-line {
+  margin: 40px 0;
+  padding: 0 24px;
+  font-size: 16px;
+}
+
+.total-staking {
+  margin: 40px 0;
+  padding: 0 24px;
+  font-size: 16px;
+}
+
+.earn-line span,
+.total-staking span {
+  float: right;
+}
+
+.select-btn {
+  margin: 0 24px;
+  text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+  line-height: 48px;
+  cursor: pointer;
+  color: #fff;
+  border-radius: 40px;
+  background: RGBA(43, 190, 127, 1.00);
+}

@@ -1,0 +1,46 @@
+.add-liquidity-wrapper {
+  padding: 24px 20px 40px;
+  width: 480px;
+  margin: 20px auto 0;
+  border-radius: 20px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, .07);
+  background: white;
+}
+
+.al-header {
+  position: relative;
+  text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.back-icon {
+  position: absolute;
+  left: 20px;
+  top: 0;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  background: url('../../../assets/back.png') center / auto 24px no-repeat;
+}
+
+.al-wrapper {
+  margin-top: 40px;
+}
+
+.icon-plus {
+  height: 24px;
+  background: url('../../../assets/plus.png') center / auto 18px no-repeat;
+}
+
+.al-add-btn {
+  margin: 0 24px;
+  text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+  line-height: 48px;
+  cursor: pointer;
+  color: #fff;
+  border-radius: 40px;
+  background: RGBA(43, 190, 127, 1.00);
+}

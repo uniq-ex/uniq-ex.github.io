@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="32px" height="32px" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>neo</title>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="画板" transform="translate(-146.000000, -441.000000)">
+            <g id="neo" transform="translate(146.000000, 441.000000)">
+                <circle id="椭圆形" fill="#FFFFFF" cx="16" cy="16" r="16"></circle>
+                <g id="Neo-symbol" transform="translate(8.000000, 7.000000)" fill-rule="nonzero">
+                    <polygon id="路径" fill="#00E599" points="0 3.15121951 0 15.1756098 7.80487805 17.9756098 7.80487805 5.85365854 16.2487805 2.74146341 8.58536585 0"></polygon>
+                    <polygon id="路径" fill="#00AF92" points="8.44390244 6.2 8.44390244 12.7756098 16.2487805 15.5756098 16.2487805 3.31219512"></polygon>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

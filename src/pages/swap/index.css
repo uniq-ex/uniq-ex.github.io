@@ -1,0 +1,44 @@
+.sw-wrapper {
+  padding: 40px 20px;
+  width: 480px;
+  margin: 20px auto 0;
+  border-radius: 20px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, .07);
+  background: white;
+}
+
+.sw-tabs {
+  padding: 0 24px;
+  display: flex;
+}
+
+.sw-tab {
+  flex: 1;
+  padding: 0 0 20px;
+  font-size: 24px;
+  color: #949494;
+  text-align: center;
+  cursor: pointer;
+}
+
+.sw-tab.active {
+  color: #2c2c2c;
+  font-weight: bold;
+}
+
+.icon-arrow-down {
+  height: 24px;
+  background: url('../../assets/arrow_down.svg') center / auto 18px no-repeat;
+}
+
+.sw-swap-btn {
+  margin: 0 24px;
+  text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+  line-height: 48px;
+  cursor: pointer;
+  color: #fff;
+  border-radius: 40px;
+  background: RGBA(43, 190, 127, 1.00);
+}

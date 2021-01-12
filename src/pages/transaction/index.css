@@ -1,0 +1,418 @@
+/* token selection */
+.token-select {
+  width: 140px;
+  height: 44px;
+  border-right: 1px solid #e5e5e5;
+}
+
+.token-select > div[class*="-control"] {
+  border: 1px solid transparent;
+  border-radius: 8px 0 0 8px;
+  box-shadow: none;
+}
+
+.token-select > div[class*="-control"] > div:first-child {
+  padding: 12px 6px;
+}
+
+.token-select div[class*="-ValueContainer"] {
+  padding: 16px 6px;
+}
+
+.token-select span[class*="-indicatorSeparator"] {
+  display: none;
+}
+
+
+.trade-container {
+  position: relative;
+  width: 1000px;
+  height: 640px;
+  margin: 20px auto 0;
+}
+
+/* left panel */
+
+.make-wrapper {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 400px;
+  height: 600px;
+  border-radius: 20px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, .07);
+  background: #fff;
+}
+
+.container-header {
+  position: relative;
+  font-size: 24px;
+  font-weight: bold;
+  padding: 20px 24px;
+}
+
+.form-item {
+  margin: 10px 0 40px;
+  padding: 0 24px;
+}
+
+.item-title {
+  font-size: 16px;
+}
+
+.item-title .hint {
+  float: right;
+  font-size: 12px;
+  color: #888;
+  padding-top: 4px;
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  margin-top: 4px;
+  border: 1px solid #e5e5e5;
+  border-radius: 4px;
+}
+
+.input {
+  border: 0;
+  border-radius: 0;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 10px;
+  border-radius: 8px;
+  outline: none;
+}
+
+.input.inline-input {
+  flex: 1;
+  padding-left: 12px;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+.fee-rate {
+  padding: 0 24px;
+  color: #888;
+}
+
+.make-btn {
+  position: absolute;
+  bottom: 40px;
+  right: 24px;
+  left: 24px;
+  line-height: 44px;
+  text-align: center;
+  border-radius: 40px;
+  color: #2c2c2c;
+  cursor: pointer;
+  border: 1px solid #2c2c2c;
+  background: #fff;
+}
+
+/* right panel */
+
+.trade-panel {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 560px;
+  height: 600px;
+  padding: 0 24px;
+  box-sizing: border-box;
+  overflow: hidden;
+  border-radius: 20px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, .07);
+  background: #fff;
+}
+
+.panel-header {
+  position: relative;
+  font-size: 24px;
+  font-weight: bold;
+  padding: 20px 0;
+}
+
+.panel-header .tabs {
+  position: absolute;
+  right: 0;
+  top: 10px;
+  display: flex;
+}
+
+.tab-wrapper {
+  position: relative;
+  flex: 1;
+  color: #949494;
+  font-size: 16px;
+  margin-left: 20px;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.tab-wrapper.selected {
+  color: #2c2c2c;
+}
+.tab-wrapper.selected::after {
+  position: absolute;
+  content: '';
+  bottom: 6px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  border-radius: 4px;
+  background: #2c2c2c;
+}
+
+.list-title {
+  display: flex;
+}
+
+.blank-placeholder {
+  width: 48px;
+}
+
+.title-items {
+  flex: 1;
+  display: flex;
+}
+
+.item-text {
+  flex: 1;
+  text-align: right;
+  color: #888;
+  font-size: 12px;
+  padding: 4px;
+}
+
+.item-placeholder {
+  width: 64px;
+}
+
+.last-price-wrapper {
+  display: flex;
+  font-size: 16px;
+  padding: 4px 0;
+  background: rgba(0, 0, 0, .03);
+}
+
+.last-price-label {
+  width: 90px;
+  padding: 0 2px 0 8px;
+  box-sizing: border-box;
+}
+
+.last-price {
+  width: 190px;
+  text-align: right;
+  padding: 0 2px;
+  font-weight: bold;
+  box-sizing: border-box;
+}
+
+.last-price-placeholder {
+  flex: 1;
+}
+
+.sell-section {
+  position: relative;
+  flex: 1;
+  display: flex;
+  color: RGBA(254, 51, 47, 1.00);
+  text-align: center;
+  align-items: center;
+  border-bottom: 1px solid rgba(0, 0, 0, .03);
+}
+
+.buy-section {
+  position: relative;
+  flex: 1;
+  display: flex;
+  color: RGBA(43, 190, 127, 1.00);
+  text-align: center;
+  align-items: center;
+}
+
+.section-title {
+  width: 48px;
+}
+
+.make-list {
+  position: absolute;
+  flex: 1;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 48px;
+  overflow-y: auto;
+  color: #2c2c2c;
+}
+
+.make-list.reverse {
+  transform: scaleY(-1);
+}
+
+.my-make-item {
+  display: flex;
+}
+
+.my-make-item:hover {
+  background-color: rgba(0, 0, 0, .03);
+}
+
+.my-make-item.reverse {
+  transform: scaleY(-1);
+}
+
+.make-item-detail {
+  flex: 1;
+  text-align: right;
+  font-size: 14px;
+  font-weight: bold;
+  padding: 2px;
+}
+
+.unmake-btn {
+  width: 64px;
+  padding: 2px;
+  margin-left: 10px;
+  box-sizing: border-box;
+  font-size: 14px;
+  cursor: pointer;
+  visibility: hidden;
+}
+
+.unmake-btn {
+  color: RGBA(254, 51, 47, 1.00);
+}
+
+.my-make-item:hover .unmake-btn {
+  visibility: visible;
+}
+
+.make-sell {
+  color: RGBA(254, 51, 47, 1.00);
+}
+
+.make-buy {
+  color: RGBA(43, 190, 127, 1.00);
+}
+
+/* pool */
+.token-pool {
+  width: 1000px;
+  margin: 0 auto;
+  overflow: hidden;
+  border-radius: 20px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, .07);
+  background: #fff;
+}
+
+.pool-item {
+  display: flex;
+  line-height: 48px;
+}
+
+.pool-item:nth-child(odd) {
+  background: rgba(0, 0, 0, .03);
+}
+
+.pool-item .token-name {
+  flex: 1;
+  padding: 0 0 0 60px;
+  background-position: 24px center;
+  background-size: 24px auto;
+  background-repeat: no-repeat;
+}
+
+.pool-item .token-balance {
+  flex: 2;
+  font-weight: bold;
+  text-align: right;
+  padding: 0 24px 0 0;
+}
+
+.option-wrapper {
+  display: flex;
+}
+
+.option-icon {
+  width: 24px;
+  height: 24px;
+  margin-right: 12px;
+  background-position: center;
+  background-size: 100% auto;
+  background-repeat: no-repeat;
+}
+
+.icon-pWBTC {
+  background-image: url('../../assets/pWBTC.svg');
+}
+
+.icon-ONTd {
+  background-image: url('../../assets/ONTd.svg');
+}
+
+.icon-prenBTC {
+  background-image: url('../../assets/prenBTC.svg');
+}
+
+.icon-pUSDC {
+  background-image: url('../../assets/pUSDC.svg');
+}
+
+.icon-WING {
+  background-image: url('../../assets/wing_icon.svg');
+}
+
+.icon-pETH {
+  background-image: url('../../assets/ETH.svg');
+}
+
+.icon-pDAI {
+  background-image: url('../../assets/oDAI.svg');
+}
+
+.icon-pUSDT {
+  background-image: url('../../assets/pusdt.svg');
+}
+
+.icon-psUSD {
+  background-image: url('../../assets/psusd.svg');
+}
+
+.icon-pNEO {
+  background-image: url('../../assets/neo-ont.svg');
+}
+
+.icon-pUNI {
+  background-image: url('../../assets/UNI-ONT.svg');
+}
+
+.icon-ONG {
+  background-image: url('../../assets/ONG_icon.svg');
+}
+
+.icon-ONT {
+  background-image: url('../../assets/ONT.svg');
+}
+
+.icon-UNX {
+  background-image: url('../../assets/newunx.svg');
+}
+
+.option-label {
+  flex: 1;
+  padding: 2px 0;
+}

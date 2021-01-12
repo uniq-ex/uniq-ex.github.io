@@ -1,0 +1,93 @@
+.governance-wrapper {
+  padding-top: 20px;
+}
+
+.overview-wrapper {
+  padding: 0 0 20px;
+  border-radius: 20px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, .07);
+  background: #fff;
+}
+
+.overview-title {
+  font-size: 24px;
+  font-weight: bold;
+  padding: 20px 24px;
+}
+
+.overview-sections, .distribution-sections {
+  display: flex;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.overview-left, .overview-right {
+  flex: 1;
+  text-align: center;
+}
+
+.overview-left {
+  border-right: 1px solid #f5f5f5;
+}
+
+.overview-section-title {
+  font-size: 20px;
+  font-weight: bold;
+  color: #2c2c2c;
+}
+
+.overview-detail {
+  font-size: 36px;
+  font-weight: bold;
+  color: #2BBE7F;
+}
+
+.overview-detail span {
+  font-size: 20px;
+  color: #949494;
+  margin-left: 10px;
+}
+
+
+.distribution-wrapper {
+  margin-top: 40px;
+  padding: 0 0 40px;
+  border-radius: 20px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, .07);
+  background: #fff;
+}
+
+.pie-svg {
+  flex: 1;
+}
+
+.donut {
+  display: block;
+  margin: 0 auto;
+}
+
+.pie-desc {
+  flex: 1;
+}
+
+.d-item {
+  display: flex;
+  margin-bottom: 20px;
+}
+
+.d-item:last-child {
+  margin-bottom: 0;
+}
+
+.d-item-color {
+  width: 60px;
+}
+
+.d-item-name {
+  flex: 1;
+  margin-left: 40px;
+}
+
+.d-item-ratio {
+  flex: 1;
+}

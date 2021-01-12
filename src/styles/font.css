@@ -1,0 +1,12 @@
+@font-face {
+  font-family: "DINPro";
+  src: url("./fonts/DINPro/DINPro.eot"); /* IE9 Compat Modes */
+  src: url("./fonts/DINPro/DINPro.woff2") format("woff2"), /* Modern Browsers */
+  url("./fonts/DINPro/DINPro.woff") format("woff"), /* Modern Browsers */
+  url("./fonts/DINPro/DINPro.ttf") format("truetype"), /* Safari, Android, iOS */
+  url("./fonts/DINPro/DINPro.eot?#iefix") format("embedded-opentype"), /* IE6-IE8 */
+  url("./fonts/DINPro/DINPro.otf") format("opentype"), /* Open Type Font */
+  url("./fonts/DINPro/DINPro.svg") format("svg"); /* Legacy iOS */
+  font-weight: normal;
+  font-style: normal;
+}
