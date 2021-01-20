@@ -48,6 +48,8 @@ export const useFetchPairs = () => {
             parsedPairs.push(pair)
           }
 
+          console.log('parsedPairs', parsedPairs)
+
           const tokenIds = []
           const tokenCount = strReader.readNextLen()
           for (let i = 0; i < tokenCount; i++) {

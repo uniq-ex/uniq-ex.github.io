@@ -1,4 +1,5 @@
 .sw-wrapper {
+  position: relative;
   padding: 40px 20px;
   width: 480px;
   margin: 20px auto 0;
@@ -41,4 +42,63 @@
   color: #fff;
   border-radius: 40px;
   background: RGBA(43, 190, 127, 1.00);
+}
+
+.sw-swap-btn.disabled {
+  background: #9B9B9B;
+  cursor: not-allowed;
+}
+
+.sw-content .form-item {
+  margin-bottom: 20px;
+}
+
+.add-liquidity-hint {
+  margin: 0 24px;
+  line-height: 48px;
+  text-align: center;
+  font-size: 14px;
+  border-radius: 30px;
+}
+
+.sw-price-wrapper {
+  margin-bottom: 20px;
+  padding: 0 24px;
+}
+
+.sw-price-wrapper span {
+  float: right;
+}
+
+.sw-hint-wrapper {
+  position: absolute;
+  z-index: -1;
+  top: 100%;
+  left: 40px;
+  right: 40px;
+  padding: 10px 20px;
+  background: #fff;
+}
+
+.sw-input-output span {
+  float: right;
+}
+
+.sw-best-path-list {
+  display: flex;
+  justify-content: space-between;
+}
+
+.icon-arrow-right {
+  width: 24px;
+  height: 48px;
+  background: url('../../assets/arrow_right.png') center / 18px no-repeat;
+}
+
+.path-icon {
+  padding: 12px 0 12px 30px;
+  line-height: 24px;
+  background-repeat: no-repeat;
+  background-position: left center;
+  background-size: 24px;
 }

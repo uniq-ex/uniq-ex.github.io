@@ -45,12 +45,18 @@ const Pool = () => {
       ]
     }).then((resp) => {
       const strReader = new StringReader(resp)
-      return { [id]: strReader.readUint128() }
+      const balance = strReader.readUint128()
+      
+      return { [id]: balance }
     })
   }
 
   function onNavigateToSwap() {
     history.push('/swap')
+  }
+
+  function onNavigateToAddLiquidity() {
+    history.push('/pool/add')
   }
 
   function generateLiquidityList() {
@@ -65,7 +71,7 @@ const Pool = () => {
           <div className="sw-tab active">Pool</div>
         </div>
         <div className="pool-content">
-          <div className="pool-add-liquidity-btn">Add Liquidity</div>
+          <div className="pool-add-liquidity-btn" onClick={() => onNavigateToAddLiquidity()}>Add Liquidity</div>
           <div className="pool-liquidity-list">
             <div className="my-liquidity">My Liquidities</div>
             {generateLiquidityList()}

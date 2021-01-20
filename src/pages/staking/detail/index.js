@@ -127,7 +127,7 @@ const StakingDetail = (props) => {
           operation: stakeType,
           args,
           gasPrice: 2500,
-          gasLimit: 3000000,
+          gasLimit: 30000000,
           requireIdentity: false
         }
 
@@ -177,7 +177,7 @@ const StakingDetail = (props) => {
         operation: 'harvest',
         args,
         gasPrice: 2500,
-        gasLimit: 3000000,
+        gasLimit: 30000000,
         requireIdentity: false
       }
 

@@ -398,7 +398,7 @@ const Transaction = () => {
           operation: 'make',
           args,
           gasPrice: 2500,
-          gasLimit: 3000000,
+          gasLimit: 30000000,
           requireIdentity: false
         })
 
@@ -440,7 +440,7 @@ const Transaction = () => {
             }
           ],
           gasPrice: 2500,
-          gasLimit: 3000000,
+          gasLimit: 30000000,
           requireIdentity: false
         })
         if (unmakeResult.transaction) {
