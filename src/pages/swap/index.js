@@ -10,6 +10,7 @@ import request from '../../utils/request'
 import { SWAP_ADDRESS } from '../../config'
 import { useFetchPairs } from '../../hooks/usePair';
 import { SLIPPAGE } from '../../utils/constants'
+import { toLocaleFixed } from '../../utils/common'
 import { bestSwap } from '../../utils/swap'
 import './index.css'
 
@@ -155,12 +156,16 @@ const Swap = () => {
   function onChangeToken1(e) {
     if (e.value !== token1.id) {
       setToken1(tokens.filter((t) => t.id === e.value)[0])
+      setToken1Amount(0)
+      setToken2Amount(0)
     }
   }
 
   function onChangeToken2(e) {
     if (e.value !== token2.id) {
       setToken2(tokens.filter((t) => t.id === e.value)[0])
+      setToken1Amount(0)
+      setToken2Amount(0)
     }
   }
 
@@ -170,12 +175,10 @@ const Swap = () => {
     setSwapType('exactin')
     setToken1Amount(amount)
     if (tokens.length && pairs.length && amount) {
-      const token1Decimals = tokens.find((t) => t.id === token1.id).decimals
-      const token2Decimals = tokens.find((t) => t.id === token2.id).decimals
-      const inputAmount = amount * (10 ** token1Decimals)
+      const inputAmount = amount * (10 ** token1.decimals)
       const [maxOutput, path] = bestSwap('exactin', inputAmount, pairs, token1.id, token2.id)
 
-      setToken2Amount(maxOutput / (10 ** token2Decimals))
+      setToken2Amount(maxOutput / (10 ** token2.decimals))
       setBestPath(path)
     } else if (amount == 0) {
       setToken2Amount(0)
@@ -188,12 +191,10 @@ const Swap = () => {
     setSwapType('exactout')
     setToken2Amount(e.target.value)
     if (tokens.length && pairs.length && amount) {
-      const token1Decimals = tokens.find((t) => t.id === token1.id).decimals
-      const token2Decimals = tokens.find((t) => t.id === token2.id).decimals
-      const outputAmount = amount * (10 ** token2Decimals)
+      const outputAmount = amount * (10 ** token2.decimals)
       const [minInput, path] = bestSwap('exactout', outputAmount, pairs, token1.id, token2.id)
 
-      setToken1Amount(minInput / (10 ** token1Decimals))
+      setToken1Amount(minInput / (10 ** token1.decimals))
       setBestPath(path)
     } else if (amount == 0) {
       setToken1Amount(0)
@@ -243,7 +244,7 @@ const Swap = () => {
       ]
       const swapResult = await client.api.smartContract.invokeWasm({
         scriptHash: SWAP_ADDRESS,
-        operation: 'swap_exact_tokens_for_tokens',
+        operation: swapType === 'exactin' ? 'swap_exact_tokens_for_tokens' : 'swap_tokens_for_exact_tokens',
         args,
         gasPrice: 2500,
         gasLimit: 30000000,
@@ -271,19 +272,32 @@ const Swap = () => {
   }
 
   function getPrice() {
-    return `${token2Amount / token1Amount} ${token2.name} per ${token1.name}`
+    return `${toLocaleFixed(token2Amount / token1Amount, 6)} ${token2.name} per ${token1.name}`
   }
 
   function getMinReceiveOrMaxSold() {
     if (swapType === 'exactin') {
-      return <p>Minimum Received:<span>{token2Amount * (1 - SLIPPAGE)} {token2.name}</span></p>
+      return <p>Minimum Received:<span>{toLocaleFixed(token2Amount * (1 - SLIPPAGE), 6)} {token2.name}</span></p>
     } else {
-      return <p>Maximum Sold:<span>{token1Amount * (1 + SLIPPAGE)} {token1.name}</span></p>
+      return <p>Maximum Sold:<span>{toLocaleFixed(token1Amount * (1 + SLIPPAGE), 6)} {token1.name}</span></p>
     }
   }
 
   function getPriceImpact() {
-    return ''
+    let price
+    let pair = pairs.find((p) => p.token1 === token1.id && p.token2 === token2.id)
+
+    if (pair) {
+      price = (pair.reserve2 / (10 ** token2.decimals)) / (pair.reserve1 / (10 ** token1.decimals))
+    } else {
+      pair = pairs.find((p) => p.token1 === token2.id && p.token2 === token1.id)
+
+      if (pair) {
+        price = (pair.reserve1 / (10 ** token1.decimals)) / (pair.reserve2 / (10 ** token2.decimals))
+      }
+    }
+
+    return <p>Price Impact:<span>{Math.abs((token2Amount / token1Amount - price) / price * 100).toFixed(2)}%</span></p>
   }
 
   function getBestPath() {

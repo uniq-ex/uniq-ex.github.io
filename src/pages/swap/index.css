@@ -80,7 +80,8 @@
   background: #fff;
 }
 
-.sw-input-output span {
+.sw-input-output span,
+.sw-price-impact span {
   float: right;
 }
 

@@ -19,9 +19,58 @@
   background: RGBA(43, 190, 127, 1.00);
 }
 
-.my-liquidity {
+.pool-liquidity-list {
   margin: 20px 24px 0;
+}
+
+.my-liquidity {
   padding: 12px 0;
   font-size: 18px;
   font-weight: bold;
+}
+
+.pool-liquidity-item {
+  display: flex;
+  align-items: center;
+  margin-top: 20px;
+  padding: 20px;
+  line-height: 24px;
+  border-radius: 8px;
+  background: RGBA(243, 248, 255, 1.00);
+}
+
+.liquidity-item-detail {
+  flex: 1;
+}
+
+.liquidity-item-detail .token-icon {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  background-size: 24px;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.token-icon + .token-icon {
+  margin-left: -4px;
+}
+
+.token-pair {
+  display: inline-block;
+  margin-left: 10px;
+  vertical-align: 6px;
+}
+
+.pair-position {
+}
+
+.remove-liquidity-btn {
+  width: 160px;
+  border-radius: 4px;
+  text-align: center;
+  line-height: 36px;
+  color: #fff;
+  cursor: pointer;
+  background: #F4BA5E;
 }

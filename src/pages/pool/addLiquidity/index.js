@@ -21,9 +21,13 @@ const AddLiquidity = () => {
   const [token2Balance, setToken2Balance] = useState(0)
   const [token1Amount, setToken1Amount] = useState(0)
   const [token2Amount, setToken2Amount] = useState(0)
-  const { account, tokens, swapTokens } = useMappedState((state) => ({
+  const [isValidPair, setIsValidPair] = useState(true)
+  const [isFirstProvider, setIsFirstProvider] = useState(false)
+  const [showPriceInfo, setShowPriceInfo] = useState(false)
+  const { account, tokens, pairs, swapTokens } = useMappedState((state) => ({
     account: state.wallet.account,
     tokens: state.common.tokens,
+    pairs: state.swap.pairs,
     swapTokens: state.swap.tokens
   }))
   const dispatch = useDispatch()
@@ -32,6 +36,30 @@ const AddLiquidity = () => {
   const history = useHistory()
 
   useFetchPairs()
+
+  useEffect(() => {
+    if (!token1.id || !token2.id || (token1.id === token2.id)) {
+      setIsValidPair(false)
+    } else {
+      setIsValidPair(true)
+    }
+  }, [token1, token2])
+
+  useEffect(() => {
+    if (token1.id && token2.id && token1.id != token2.id && (!pairs.length || !getPairByToken())) {
+      setIsFirstProvider(true)
+    } else {
+      setIsFirstProvider(false)
+    }
+  }, [pairs, token1, token2])
+
+  useEffect(() => {
+    if (token1.id && token2.id) {
+      setShowPriceInfo(true)
+    } else {
+      setShowPriceInfo(false)
+    }
+  }, [pairs, token1, token2, token1Amount, token2Amount])
 
   useEffect(() => {
     if (tokens.length && swapTokens.length) {
@@ -55,6 +83,10 @@ const AddLiquidity = () => {
       })
     }
   }, [account, token2])
+
+  function getPairByToken() {
+    return pairs.find((p) => (p.token1 === token1.id && p.token2 === token2.id) || (p.token1 === token2.id && p.token2 === token1.id))
+  }
 
   function getTokenBalance(token, cb = () => {}) {
     if (token.name !== 'ONT' && token.name !== 'ONG') {
@@ -134,12 +166,71 @@ const AddLiquidity = () => {
   function onChangeToken1(e) {
     if (e.value !== token1.id) {
       setToken1(tokens.filter((t) => t.id === e.value)[0])
+      setToken1Amount(0)
+      setToken2Amount(0)
     }
   }
 
   function onChangeToken2(e) {
     if (e.value !== token2.id) {
       setToken2(tokens.filter((t) => t.id === e.value)[0])
+      setToken1Amount(0)
+      setToken2Amount(0)
+    }
+  }
+
+  function getPairPrice() {
+    if (token1.id && token2.id && pairs.length) {
+      let pair = pairs.find((p) => p.token1 === token1.id && p.token2 === token2.id)
+      if (pair) {
+        return (pair.reserve2 / (10 ** token2.decimals)) / (pair.reserve1 / (10 ** token1.decimals))
+      }
+      pair = pairs.find((p) => p.token1 === token2.id && p.token2 === token1.id)
+      if (pair) {
+        return (pair.reserve1 / (10 ** token1.decimals)) / (pair.reserve2 / (10 ** token2.decimals))
+      }
+    }
+
+    return 0
+  }
+
+  function onToken1AmountChange(e) {
+    const amount = e.target.value
+
+    setToken1Amount(amount)
+    if (tokens.length && pairs.length && !!getPairByToken()) {
+      if (amount) {
+        setToken2Amount(amount * getPairPrice())
+      } else if (amount == 0) {
+        setToken2Amount(0)
+      }
+    }
+  }
+
+  function onToken2AmountChange(e) {
+    const amount = e.target.value
+
+    setToken2Amount(amount)
+    if (tokens.length && pairs.length && !!getPairByToken()) {
+      if (amount) {
+        setToken2Amount(amount / getPairPrice())
+      } else if (amount == 0) {
+        setToken2Amount(0)
+      }
+    }
+  }
+
+  function getShareOfPool() {
+    if (isFirstProvider) {
+      return '100%'
+    } else {
+      const pair = getPairByToken()
+      const amountProduct = token1Amount * (10 ** token1.decimals) * token2Amount * (10 ** token2.decimals)
+
+      if (pair) {
+        return `${(amountProduct / (amountProduct + pair.reserve1 * pair.reserve2) * 100).toFixed(2)}%`
+      }
+      return `0%`
     }
   }
 
@@ -162,7 +253,6 @@ const AddLiquidity = () => {
     }
 
     try {
-      console.log(token1Amount, token2Amount, new BigNumber(token2Amount).toString())
       const args = [
         {
           type: 'Address',
@@ -178,26 +268,25 @@ const AddLiquidity = () => {
         },
         {
           type: 'Long',
-          value: new BigNumber(token1Amount).times(new BigNumber(10 ** token1.decimals)).integerValue(BigNumber.ROUND_DOWN).toString()
+          value: new BigNumber(token1Amount).times(new BigNumber(10 ** token1.decimals)).integerValue(BigNumber.ROUND_UP).toString()
         },
         {
           type: 'Long',
-          value: new BigNumber(token2Amount).times(new BigNumber(10 ** token2.decimals)).integerValue(BigNumber.ROUND_DOWN).toString()
+          value: new BigNumber(token2Amount).times(new BigNumber(10 ** token2.decimals)).integerValue(BigNumber.ROUND_UP).toString()
         },
         {
           type: 'Long',
-          value: new BigNumber(token1Amount).times(new BigNumber(10 ** token1.decimals)).integerValue(BigNumber.ROUND_DOWN).toString()
+          value: new BigNumber(token1Amount).times(new BigNumber(10 ** token1.decimals)).times(1 - SLIPPAGE).integerValue(BigNumber.ROUND_UP).toString()
         },
         {
           type: 'Long',
-          value: new BigNumber(token2Amount).times(new BigNumber(10 ** token2.decimals)).integerValue(BigNumber.ROUND_DOWN).toString()
+          value: new BigNumber(token2Amount).times(new BigNumber(10 ** token2.decimals)).times(1 - SLIPPAGE).integerValue(BigNumber.ROUND_UP).toString()
         },
         {
           type: 'Address',
           value: account
         }
       ]
-      console.log(args)
       const addResult = await client.api.smartContract.invokeWasm({
         scriptHash: SWAP_ADDRESS,
         operation: 'add_liquidity',
@@ -206,8 +295,6 @@ const AddLiquidity = () => {
         gasLimit: 30000000,
         requireIdentity: false
       })
-
-      console.log('addResult', addResult)
 
       if (addResult.transaction) {
         setModal('infoModal', {
@@ -235,13 +322,20 @@ const AddLiquidity = () => {
         <div className="back-icon" onClick={() => onNavigateToPool()}></div>
       </div>
       <div className="al-wrapper">
+        {
+          isValidPair && isFirstProvider ? (
+            <div className="first-provider-hint">
+              <div><strong>You are the first liquidity provider.</strong><br /><br />The ratio of tokens you add will set the price of this pool.</div>
+            </div>
+          ) : null
+        }
         <div className="form-item">
           <div className="item-title">Input
             <span className="hint">Balance: {token1Balance}</span>
           </div>
           <div className="input-wrapper">
             {generateTokenSelection('1')}
-            <input className="input inline-input" placeholder="0.0" type="number" onChange={(event) => setToken1Amount(event.target.value)}></input>
+            <input className="input inline-input" value={token1Amount} placeholder="0.0" type="number" onChange={(event) => onToken1AmountChange(event)}></input>
           </div>
         </div>
         <div className="icon-plus"></div>
@@ -251,9 +345,27 @@ const AddLiquidity = () => {
           </div>
           <div className="input-wrapper">
             {generateTokenSelection('2')}
-            <input className="input inline-input" placeholder="0.0" type="number" onChange={(event) => setToken2Amount(event.target.value)}></input>
+            <input className="input inline-input" value={token2Amount} placeholder="0.0" type="number" onChange={(event) => onToken2AmountChange(event)}></input>
           </div>
         </div>
+        {
+          isValidPair && showPriceInfo ? (
+            <div className="al-price-wrapper">
+              <div className="al-price-item">
+                <div className="price-item-detail">{getPairPrice().toFixed(4)}</div>
+                <div className="price-item-label">{token2.name} per {token1.name}</div>
+              </div>
+              <div className="al-price-item">
+                <div className="price-item-detail">{(1 / getPairPrice()).toFixed(4)}</div>
+                <div className="price-item-label">{token1.name} per {token2.name}</div>
+              </div>
+              <div className="al-price-item">
+                <div className="price-item-detail">{getShareOfPool()}</div>
+                <div className="price-item-label">Share of Pool</div>
+              </div>
+            </div>
+          ) : null
+        }
         <div className="al-add-btn" onClick={() => onAdd()}>Add</div>
       </div>
     </div>

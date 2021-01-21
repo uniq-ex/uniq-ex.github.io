@@ -28,9 +28,48 @@
   margin-top: 40px;
 }
 
+.first-provider-hint {
+  margin: 10px 24px 20px;
+  padding: 20px;
+  border-radius: 8px;
+  background: RGBA(243, 248, 255, 1.00);
+}
+
+.first-provider-hint div {
+  font-size: 18px;
+}
+
+.al-wrapper .form-item {
+  margin-bottom: 20px;
+}
+
 .icon-plus {
   height: 24px;
   background: url('../../../assets/plus.png') center / auto 18px no-repeat;
+}
+
+.al-price-wrapper {
+  display: flex;
+  margin: 20px 24px;
+  border-radius: 8px;
+  background: #546A5B;
+}
+
+.al-price-item {
+  flex: 1;
+  padding: 12px 0;
+  text-align: center;
+}
+
+.price-item-detail {
+  font-size: 20px;
+  font-weight: bold;
+  color: white;
+}
+
+.price-item-label {
+  font-size: 16px;
+  color: #E5E5E5;
 }
 
 .al-add-btn {
