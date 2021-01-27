@@ -1,0 +1,15 @@
+.token-input-wrapper {
+  margin: 10px 0 40px;
+  padding: 0 24px;
+}
+
+.input-label {
+  font-size: 16px;
+}
+
+.input-label .hint {
+  float: right;
+  font-size: 12px;
+  color: #888;
+  padding-top: 4px;
+}

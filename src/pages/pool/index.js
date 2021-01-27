@@ -60,6 +60,10 @@ const Pool = () => {
     history.push('/pool/add')
   }
 
+  function onRemoveLiquidity(pairId) {
+    history.push(`/pool/remove/${pairId}`)
+  }
+
   function generateLiquidityList() {
     if (liquidityBalance.length && pairs.length && tokens.length) {
       return liquidityBalance.map((lb) => {
@@ -67,8 +71,8 @@ const Pool = () => {
         const pair = pairs.find((p) => p.id == pairId)
         const token1 = tokens.find((t) => t.id === pair.token1)
         const token2 = tokens.find((t) => t.id === pair.token2)
-        const balance = Math.pow(lb[pairId] / (10 ** 18), 2)
-        const shareOfPool = Math.sqrt(balance / (pair.reserve1 * pair.reserve2 / (10 ** (token1.decimals + token2.decimals))))
+        const balance = lb[pairId] / (10 ** 18)
+        const shareOfPool = Math.sqrt(Math.pow(balance, 2) / (pair.reserve1 * pair.reserve2 / (10 ** (token1.decimals + token2.decimals))))
         const token1Amount = (pair.reserve1 * shareOfPool / (10 ** token1.decimals)).toFixed(2)
         const token2Amount = (pair.reserve2 * shareOfPool / (10 ** token2.decimals)).toFixed(2)
         
@@ -77,10 +81,11 @@ const Pool = () => {
             <div className="liquidity-item-detail">
               <div className={`token-icon icon-${token1.name}`}></div>
               <div className={`token-icon icon-${token2.name}`}></div>
-              <div className="token-pair">{token1.name}/{token2.name}</div>
-              <div className="pair-position">Position: {token1Amount}/{token2Amount}</div>
+              <div className="token-pair"><strong>{token1.name}/{token2.name}</strong></div>
+              <div className="pair-position"><strong>Pooled</strong>: {token1Amount} / {token2Amount}</div>
+              <div className="pool-tokens"><strong>Pool Tokens</strong>: {balance.toFixed(6)}</div>
             </div>
-            <div className="remove-liquidity-btn">Remove Liquidity</div>
+            <div className="remove-liquidity-btn" onClick={() => onRemoveLiquidity(pairId)}>Remove Liquidity</div>
           </div>
         )
       })
@@ -99,7 +104,7 @@ const Pool = () => {
         <div className="pool-content">
           <div className="pool-add-liquidity-btn" onClick={() => onNavigateToAddLiquidity()}>Add Liquidity</div>
           <div className="pool-liquidity-list">
-            <div className="my-liquidity">My Liquidities</div>
+            <div className="my-liquidity">Your Liquidity</div>
             {generateLiquidityList()}
           </div>
         </div>

@@ -14,6 +14,7 @@ import Transaction from './pages/transaction'
 import Swap from './pages/swap'
 import Pool from './pages/pool'
 import AddLiquidity from './pages/pool/addLiquidity'
+import RemoveLiquidity from './pages/pool/removeLiquidity'
 import Staking from './pages/staking'
 import StakingDetail from './pages/staking/detail'
 import Token from './pages/token'
@@ -108,6 +109,12 @@ export const App = () => {
               READY_TABS.indexOf('/swap') >= 0 ?
               <Route exact path="/pool/add">
                 <AddLiquidity />
+              </Route> : null
+            }
+            {
+              READY_TABS.indexOf('/swap') >= 0 ?
+              <Route exact path="/pool/remove/:id">
+                <RemoveLiquidity />
               </Route> : null
             }
             {

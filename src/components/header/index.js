@@ -50,9 +50,9 @@ const Header = (props) => {
             <div className="site-intro" onClick={() => toggleShowSiteIntro(true)}></div>
           </div>
           <div className="nav-list">
-            { READY_TABS.indexOf('/') >= 0 ? <div className="nav-item"><Link to="/">Trade</Link></div> : null }
-            { READY_TABS.indexOf('/swap') >= 0 ? <div className="nav-item"><Link to="/swap">Swap</Link></div> : null }
             { READY_TABS.indexOf('/staking') >= 0 ? <div className="nav-item"><Link to="/staking">Staking</Link></div> : null }
+            { READY_TABS.indexOf('/swap') >= 0 ? <div className="nav-item"><Link to="/swap">Swap</Link></div> : null }
+            { READY_TABS.indexOf('/') >= 0 ? <div className="nav-item"><Link to="/">Trade</Link></div> : null }
             { READY_TABS.indexOf('/governance') >= 0 ? <div className="nav-item"><Link to="/governance">Governance</Link></div> : null }
             { READY_TABS.indexOf('/token') >= 0 ? <div className="nav-item"><Link to="/token">Token</Link></div> : null }
           </div>

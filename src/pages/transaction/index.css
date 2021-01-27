@@ -412,6 +412,54 @@ input[type=number] {
   background-image: url('../../assets/newunx.svg');
 }
 
+.icon-wfpWBTC {
+  background-image: url('../../assets/wfpWBTC.png');
+}
+
+.icon-wfONTd {
+  background-image: url('../../assets/wfONTd.png');
+}
+
+.icon-wfprenBTC {
+  background-image: url('../../assets/wfprenBTC.png');
+}
+
+.icon-wfpUSDC {
+  background-image: url('../../assets/wfpUSDC.png');
+}
+
+.icon-wfWING {
+  background-image: url('../../assets/wing_icon.svg');
+}
+
+.icon-wfpETH {
+  background-image: url('../../assets/wfETH.png');
+}
+
+.icon-wfpDAI {
+  background-image: url('../../assets/wfoDAI.png');
+}
+
+.icon-wfpUSDT {
+  background-image: url('../../assets/wfpusdt.png');
+}
+
+.icon-wfpsUSD {
+  background-image: url('../../assets/wfpsusd.png');
+}
+
+.icon-wfpNEO {
+  background-image: url('../../assets/wfneo-ont.png');
+}
+
+.icon-wfpUNI {
+  background-image: url('../../assets/wfUNI-ONT.png');
+}
+
+.icon-wfONG {
+  background-image: url('../../assets/wfONG_icon.png');
+}
+
 .option-label {
   flex: 1;
   padding: 2px 0;

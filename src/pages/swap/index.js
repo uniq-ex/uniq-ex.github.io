@@ -1,12 +1,10 @@
 import { client } from '@ont-dev/ontology-dapi'
 import React, { useState, useEffect, useCallback } from 'react'
 import { useHistory } from "react-router-dom"
-import Select, { components } from 'react-select'
 import { useMappedState, useDispatch } from 'redux-react-hook';
-import { utils } from 'ontology-ts-sdk'
 import { useAlert } from 'react-alert'
 import BigNumber from 'bignumber.js'
-import request from '../../utils/request'
+import TokenInput from '../../components/tokenInput'
 import { SWAP_ADDRESS } from '../../config'
 import { useFetchPairs } from '../../hooks/usePair';
 import { SLIPPAGE } from '../../utils/constants'
@@ -14,24 +12,19 @@ import { toLocaleFixed } from '../../utils/common'
 import { bestSwap } from '../../utils/swap'
 import './index.css'
 
-const { StringReader, reverseHex } = utils
-
 const Swap = () => {
-  const [currentTokenBalance, setCurrentTokenBalance] = useState(0)
   const [swapType, setSwapType] = useState('exactin')
   const [token1, setToken1] = useState({})
   const [token2, setToken2] = useState({})
-  const [token1Amount, setToken1Amount] = useState(0)
-  const [token2Amount, setToken2Amount] = useState(0)
+  const [token1Amount, setToken1Amount] = useState('')
+  const [token2Amount, setToken2Amount] = useState('')
   const [isValidPair, setIsValidPair] = useState(false)
-  const [priceImpact, setPriceImpact] = useState(0)
   const [bestPath, setBestPath] = useState([])
   const [showPrice, setShowPrice] = useState(false)
   const [showInfo, setShowInfo] = useState(false)
-  const { account, pairs, tokens, swapTokens } = useMappedState((state) => ({
+  const { account, pairs, swapTokens } = useMappedState((state) => ({
     account: state.wallet.account,
     pairs: state.swap.pairs,
-    tokens: state.common.tokens,
     swapTokens: state.swap.tokens
   }))
   const dispatch = useDispatch()
@@ -52,12 +45,11 @@ const Swap = () => {
   }, [token1Amount, token2Amount])
 
   useEffect(() => {
-    if (tokens.length && swapTokens.length) {
-      const sTokens = swapTokens.map((t) => tokens.find((tk) => tk.id === t))
-      setToken1(sTokens[0])
-      setToken2(sTokens[1])
+    if (swapTokens.length) {
+      setToken1(swapTokens[0])
+      setToken2(swapTokens[1])
     }
-  }, [tokens, swapTokens])
+  }, [swapTokens])
 
   useEffect(() => {
     if (token1.id && token2.id && validPair(token1.id, token2.id)) {
@@ -66,83 +58,6 @@ const Swap = () => {
       setIsValidPair(false)
     }
   }, [token1, token2])
-
-  useEffect(() => {
-    if (account && token1.id) {
-      if (token1.name !== 'ONT' && token1.name !== 'ONG') {
-        const param = {
-          scriptHash: token1.address,
-          operation: 'balanceOf',
-          args: [
-            {
-              type: 'Address',
-              value: account,
-            },
-          ],
-        }
-        client.api.smartContract.invokeRead(param).then((balance) => {
-          if (balance) {
-            setCurrentTokenBalance(parseInt(reverseHex(balance), 16) / (10 ** token1.decimals))
-          }
-        })
-      } else {
-        request({
-          method: 'get',
-          url: `/v2/addresses/${account}/native/balances`
-        }).then((resp) => {
-          if (resp.code === 0) {
-            const token = resp.result.find((t) => t.asset_name === token1.name.toLowerCase())
-            setCurrentTokenBalance(token.balance)
-          }
-        })
-        .catch((e) => {
-          console.log(e)
-        })
-      }
-    }
-  }, [account, token1])
-
-  const generateTokenSelection = (type) => {
-    if (tokens.length && swapTokens.length) {
-      const sTokens = swapTokens.map((t) => tokens.find((tk) => tk.id === t))
-      const CustomOption = (props) => (
-        <components.Option {...props}>
-          <div className="option-wrapper">
-            <div className={`icon-${props.label} option-icon`}></div>
-            <div className="option-label">{props.label}</div>
-          </div>
-        </components.Option>
-      )
-      const SingleValue = ({ children, ...props }) => (
-        <components.SingleValue {...props}>
-          <div className="option-wrapper">
-            <div className={`icon-${children} option-icon`}></div>
-            <div className="option-label">{children}</div>
-          </div>
-        </components.SingleValue>
-      )
-      const onChangeToken = (type === '1' ? onChangeToken1 : onChangeToken2)
-      let defaultToken = type === '1' ? sTokens[0] : sTokens[1]
-      return (
-        <Select
-          className="token-select"
-          defaultValue={defaultToken}
-          options={sTokens}
-          isSearchable={false}
-          components={{ Option: CustomOption, SingleValue }}
-          onChange={(e) => onChangeToken(e)}
-          theme={theme => ({
-            ...theme,
-            borderRadius: 0,
-            colors: {
-              ...theme.colors,
-              primary: '#2c2c2c',
-            },
-          })}
-        />
-      )
-    }
-  }
 
   function validPair(token1, token2) {
     if (pairs.length) {
@@ -153,51 +68,51 @@ const Swap = () => {
     return false
   }
 
-  function onChangeToken1(e) {
-    if (e.value !== token1.id) {
-      setToken1(tokens.filter((t) => t.id === e.value)[0])
-      setToken1Amount(0)
-      setToken2Amount(0)
+  function onChangeToken1(token) {
+    if (token.id !== token1.id) {
+      setToken1(token)
+      setToken1Amount('')
+      setToken2Amount('')
     }
   }
 
-  function onChangeToken2(e) {
-    if (e.value !== token2.id) {
-      setToken2(tokens.filter((t) => t.id === e.value)[0])
-      setToken1Amount(0)
-      setToken2Amount(0)
+  function onChangeToken2(token) {
+    if (token.id !== token2.id) {
+      setToken2(token)
+      setToken1Amount('')
+      setToken2Amount('')
     }
   }
 
-  function onToken1AmountChange(e) {
-    const amount = e.target.value
+  function onToken1AmountChange(amount) {
+    if (amount != token1Amount) {
+      setSwapType('exactin')
+      setToken1Amount(amount)
+      if (pairs.length && amount) {
+        const inputAmount = amount * (10 ** token1.decimals)
+        const [maxOutput, path] = bestSwap('exactin', inputAmount, pairs, token1.id, token2.id)
 
-    setSwapType('exactin')
-    setToken1Amount(amount)
-    if (tokens.length && pairs.length && amount) {
-      const inputAmount = amount * (10 ** token1.decimals)
-      const [maxOutput, path] = bestSwap('exactin', inputAmount, pairs, token1.id, token2.id)
-
-      setToken2Amount(maxOutput / (10 ** token2.decimals))
-      setBestPath(path)
-    } else if (amount == 0) {
-      setToken2Amount(0)
+        setToken2Amount(new BigNumber(maxOutput).div(10 ** token2.decimals).toString())
+        setBestPath(path)
+      } else if (amount == 0) {
+        setToken2Amount('')
+      }
     }
   }
 
-  function onToken2AmountChange(e) {
-    const amount = e.target.value
+  function onToken2AmountChange(amount) {
+    if (amount != token2Amount) {
+      setSwapType('exactout')
+      setToken2Amount(amount)
+      if (pairs.length && amount) {
+        const outputAmount = amount * (10 ** token2.decimals)
+        const [minInput, path] = bestSwap('exactout', outputAmount, pairs, token1.id, token2.id)
 
-    setSwapType('exactout')
-    setToken2Amount(e.target.value)
-    if (tokens.length && pairs.length && amount) {
-      const outputAmount = amount * (10 ** token2.decimals)
-      const [minInput, path] = bestSwap('exactout', outputAmount, pairs, token1.id, token2.id)
-
-      setToken1Amount(minInput / (10 ** token1.decimals))
-      setBestPath(path)
-    } else if (amount == 0) {
-      setToken1Amount(0)
+        setToken1Amount(new BigNumber(minInput).div(10 ** token1.decimals).toString())
+        setBestPath(path)
+      } else if (amount == 0) {
+        setToken1Amount('')
+      }
     }
   }
 
@@ -304,7 +219,7 @@ const Swap = () => {
     if (bestPath.length) {
       const items = []
       bestPath.map((t, index) => {
-        const token = tokens.find((tk) => tk.id === t)
+        const token = swapTokens.find((tk) => tk.id === t)
         index > 0 && items.push((<div className="icon-arrow-right"></div>))
         items.push((<div className={`path-icon icon-${token.name}`}>{token.name}</div>))
       })
@@ -321,23 +236,22 @@ const Swap = () => {
           <div className="sw-tab" onClick={() => onNavigateToPool()}>Pool</div>
         </div>
         <div className="sw-content">
-          <div className="form-item">
-            <div className="item-title">From
-              <span className="hint">Balance: {currentTokenBalance}</span>
-            </div>
-            <div className="input-wrapper">
-              {generateTokenSelection('1')}
-              <input className="input inline-input" value={token1Amount} placeholder="0.0" type="number" onChange={(event) => onToken1AmountChange(event)}></input>
-            </div>
-          </div>
+          <TokenInput
+            label="From"
+            tokens={swapTokens}
+            value={token1Amount}
+            round='up'
+            onTokenChange={(token) => onChangeToken1(token)}
+            onAmountChange={(amount) => onToken1AmountChange(amount)} />
           <div className="icon-arrow-down"></div>
-          <div className="form-item">
-            <div className="item-title">To</div>
-            <div className="input-wrapper">
-              {generateTokenSelection('2')}
-              <input className="input inline-input" value={token2Amount} placeholder="0.0" type="number" onChange={(event) => onToken2AmountChange(event)}></input>
-            </div>
-          </div>
+          <TokenInput
+            label="To"
+            tokens={swapTokens}
+            value={token2Amount}
+            round='down'
+            defaultTokenId={swapTokens.length && swapTokens[1].id}
+            onTokenChange={(token) => onChangeToken2(token)}
+            onAmountChange={(amount) => onToken2AmountChange(amount)} />
           { showPrice ? <div className="sw-price-wrapper">Price<span className="sw-price-info">{getPrice()}</span></div> : null }
           { isValidPair ? null : <div className="add-liquidity-hint">Add liquidity to enable swaps for this pair.</div> }
           { isValidPair ? <div className="sw-swap-btn" onClick={() => handleSwap()}>Swap</div> : <div className="sw-swap-btn disabled">Illiquidity</div> }

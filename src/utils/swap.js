@@ -1,3 +1,5 @@
+const REST = 0.997
+
 export const findAllPaths = (pairs, sourceId, targetId) => {
   let pathArr = []
   const findPath = (sourceId, targetId, pathNodes = []) => {
@@ -35,17 +37,23 @@ export const findAllPaths = (pairs, sourceId, targetId) => {
 }
 
 const getInputAmount = (output, pair, reverse = false) => {
+  let amount
   if (reverse) {
-    return pair.reserve1 * pair.reserve2 / (pair.reserve1 - output) - pair.reserve2
+    amount = (pair.reserve1 * pair.reserve2 / (pair.reserve1 - output) - pair.reserve2) / REST
+  } else {
+    amount = (pair.reserve1 * pair.reserve2 / (pair.reserve2 - output) - pair.reserve1) / REST
   }
-  return pair.reserve1 * pair.reserve2 / (pair.reserve2 - output) - pair.reserve1
+  return Math.ceil(amount)
 }
 
 const getOutputAmount = (input, pair, reverse = false) => {
+  let amount
   if (reverse) {
-    return pair.reserve1 - pair.reserve1 * pair.reserve2 / (pair.reserve2 + input)
+    amount = pair.reserve1 - pair.reserve1 * pair.reserve2 / (pair.reserve2 + REST * input)
+  } else {
+    amount = pair.reserve2 - pair.reserve1 * pair.reserve2 / (pair.reserve1 + REST * input)
   }
-  return pair.reserve2 - pair.reserve1 * pair.reserve2 / (pair.reserve1 + input)
+  return Math.floor(amount)
 }
 
 const findNextOutput = (input, pairs, token1, token2) => {
@@ -78,29 +86,29 @@ const findPrevInput = (output, pairs, token1, token2) => {
 
 export const bestSwap = (type = 'exactin', amount, pairs, token1, token2) => {
   const paths = findAllPaths(pairs, token1, token2)
+  const originAmount = amount
   let maxOutput = 0
   let minInput = Infinity
   let path = []
   
   for (let i = 0; i < paths.length; i++) {
+    amount = originAmount
     if (type === 'exactin') {
-      let output = 0
       for (let j = 0; j < paths[i].length - 1; j++) {
-        output = findNextOutput(amount, pairs, paths[i][j], paths[i][j + 1])
+        amount = findNextOutput(amount, pairs, paths[i][j], paths[i][j + 1])
       }
   
-      if (output > maxOutput) {
-        maxOutput = output
+      if (amount > maxOutput) {
+        maxOutput = amount
         path = paths[i]
       }
     } else {
-      let input = Infinity
-      for (let j = 0; j < paths[i].length - 1; j++) {
-        input = findPrevInput(amount, pairs, paths[i][j], paths[i][j + 1])
+      for (let j = paths[i].length - 1; j > 0; j--) {
+        amount = findPrevInput(amount, pairs, paths[i][j - 1], paths[i][j])
       }
   
-      if (input < minInput && input > 0) {
-        minInput = input
+      if (amount < minInput && amount > 0) {
+        minInput = amount
         path = paths[i]
       }
     }

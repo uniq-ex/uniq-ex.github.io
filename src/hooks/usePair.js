@@ -8,9 +8,10 @@ import { useMappedState, useDispatch } from 'redux-react-hook'
 const { StringReader, reverseHex } = utils
 
 export const useFetchPairs = () => {
-  const { account, pairs } = useMappedState((state) => ({
+  const { account, tokens, swapTokens } = useMappedState((state) => ({
     account: state.wallet.account,
-    pairs: state.swap.pairs
+    tokens: state.common.tokens,
+    swapTokens: state.swap.tokens
   }))
   const dispatch = useDispatch()
   const setSwapTokens = useCallback((tokens) => dispatch({ type: 'SET_SWAP_TOKENS', tokens }), [])
@@ -18,53 +19,52 @@ export const useFetchPairs = () => {
 
   useEffect(() => {
     getSwapStat()
-    let interval = setInterval(() => getSwapStat, 3000)
+    let interval = setInterval(getSwapStat, 3000)
     return () => {
       interval && clearInterval(interval)
     }
-  }, [account, pairs])
+  }, [account, tokens, swapTokens])
 
   function getSwapStat() {
-    if (!pairs.length) {
-      try {
-        client.api.smartContract.invokeWasmRead({
-          scriptHash: SWAP_ADDRESS,
-          operation: 'stat',
-          args: []
-        })
-        .then((pairStr) => {
-          const parsedPairs = []
-          const strReader = new StringReader(pairStr)
-          const pairCount = strReader.readNextLen()
-          for (let i = 0; i < pairCount; i++) {
-            const pair = {}
-            pair.address = reverseHex(strReader.read(20))
-            pair.token1 = strReader.readUint128()
-            pair.token2 = strReader.readUint128()
-            pair.id = strReader.readUint128()
-            pair.reserve1 = strReader.readUint128()
-            pair.reserve2 = strReader.readUint128()
+    try {
+      client.api.smartContract.invokeWasmRead({
+        scriptHash: SWAP_ADDRESS,
+        operation: 'stat',
+        args: []
+      })
+      .then((pairStr) => {
+        const parsedPairs = []
+        const strReader = new StringReader(pairStr)
+        const pairCount = strReader.readNextLen()
+        for (let i = 0; i < pairCount; i++) {
+          const pair = {}
+          pair.address = reverseHex(strReader.read(20))
+          pair.token1 = strReader.readUint128()
+          pair.token2 = strReader.readUint128()
+          pair.id = strReader.readUint128()
+          pair.reserve1 = strReader.readUint128()
+          pair.reserve2 = strReader.readUint128()
+          pair.lp = strReader.readUint128()
 
-            parsedPairs.push(pair)
-          }
+          parsedPairs.push(pair)
+        }
 
-          const tokenIds = []
-          const tokenCount = strReader.readNextLen()
-          for (let i = 0; i < tokenCount; i++) {
-            tokenIds.push(strReader.readUint128())
-          }
+        const tokenIds = []
+        const tokenCount = strReader.readNextLen()
+        for (let i = 0; i < tokenCount; i++) {
+          tokenIds.push(strReader.readUint128())
+        }
 
-          console.log(parsedPairs);
-
-          setPairs(parsedPairs)
-          setSwapTokens(tokenIds)
-        })
-        .catch((e) => {
-          console.log(e)
-        })
-      } catch (e) {
+        setPairs(parsedPairs)
+        if (tokens.length && !swapTokens.length) {
+          setSwapTokens(tokenIds.map((t) => tokens.find((tk) => tk.id === t)))
+        }
+      })
+      .catch((e) => {
         console.log(e)
-      }
+      })
+    } catch (e) {
+      console.log(e)
     }
   }
 

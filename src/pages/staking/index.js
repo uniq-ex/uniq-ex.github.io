@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react'
 import { useHistory } from "react-router-dom"
 import { utils } from 'ontology-ts-sdk'
 import BigNumber from 'bignumber.js'
+import ReactTooltip from 'react-tooltip';
 import { useAlert } from 'react-alert'
 import { useMappedState } from 'redux-react-hook'
 import { STAKING_ADDRESS } from '../../config'
@@ -110,6 +111,13 @@ const Staking = () => {
     history.push(`/staking/${token.id}`)
   }
 
+  function getTip(token) {
+    if (token.name.startsWith('wf')) {
+      return `${token.name} is the hidden receipt for wing ${token.name.replace('wf', '')} suppliers`
+    }
+    return ''
+  }
+
   function generateStakingPool() {
     if (tokens.length) {
       return tokens.map((token) => {
@@ -119,7 +127,7 @@ const Staking = () => {
             <div className="item-detail">
               <div className="staking-token">
                 <div className="staking-text">Deposit</div>
-                <div className={`staking-token-icon icon-${token.name}`}>{token.name}</div>
+                <div data-tip={getTip(token)} className={`staking-token-icon icon-${token.name}`}>{token.name}</div>
               </div>
               <div className="earn-line">Earn<span>UNX</span></div>
               <div className="total-staking">Total Staking<span>{new BigNumber(balance || 0).div(10 ** token.decimals).toString()}</span></div>
@@ -133,6 +141,7 @@ const Staking = () => {
 
   return (
     <div className="stake-container">
+      <ReactTooltip />
       <div className="stake-pool">
         <div className="title"></div>
         <div className="pool-list">

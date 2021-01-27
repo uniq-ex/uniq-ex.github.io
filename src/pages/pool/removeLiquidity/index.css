@@ -1,0 +1,97 @@
+.remove-liquidity-wrapper {
+  padding: 24px 20px 40px;
+  width: 480px;
+  margin: 20px auto 0;
+  border-radius: 20px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, .07);
+  background: white;
+}
+
+.rl-header {
+  position: relative;
+  text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.back-icon {
+  position: absolute;
+  left: 20px;
+  top: 0;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  background: url('../../../assets/back.png') center / auto 24px no-repeat;
+}
+
+.rl-wrapper {
+  margin-top: 40px;
+}
+
+.rl-amount {
+  margin: 0 24px 20px;
+}
+
+.rl-amount-label {
+  margin-bottom: 20px;
+  font-size: 36px;
+  font-weight: bold;
+}
+
+.rl-amount-label span {
+  float: right;
+}
+
+.quick-items {
+  display: flex;
+  margin-top: 20px;
+  justify-content: space-between;
+}
+
+.quick-item {
+  width: 60px;
+  line-height: 24px;
+  color: #fff;
+  text-align: center;
+  cursor: pointer;
+  border-radius: 4px;
+  background: RGBA(43, 190, 127, 1.00)
+}
+
+.rl-receive-wrapper {
+  margin: 20px 24px;
+  padding: 20px;
+  border-radius: 8px;
+  background: RGBA(243, 248, 255, 1.00);
+}
+
+.receive-token-item {
+  padding: 10px 0 10px 40px;
+  background-size: 24px;
+  background-position: left center;
+  background-repeat: no-repeat;
+}
+.receive-token-item span {
+  float: right;
+}
+
+.rl-price-wrapper {
+  margin: 0 24px 20px;
+}
+
+.rl-remove-btn {
+  margin: 0 24px;
+  text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+  line-height: 48px;
+  cursor: pointer;
+  color: #fff;
+  border-radius: 40px;
+  background: RGBA(43, 190, 127, 1.00);
+}
+
+.rl-remove-btn.disabled {
+  background: #9B9B9B;
+  cursor: not-allowed;
+}

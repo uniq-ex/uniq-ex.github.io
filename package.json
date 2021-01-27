@@ -11,6 +11,7 @@
     "bignumber.js": "^9.0.1",
     "chart.js": "^2.9.4",
     "ontology-ts-sdk": "^1.1.18",
+    "rc-slider": "^9.7.1",
     "react": "^17.0.1",
     "react-alert": "^7.0.2",
     "react-alert-template-basic": "^1.0.0",
@@ -30,10 +31,10 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "buildtest": "cp src/config.test.js src/config.js && npm run build && mv build testenv",
+    "buildtest": "cp src/config.test.js src/config.js && npm run build",
     "buildlive": "cp src/config.live.js src/config.js && npm run build",
-    "aiobuild": "rm -rf testevn && npm run buildtest && npm run buildlive && mv testenv/index.html build/test.html && rsync -av testenv/ build/ && rm -rf testenv && cp src/config.test.js src/config.js",
-    "predeploy": "npm run aiobuild",
+    "renamebuild": "mv build testenv",
+    "aiobuild": "rm -rf testevn && npm run buildtest && npm run renamebuild && npm run buildlive && mv testenv/index.html build/test.html && rsync -av testenv/ build/ && rm -rf testenv && cp src/config.test.js src/config.js",
     "deploy": "gh-pages -d build"
   },
   "eslintConfig": {
