@@ -112,8 +112,8 @@ const Staking = () => {
   }
 
   function getTip(token) {
-    if (token.name.startsWith('wf')) {
-      return `${token.name} is the hidden receipt for wing ${token.name.replace('wf', '')} suppliers`
+    if (token.name.startsWith('f')) {
+      return `${token.name} is the hidden receipt for wing ${token.name.replace('f', '')} suppliers`
     }
     return ''
   }
@@ -141,7 +141,7 @@ const Staking = () => {
 
   return (
     <div className="stake-container">
-      <ReactTooltip />
+      <div style={{opacity: 0}}><ReactTooltip /></div>
       <div className="stake-pool">
         <div className="title"></div>
         <div className="pool-list">

@@ -5,7 +5,7 @@ import { useMappedState, useDispatch } from 'redux-react-hook';
 import { useAlert } from 'react-alert'
 import BigNumber from 'bignumber.js'
 import TokenInput from '../../components/tokenInput'
-import { SWAP_ADDRESS } from '../../config'
+import { SWAP_ADDRESS, TRANSACTION_BASE_URL, TRANSACTION_AFTERFIX } from '../../config'
 import { useFetchPairs } from '../../hooks/usePair';
 import { SLIPPAGE } from '../../utils/constants'
 import { toLocaleFixed } from '../../utils/common'
@@ -172,7 +172,7 @@ const Swap = () => {
           type: 'success',
           text: 'Transaction Successful',
           extraText: 'View Transaction',
-          extraLink: `https://explorer.ont.io/transaction/${swapResult.transaction}`
+          extraLink: `${TRANSACTION_BASE_URL}${swapResult.transaction}${TRANSACTION_AFTERFIX}`
         })
       }
     } catch (e) {

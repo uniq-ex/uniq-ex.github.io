@@ -90,7 +90,13 @@ export const App = () => {
             {
               READY_TABS.indexOf('/') >= 0 ?
               <Route exact path="/">
-                <Transaction />
+                <Staking />
+              </Route> : null
+            }
+            {
+              READY_TABS.indexOf('/') >= 0 ?
+              <Route exact path="/staking/:id">
+                <StakingDetail />
               </Route> : null
             }
             {
@@ -118,15 +124,9 @@ export const App = () => {
               </Route> : null
             }
             {
-              READY_TABS.indexOf('/staking') >= 0 ?
-              <Route exact path="/staking">
-                <Staking />
-              </Route> : null
-            }
-            {
-              READY_TABS.indexOf('/staking') >= 0 ?
-              <Route exact path="/staking/:id">
-                <StakingDetail />
+              READY_TABS.indexOf('/trade') >= 0 ?
+              <Route exact path="/trade">
+                <Transaction />
               </Route> : null
             }
             {

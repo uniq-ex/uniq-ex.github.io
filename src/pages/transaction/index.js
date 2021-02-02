@@ -9,7 +9,7 @@ import request from '../../utils/request'
 import { handleError } from '../../utils/errorHandle'
 import { getHashString } from '../../utils/common'
 import { PRICE_DECIMALS } from '../../utils/constants'
-import { CONTRACT_ADDRESS } from '../../config'
+import { CONTRACT_ADDRESS, TRANSACTION_BASE_URL, TRANSACTION_AFTERFIX } from '../../config'
 import './index.css'
 
 const { StringReader, reverseHex } = utils
@@ -38,17 +38,17 @@ const Transaction = () => {
 
   const Alert = useAlert()
 
-  const urlAssetTokenId = parseInt(getHashString(window.location.hash, 'asset') || 1)
-  const urlPriceTokenId = parseInt(getHashString(window.location.hash, 'price') || 2)
+  const urlAssetTokenName = getHashString(window.location.hash, 'asset')
+  const urlPriceTokenName = getHashString(window.location.hash, 'price')
 
   useEffect(() => {
-    if (tokens.length) {
-      let tempToken = tokens.filter((t) => urlAssetTokenId === t.id)[0]
-      setAssetToken(tempToken || tokens[0])
-      tempToken = tokens.filter((t) => urlPriceTokenId === t.id)[0]
-      setPriceToken(tempToken || tokens[1])
+    if (pool.length && !assetToken.id && !priceToken.id) {
+      let tempToken = pool.find((t) => urlAssetTokenName === t.name)
+      setAssetToken(tempToken || pool[0])
+      tempToken = pool.find((t) => urlPriceTokenName === t.name)
+      setPriceToken(tempToken || pool[1])
     }
-  }, [tokens])
+  }, [pool])
 
   useEffect(() => {
     if (account && assetToken.id) {
@@ -226,12 +226,12 @@ const Transaction = () => {
             const token = {}
             token.id = strReader.readUint128()
             const tempToken = tokens.filter((t) => t.id === token.id)[0]
-            token.balance = new BigNumber(strReader.readUint128()).div(new BigNumber(10 ** tempToken.decimals)).toString()
-            token.name = tempToken.name
+            // token.balance = new BigNumber(strReader.readUint128()).div(new BigNumber(10 ** tempToken.decimals)).toString()
+            token.balance = strReader.readUint128()
   
-            tokenPool.push(token)
+            tokenPool.push(Object.assign(tempToken, token))
           }
-  
+
           setPool(tokenPool)
         } catch (e) {
           handleError(e, (errorCode) => {
@@ -266,7 +266,7 @@ const Transaction = () => {
 
 
   const generateTokenSelection = (type) => {
-    if (tokens.length) {
+    if (pool.length) {
       const CustomOption = (props) => (
         <components.Option {...props}>
           <div className="option-wrapper">
@@ -287,17 +287,17 @@ const Transaction = () => {
       let defaultToken = {}
       let tempToken = {}
       if (type === 'asset') {
-        tempToken = tokens.filter((t) => urlAssetTokenId === t.id)[0]
-        defaultToken = tempToken || tokens[0]
+        tempToken = pool.find((t) => urlAssetTokenName === t.name)
+        defaultToken = tempToken || pool[0]
       } else {
-        tempToken = tokens.filter((t) => urlPriceTokenId === t.id)[0]
-        defaultToken = tempToken || tokens[1]
+        tempToken = pool.find((t) => urlPriceTokenName === t.name)
+        defaultToken = tempToken || pool[1]
       }
       return (
         <Select
           className="token-select"
           defaultValue={defaultToken}
-          options={tokens}
+          options={pool}
           isSearchable={false}
           components={{ Option: CustomOption, SingleValue }}
           onChange={(e) => onChangeToken(e)}
@@ -408,7 +408,7 @@ const Transaction = () => {
             type: 'success',
             text: 'Transaction Successful',
             extraText: 'View Transaction',
-            extraLink: `https://explorer.ont.io/transaction/${makeResult.transaction}`
+            extraLink: `${TRANSACTION_BASE_URL}${makeResult.transaction}${TRANSACTION_AFTERFIX}`
           })
         }
       } catch (e) {
@@ -449,7 +449,7 @@ const Transaction = () => {
             type: 'success',
             text: 'Transaction Successful',
             extraText: 'View Transaction',
-            extraLink: `https://explorer.ont.io/transaction/${unmakeResult.transaction}`
+            extraLink: `${TRANSACTION_BASE_URL}${unmakeResult.transaction}${TRANSACTION_AFTERFIX}`
           })
         }
       } catch (e) {
@@ -486,7 +486,7 @@ const Transaction = () => {
     if (e.value !== assetToken.id) {
       setMakes([])
       setLastPrice(0)
-      setAssetToken(tokens.filter((t) => t.id === e.value)[0])
+      setAssetToken(tokens.find((t) => t.id === e.value))
     }
   }
 
@@ -494,7 +494,7 @@ const Transaction = () => {
     if (e.value !== priceToken.id) {
       setMakes([])
       setLastPrice(0)
-      setPriceToken(tokens.filter((t) => t.id === e.value)[0])
+      setPriceToken(tokens.find((t) => t.id === e.value))
     }
   }
 

@@ -6,7 +6,7 @@ import { useAlert } from 'react-alert'
 import BigNumber from 'bignumber.js'
 import TokenInput from '../../../components/tokenInput'
 import { useFetchPairs } from '../../../hooks/usePair';
-import { SWAP_ADDRESS } from '../../../config'
+import { SWAP_ADDRESS, TRANSACTION_BASE_URL, TRANSACTION_AFTERFIX } from '../../../config'
 import { SLIPPAGE } from '../../../utils/constants'
 import './index.css'
 
@@ -200,7 +200,7 @@ const AddLiquidity = () => {
           type: 'success',
           text: 'Transaction Successful',
           extraText: 'View Transaction',
-          extraLink: `https://explorer.ont.io/transaction/${addResult.transaction}`
+          extraLink: `${TRANSACTION_BASE_URL}${addResult.transaction}${TRANSACTION_AFTERFIX}`
         })
       }
     } catch (e) {

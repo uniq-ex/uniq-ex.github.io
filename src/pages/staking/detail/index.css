@@ -1,4 +1,6 @@
 .stake-title {
+  position: relative;
+  margin: 0 240px;
   font-size: 28px;
   text-align: center;
 }

@@ -1,11 +1,11 @@
 import { client } from '@ont-dev/ontology-dapi'
 import React, { useState, useEffect, useCallback } from 'react'
-import { useLocation } from "react-router-dom"
+import { useHistory, useLocation } from "react-router-dom"
 import { utils } from 'ontology-ts-sdk'
 import BigNumber from 'bignumber.js'
 import { useAlert } from 'react-alert'
 import { useMappedState, useDispatch } from 'redux-react-hook';
-import { STAKING_ADDRESS } from '../../../config'
+import { STAKING_ADDRESS, TRANSACTION_BASE_URL, TRANSACTION_AFTERFIX } from '../../../config'
 import './index.css'
 
 const { StringReader } = utils
@@ -25,6 +25,7 @@ const StakingDetail = (props) => {
 
   const Alert = useAlert()
   const location = useLocation()
+  const history = useHistory()
   const tokenId = location.pathname.match(/\/([^/]+)$/)[1]
 
   useEffect(() => {
@@ -121,7 +122,6 @@ const StakingDetail = (props) => {
             value: new BigNumber(amount).times(new BigNumber(10 ** stakeToken.decimals)).integerValue(BigNumber.ROUND_DOWN).toString()
           }
         ]
-        console.log(args)
         const param = {
           scriptHash: STAKING_ADDRESS,
           operation: stakeType,
@@ -140,7 +140,7 @@ const StakingDetail = (props) => {
             type: 'success',
             text: 'Transaction Successful',
             extraText: 'View Transaction',
-            extraLink: `https://explorer.ont.io/transaction/${stakeResult.transaction}`
+            extraLink: `${TRANSACTION_BASE_URL}${stakeResult.transaction}${TRANSACTION_AFTERFIX}`
           })
         }
       } catch (e) {
@@ -190,7 +190,7 @@ const StakingDetail = (props) => {
           type: 'success',
           text: 'Transaction Successful',
           extraText: 'View Transaction',
-          extraLink: `https://explorer.ont.io/transaction/${harvestResult.transaction}`
+          extraLink: `${TRANSACTION_BASE_URL}${harvestResult.transaction}${TRANSACTION_AFTERFIX}`
         })
       }
     } catch (e) {
@@ -204,9 +204,16 @@ const StakingDetail = (props) => {
     }
   }
 
+  function onNavigateToStaking() {
+    history.goBack()
+  }
+
   return (
     <div className="stake-container">
-      <div className="stake-title">Earn <span className="icon-UNX">UNX</span> by <span className={`icon-${stakeToken.name}`}>{stakeToken.name || ''}</span></div>
+      <div className="stake-title">
+        <div className="back-icon" onClick={() => onNavigateToStaking()} />
+        Earn <span className="icon-UNX">UNX</span> by <span className={`icon-${stakeToken.name}`}>{stakeToken.name || ''}</span>
+      </div>
       <div className="stake-token-detail">
         <div className={`stake-token-amount icon-${stakeToken.name}`}>{new BigNumber(myStake.balance || 0).div(10 ** (stakeToken.decimals || 0)).toString()}</div>
         <div className="stake-token-actions">
