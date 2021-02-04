@@ -17,7 +17,7 @@ const Header = (props) => {
 
   const renderSiteIntro = () => {
     if (showSiteIntro) {
-      const href = `${window.location.origin}/#/trade?asset=ONT&price=UNX`
+      const href = `${window.location.origin}${window.location.pathname}#/trade?asset=ONT&price=UNX`
       return (
         <div className="modal-overlay">
           <div className="modal-wrapper">

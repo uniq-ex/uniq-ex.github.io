@@ -3,10 +3,12 @@ import React, { useState, useEffect } from 'react'
 import { useHistory } from "react-router-dom"
 import { utils } from 'ontology-ts-sdk'
 import BigNumber from 'bignumber.js'
-import ReactTooltip from 'react-tooltip';
+import Tooltip from 'rc-tooltip';
 import { useAlert } from 'react-alert'
 import { useMappedState } from 'redux-react-hook'
 import { STAKING_ADDRESS } from '../../config'
+
+import 'rc-tooltip/assets/bootstrap.css'
 import './index.css'
 
 const { StringReader } = utils
@@ -112,10 +114,7 @@ const Staking = () => {
   }
 
   function getTip(token) {
-    if (token.name.startsWith('f')) {
-      return `${token.name} is the hidden receipt for wing ${token.name.replace('f', '')} suppliers`
-    }
-    return ''
+    return `${token.name} is the hidden receipt for wing ${token.name.replace('f', '')} suppliers`
   }
 
   function generateStakingPool() {
@@ -127,7 +126,13 @@ const Staking = () => {
             <div className="item-detail">
               <div className="staking-token">
                 <div className="staking-text">Deposit</div>
-                <div data-tip={getTip(token)} className={`staking-token-icon icon-${token.name}`}>{token.name}</div>
+                {
+                  token.name.startsWith('f') ? (
+                    <Tooltip placement="top" overlay={getTip(token)}>
+                      <div className={`staking-token-icon icon-${token.name}`}>{token.name}</div>
+                    </Tooltip>
+                  ) : <div className={`staking-token-icon icon-${token.name}`}>{token.name}</div>
+                }
               </div>
               <div className="earn-line">Earn<span>UNX</span></div>
               <div className="total-staking">Total Staking<span>{new BigNumber(balance || 0).div(10 ** token.decimals).toString()}</span></div>
@@ -141,7 +146,6 @@ const Staking = () => {
 
   return (
     <div className="stake-container">
-      <div style={{opacity: 0}}><ReactTooltip /></div>
       <div className="stake-pool">
         <div className="title"></div>
         <div className="pool-list">
