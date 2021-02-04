@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
 const Input = (props) => {
-  const { value = '', round, decimals, inline = true, onChange } = props
+  const { value = '', round, disabled, decimals, inline = true, onChange } = props
   const [val, setVal] = useState('')
 
   useEffect(() => {
@@ -51,6 +51,7 @@ const Input = (props) => {
       type="text"
       placeholder={placeholder}
       value={val}
+      disabled={disabled}
       onInput={(e) => handleInput(e)}
       // onChange={(e) => handleChange(e)}
     />

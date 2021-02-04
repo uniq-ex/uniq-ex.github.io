@@ -5,7 +5,6 @@ import { useMappedState } from 'redux-react-hook';
 import { utils } from 'ontology-ts-sdk'
 import { useFetchPairs } from '../../hooks/usePair'
 import { SWAP_ADDRESS } from '../../config'
-import { SLIPPAGE } from '../../utils/constants'
 import './index.css'
 
 const { StringReader } = utils
@@ -24,33 +23,32 @@ const Pool = () => {
 
   useEffect(() => {
     if (account && pairs.length) {
+      const getLiquidityBalanceByPairId = (id) => {
+        return client.api.smartContract.invokeWasmRead({
+          scriptHash: SWAP_ADDRESS,
+          operation: 'balanceOf',
+          args: [
+            {
+              type: 'Long',
+              value: id
+            },
+            {
+              type: 'Address',
+              value: account
+            }
+          ]
+        }).then((resp) => {
+          const strReader = new StringReader(resp)
+          const balance = strReader.readUint128()
+          
+          return { [id]: balance }
+        })
+      }
       Promise.all(pairs.map((p) => getLiquidityBalanceByPairId(p.id))).then((resp) => {
         setLiquidityBalance(resp)
       })
     }
   }, [account, pairs])
-
-  function getLiquidityBalanceByPairId(id) {
-    return client.api.smartContract.invokeWasmRead({
-      scriptHash: SWAP_ADDRESS,
-      operation: 'balanceOf',
-      args: [
-        {
-          type: 'Long',
-          value: id
-        },
-        {
-          type: 'Address',
-          value: account
-        }
-      ]
-    }).then((resp) => {
-      const strReader = new StringReader(resp)
-      const balance = strReader.readUint128()
-      
-      return { [id]: balance }
-    })
-  }
 
   function onNavigateToSwap() {
     history.push('/swap')
@@ -68,7 +66,7 @@ const Pool = () => {
     if (liquidityBalance.length && pairs.length && tokens.length) {
       return liquidityBalance.map((lb) => {
         const pairId = Object.keys(lb)[0]
-        const pair = pairs.find((p) => p.id == pairId)
+        const pair = pairs.find((p) => `${p.id}` === pairId)
         const token1 = tokens.find((t) => t.id === pair.token1)
         const token2 = tokens.find((t) => t.id === pair.token2)
         const balance = lb[pairId] / (10 ** 18)
@@ -85,7 +83,7 @@ const Pool = () => {
               <div className="pair-position"><strong>Pooled</strong>: {token1Amount} / {token2Amount}</div>
               <div className="pool-tokens"><strong>Pool Tokens</strong>: {balance.toFixed(9)}</div>
             </div>
-            <div className="remove-liquidity-btn" onClick={() => onRemoveLiquidity(pairId)}>Remove Liquidity</div>
+            <div className="remove-liquidity-btn" onClick={() => onRemoveLiquidity(pairId)}>Remove</div>
           </div>
         )
       })

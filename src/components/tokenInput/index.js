@@ -10,7 +10,7 @@ import './index.css'
 const { reverseHex } = utils
 
 const TokenInput = (props) => {
-  const { value, round, tokens, defaultTokenId, showBalance = true, onTokenChange, onAmountChange } = props
+  const { value, round, tokens, defaultTokenId, inputDisabled = false, showBalance = true, withMax = true, onTokenChange, onAmountChange } = props
   const [token, setToken] = useState({})
   const [balance, setBalance] = useState('-')
   const { account } = useMappedState((state) => ({
@@ -50,7 +50,7 @@ const TokenInput = (props) => {
         })
       }
     }
-  }, [token])
+  }, [token, showBalance, account])
 
   const handleTokenChange = (e) => {
     if (e.value !== token.id) {
@@ -106,6 +106,12 @@ const TokenInput = (props) => {
     }
   }
 
+  const maxInput = () => {
+    if (!isNaN(balance) && typeof onAmountChange === 'function') {
+      onAmountChange(balance)
+    }
+  }
+
   return (
     <div className="token-input-wrapper">
       <div className="input-label">{props.label || 'Input'}
@@ -113,7 +119,8 @@ const TokenInput = (props) => {
       </div>
       <div className="input-wrapper">
         { renderTokenSeletion(defaultTokenId) }
-        <Input decimals={token.decimals} value={value} round={round} onChange={(value) => onAmountChange(value)} />
+        <Input decimals={token.decimals} disabled={inputDisabled} value={value} round={round} onChange={(value) => onAmountChange(value)} />
+        { withMax && <div className="input-max-btn" onClick={() => maxInput()}>MAX</div> }
       </div>
     </div>
   )

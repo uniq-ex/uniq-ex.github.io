@@ -94,7 +94,7 @@ const Swap = () => {
 
         setToken2Amount(new BigNumber(maxOutput).div(10 ** token2.decimals).toString())
         setBestPath(path)
-      } else if (amount == 0) {
+      } else if (Number(amount) === 0) {
         setToken2Amount('')
       }
     }
@@ -110,7 +110,7 @@ const Swap = () => {
 
         setToken1Amount(new BigNumber(minInput).div(10 ** token1.decimals).toString())
         setBestPath(path)
-      } else if (amount == 0) {
+      } else if (Number(amount) === 0) {
         setToken1Amount('')
       }
     }

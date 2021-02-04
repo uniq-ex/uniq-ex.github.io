@@ -13,3 +13,21 @@
   color: #888;
   padding-top: 4px;
 }
+
+.input-wrapper {
+  position: relative;
+}
+
+.input-max-btn {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  font-size: 12px;
+  line-height: 24px;
+  padding: 0 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #fff;
+  font-weight: bold;
+  background: RGBA(43, 190, 127, 1.00);
+}

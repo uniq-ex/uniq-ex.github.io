@@ -47,7 +47,7 @@ const RemoveLiquidity = () => {
 
   useEffect(() => {
     if (tokens.length && pairs.length && pairId) {
-      const pair = pairs.find((p) => p.id == pairId)
+      const pair = pairs.find((p) => `${p.id}` === pairId)
       setPair(pair)
       setToken1(tokens.find((t) => t.id === pair.token1))
       setToken2(tokens.find((t) => t.id === pair.token2))

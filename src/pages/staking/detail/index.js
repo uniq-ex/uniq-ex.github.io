@@ -30,7 +30,7 @@ const StakingDetail = (props) => {
 
   useEffect(() => {
     if (account && tokens.length) {
-      setStakeToken(tokens.find((t) => t.id == tokenId))
+      setStakeToken(tokens.find((t) => `${t.id}` === tokenId))
     }
   }, [tokens, account])
 

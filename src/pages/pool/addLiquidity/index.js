@@ -86,7 +86,7 @@ const AddLiquidity = () => {
     if (pairs.length && !!getPairByToken()) {
       if (amount) {
         setToken2Amount(Math.ceil(amount * getPairPrice() * (10 ** token2.decimals)) / (10 ** token2.decimals))
-      } else if (amount == 0) {
+      } else if (Number(amount) === 0) {
         setToken2Amount('')
       }
     }
@@ -97,7 +97,7 @@ const AddLiquidity = () => {
     if (pairs.length && !!getPairByToken()) {
       if (amount) {
         setToken1Amount(Math.ceil(amount / getPairPrice() * (10 ** token1.decimals)) / (10 ** token1.decimals))
-      } else if (amount == 0) {
+      } else if (Number(amount) === 0) {
         setToken1Amount('')
       }
     }

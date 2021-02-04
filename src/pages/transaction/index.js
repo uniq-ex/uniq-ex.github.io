@@ -1,23 +1,22 @@
 import { client } from '@ont-dev/ontology-dapi'
 import React, { useState, useEffect, useCallback } from 'react'
 import { utils } from 'ontology-ts-sdk'
-import Select, { components } from 'react-select'
 import BigNumber from 'bignumber.js'
 import { useAlert } from 'react-alert'
 import { useMappedState, useDispatch } from 'redux-react-hook';
-import request from '../../utils/request'
+import TokenInput from '../../components/tokenInput'
+import Input from '../../components/input'
 import { handleError } from '../../utils/errorHandle'
 import { getHashString } from '../../utils/common'
 import { PRICE_DECIMALS } from '../../utils/constants'
 import { CONTRACT_ADDRESS, TRANSACTION_BASE_URL, TRANSACTION_AFTERFIX } from '../../config'
 import './index.css'
 
-const { StringReader, reverseHex } = utils
+const { StringReader } = utils
 
 const Transaction = () => {
   const [assetToken, setAssetToken] = useState({})
   const [priceToken, setPriceToken] = useState({})
-  const [currentTokenBalance, setCurrentTokenBalance] = useState(0)
   const [makes, setMakes] = useState([])
   const [myMakes, setMyMakes] = useState([])
   const [makeView, setMakeView] = useState('all')
@@ -27,6 +26,7 @@ const Transaction = () => {
   const [pool, setPool] = useState([])
   const [lastPrice, setLastPrice] = useState(0)
   const [feeRate, setFeeRate] = useState(0)
+  const [isValid, setIsValid] = useState(false)
   const { account, stopInterval, tokens } = useMappedState((state) => ({
     account: state.wallet.account,
     stopInterval: state.common.stopInterval,
@@ -49,41 +49,6 @@ const Transaction = () => {
       setPriceToken(tempToken || pool[1])
     }
   }, [pool])
-
-  useEffect(() => {
-    if (account && assetToken.id) {
-      if (assetToken.name !== 'ONT' && assetToken.name !== 'ONG') {
-        const param = {
-          scriptHash: assetToken.address,
-          operation: 'balanceOf',
-          args: [
-            {
-              type: 'Address',
-              value: account,
-            },
-          ],
-        }
-        client.api.smartContract.invokeRead(param).then((balance) => {
-          if (balance) {
-            setCurrentTokenBalance(parseInt(reverseHex(balance), 16) / (10 ** assetToken.decimals))
-          }
-        })
-      } else {
-        request({
-          method: 'get',
-          url: `/v2/addresses/${account}/native/balances`
-        }).then((resp) => {
-          if (resp.code === 0) {
-            const token = resp.result.find((t) => t.asset_name === assetToken.name.toLowerCase())
-            setCurrentTokenBalance(token.balance)
-          }
-        })
-        .catch((e) => {
-          console.log(e)
-        })
-      }
-    }
-  }, [account, assetToken])
 
   useEffect(() => {
     function getMakesOfPair() {
@@ -261,58 +226,16 @@ const Transaction = () => {
   }, [price, amount])
 
   useEffect(() => {
+    if (assetToken.id !== priceToken.id && price > 0 && amount > 0) {
+      setIsValid(true)
+    } else {
+      setIsValid(false)
+    }
+  }, [assetToken, priceToken, amount, price])
+
+  useEffect(() => {
     setMakeView('all')
   }, [account])
-
-
-  const generateTokenSelection = (type) => {
-    if (pool.length) {
-      const CustomOption = (props) => (
-        <components.Option {...props}>
-          <div className="option-wrapper">
-            <div className={`icon-${props.label} option-icon`}></div>
-            <div className="option-label">{props.label}</div>
-          </div>
-        </components.Option>
-      )
-      const SingleValue = ({ children, ...props }) => (
-        <components.SingleValue {...props}>
-          <div className="option-wrapper">
-            <div className={`icon-${children} option-icon`}></div>
-            <div className="option-label">{children}</div>
-          </div>
-        </components.SingleValue>
-      )
-      const onChangeToken = (type === 'asset' ? onChangeAssetToken : onChangePriceToken)
-      let defaultToken = {}
-      let tempToken = {}
-      if (type === 'asset') {
-        tempToken = pool.find((t) => urlAssetTokenName === t.name)
-        defaultToken = tempToken || pool[0]
-      } else {
-        tempToken = pool.find((t) => urlPriceTokenName === t.name)
-        defaultToken = tempToken || pool[1]
-      }
-      return (
-        <Select
-          className="token-select"
-          defaultValue={defaultToken}
-          options={pool}
-          isSearchable={false}
-          components={{ Option: CustomOption, SingleValue }}
-          onChange={(e) => onChangeToken(e)}
-          theme={theme => ({
-            ...theme,
-            borderRadius: 0,
-            colors: {
-              ...theme.colors,
-              primary: '#2c2c2c',
-            },
-          })}
-        />
-      )
-    }
-  }
 
   function onChangeToUserMakeView() {
     if (account) {
@@ -482,25 +405,25 @@ const Transaction = () => {
     }
   }
 
-  function onChangeAssetToken(e) {
-    if (e.value !== assetToken.id) {
+  function onChangeAssetToken(token) {
+    if (token.id !== assetToken.id) {
+      setAssetToken(token)
       setMakes([])
       setLastPrice(0)
-      setAssetToken(tokens.find((t) => t.id === e.value))
     }
   }
 
-  function onChangePriceToken(e) {
-    if (e.value !== priceToken.id) {
+  function onChangePriceToken(token) {
+    if (token.id !== priceToken.id) {
+      setPriceToken(token)
       setMakes([])
       setLastPrice(0)
-      setPriceToken(tokens.find((t) => t.id === e.value))
     }
   }
 
   function generateTokenPool() {
     if (pool.length) {
-      return pool.filter((tp) => tp.balance != 0).map((tp) => {
+      return pool.filter((tp) => Number(tp.balance) !== 0).map((tp) => {
         return (
           <div className="pool-item" key={tp.name}>
             <div className={`icon-${tp.name} token-name`}>{tp.name}</div>
@@ -513,39 +436,34 @@ const Transaction = () => {
 
   return (
     <div className="swap-wrapper">
-      {/* <div className="notice-wrapper">
-        <ReactTooltip />
-        <span data-tip="The governance token of uniq-ex">UNX</span> is currently open to <a target="_blank" rel="noreferrer" href="https://uniq-ex.github.io/#asset=8&price=14">transaction</a>!
-      </div> */}
       <div className="trade-container">
         <div className="make-wrapper">
           <div className="container-header">Trade</div>
-          <div className="form-item">
-            <div className="item-title">Sell
-              <span className="hint">Balance: {currentTokenBalance}</span>
-            </div>
-            <div className="input-wrapper">
-              {generateTokenSelection('asset')}
-              <input className="input inline-input" placeholder="Amount" type="number" onChange={(event) => setAmount(event.target.value)}></input>
-            </div>
-          </div>
+          <TokenInput
+            label="Sell"
+            tokens={pool}
+            defaultTokenId={assetToken.id || (pool.length && pool[0].id)}
+            value={amount}
+            onTokenChange={(token) => onChangeAssetToken(token)}
+            onAmountChange={(amount) => setAmount(amount)} />
           <div className="form-item">
             <div className="item-title">Price
               <span className="hint">{generatePriceHint()}</span>
             </div>
             <div className="input-wrapper">
-              <input className="input" placeholder="Price" type="number" onChange={(event) => setPrice(event.target.value)}></input>
+              <Input placeholder="Price" decimals="9" onChange={(amount) => setPrice(amount)} />
             </div>
           </div>
-          <div className="form-item">
-            <div className="item-title">Will Get</div>
-            <div className="input-wrapper">
-              {generateTokenSelection('price')}
-              <input className="input inline-input" disabled type="number" value={total}></input>
-            </div>
-          </div>
+          <TokenInput
+            label="Will Get"
+            tokens={pool}
+            defaultTokenId={priceToken.id || (pool.length && pool[1].id)}
+            value={total}
+            inputDisabled
+            withMax={false}
+            onTokenChange={(token) => onChangePriceToken(token)} />
           { feeRate ? <p className="fee-rate">* The fee rate of transaction is {feeRate / 100}%</p> : null }
-          <div className="make-btn" onClick={() => onMake()}>Sell</div>
+          { isValid ? <div className="make-btn" onClick={() => onMake()}>Sell</div> : <div className="make-btn disabled">Sell</div> }
         </div>
         <div className="trade-panel">
           <div className="panel-header">
@@ -560,7 +478,6 @@ const Transaction = () => {
             <div className="title-items">
               <div className="item-text">Price ({getPriceToken()})</div>
               <div className="item-text">Amount ({getAmountHint()})</div>
-              {/* <div className="item-text">Total</div> */}
               { makeView === 'my' && <div className="item-placeholder"></div> }
             </div>
           </div>
@@ -571,7 +488,7 @@ const Transaction = () => {
             </div>
           </div>
           {
-            (makeView === 'all' && lastPrice != 0) ? <div className="last-price-wrapper">
+            (makeView === 'all' && Number(lastPrice) !== 0) ? <div className="last-price-wrapper">
               <div className="last-price-label">Last Price</div>
               <div className="last-price">{lastPrice}</div>
               <div className="last-price-placeholder"></div>

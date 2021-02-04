@@ -110,13 +110,17 @@ input[type=number] {
   bottom: 40px;
   right: 24px;
   left: 24px;
-  line-height: 44px;
+  line-height: 48px;
   text-align: center;
-  border-radius: 40px;
-  color: #2c2c2c;
   cursor: pointer;
-  border: 1px solid #2c2c2c;
-  background: #fff;
+  color: #fff;
+  border-radius: 40px;
+  background: RGBA(43, 190, 127, 1.00);
+}
+
+.make-btn.disabled {
+  background: #9B9B9B;
+  cursor: not-allowed;
 }
 
 /* right panel */
