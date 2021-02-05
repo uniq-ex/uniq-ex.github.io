@@ -191,8 +191,7 @@ const Transaction = () => {
             const token = {}
             token.id = strReader.readUint128()
             const tempToken = tokens.filter((t) => t.id === token.id)[0]
-            // token.balance = new BigNumber(strReader.readUint128()).div(new BigNumber(10 ** tempToken.decimals)).toString()
-            token.balance = strReader.readUint128()
+            token.balance = new BigNumber(strReader.readUint128()).div(new BigNumber(10 ** tempToken.decimals)).toString()
   
             tokenPool.push(Object.assign(tempToken, token))
           }
@@ -326,6 +325,8 @@ const Transaction = () => {
         })
 
         if (makeResult.transaction) {
+          setAmount('')
+          setPrice('')
           setModal('infoModal', {
             show: true,
             type: 'success',
@@ -451,7 +452,7 @@ const Transaction = () => {
               <span className="hint">{generatePriceHint()}</span>
             </div>
             <div className="input-wrapper">
-              <Input placeholder="Price" decimals="9" onChange={(amount) => setPrice(amount)} />
+              <Input placeholder="Price" value={price} decimals="9" onChange={(amount) => setPrice(amount)} />
             </div>
           </div>
           <TokenInput

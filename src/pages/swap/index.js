@@ -19,9 +19,9 @@ const Swap = () => {
   const [token1Amount, setToken1Amount] = useState('')
   const [token2Amount, setToken2Amount] = useState('')
   const [isValidPair, setIsValidPair] = useState(false)
+  const [isValidSwap, setIsValidSwap] = useState(false)
   const [bestPath, setBestPath] = useState([])
   const [showPrice, setShowPrice] = useState(false)
-  const [showInfo, setShowInfo] = useState(false)
   const { account, pairs, swapTokens } = useMappedState((state) => ({
     account: state.wallet.account,
     pairs: state.swap.pairs,
@@ -35,14 +35,14 @@ const Swap = () => {
   useFetchPairs()
 
   useEffect(() => {
-    if (token1Amount > 0 && token2Amount > 0) {
+    if (token1.id !== token2.id && token1Amount > 0 && token2Amount > 0 && bestPath.length) {
       setShowPrice(true)
-      setShowInfo(true)
+      setIsValidSwap(true)
     } else {
       setShowPrice(false)
-      setShowInfo(false)
+      setIsValidSwap(false)
     }
-  }, [token1Amount, token2Amount])
+  }, [token1, token2, token1Amount, token2Amount, bestPath])
 
   useEffect(() => {
     if (swapTokens.length) {
@@ -85,7 +85,7 @@ const Swap = () => {
   }
 
   function onToken1AmountChange(amount) {
-    if (amount != token1Amount) {
+    if (amount !== token1Amount) {
       setSwapType('exactin')
       setToken1Amount(amount)
       if (pairs.length && amount) {
@@ -101,14 +101,18 @@ const Swap = () => {
   }
 
   function onToken2AmountChange(amount) {
-    if (amount != token2Amount) {
+    if (amount !== token2Amount) {
       setSwapType('exactout')
       setToken2Amount(amount)
       if (pairs.length && amount) {
         const outputAmount = amount * (10 ** token2.decimals)
         const [minInput, path] = bestSwap('exactout', outputAmount, pairs, token1.id, token2.id)
 
-        setToken1Amount(new BigNumber(minInput).div(10 ** token1.decimals).toString())
+        if (minInput === Infinity) {
+          setToken1Amount('')
+        } else {
+          setToken1Amount(new BigNumber(minInput).div(10 ** token1.decimals).toString())
+        }
         setBestPath(path)
       } else if (Number(amount) === 0) {
         setToken1Amount('')
@@ -222,6 +226,8 @@ const Swap = () => {
         const token = swapTokens.find((tk) => tk.id === t)
         index > 0 && items.push((<div className="icon-arrow-right"></div>))
         items.push((<div className={`path-icon icon-${token.name}`}>{token.name}</div>))
+
+        return t
       })
 
       return items
@@ -254,10 +260,10 @@ const Swap = () => {
             onAmountChange={(amount) => onToken2AmountChange(amount)} />
           { showPrice ? <div className="sw-price-wrapper">Price<span className="sw-price-info">{getPrice()}</span></div> : null }
           { isValidPair ? null : <div className="add-liquidity-hint">Add liquidity to enable swaps for this pair.</div> }
-          { isValidPair ? <div className="sw-swap-btn" onClick={() => handleSwap()}>Swap</div> : <div className="sw-swap-btn disabled">Illiquidity</div> }
+          { isValidPair ? ( isValidSwap ? <div className="sw-swap-btn" onClick={() => handleSwap()}>Swap</div> : <div className="sw-swap-btn disabled">Swap</div> ) : <div className="sw-swap-btn disabled">Illiquidity</div> }
         </div>
         {
-          showInfo ? (
+          isValidPair && isValidSwap ? (
             <div className="sw-hint-wrapper">
               <div className="sw-input-output">{getMinReceiveOrMaxSold()}</div>
               <div className="sw-price-impact">{getPriceImpact()}</div>
