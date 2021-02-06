@@ -1,7 +1,7 @@
 export const NETWORK_TYPE = 'TEST'
 export const CONTRACT_ADDRESS = '36a94c3d66790153044a7cecd86180b3da32d340'
 export const STAKING_ADDRESS = '21f4125ae8704deff4f58bad17108cbe8624a17c'
-export const GOVERNANCE_ADDRESS = '75380de39d6a08edfb075f675ef5ee20ef030eb8'
+export const GOVERNANCE_ADDRESS = 'a7a2cafcb7189e68a052806a22a31af9bff6963f'
 export const SWAP_ADDRESS = '3374e9f362edf2c91319d7e2b87dcbbb9af502ae'
 export const API_BASE_URL = 'https://polarisexplorer.ont.io'
 export const TRANSACTION_BASE_URL = 'https://explorer.ont.io/transaction/'
