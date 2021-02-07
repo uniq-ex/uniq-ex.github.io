@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react'
 import { useMappedState } from 'redux-react-hook';
-import { utils } from 'ontology-ts-sdk'
+import { utils, WebsocketClient, CONST, Crypto } from 'ontology-ts-sdk'
 import { client } from '@ont-dev/ontology-dapi'
 import Select, { components } from 'react-select'
 import Input from '../input'
 import request from '../../utils/request'
 import './index.css'
 
+const { Address } = Crypto
+const webSocketClient = new WebsocketClient(CONST.TEST_ONT_URL_2.SOCKET_URL, false, false)
 const { reverseHex } = utils
 
 const TokenInput = (props) => {
@@ -36,6 +38,7 @@ const TokenInput = (props) => {
           }
         })
       } else {
+        // getNativeTokenBalance(account, token)
         request({
           method: 'get',
           url: `/v2/addresses/${account}/native/balances`
@@ -51,6 +54,14 @@ const TokenInput = (props) => {
       }
     }
   }, [token, showBalance, account])
+
+  const getNativeTokenBalance = async (account, token) => {
+    const balance = await webSocketClient.getBalance(new Address(account))
+
+    if (balance.Desc === 'SUCCESS') {
+      setBalance(balance.Result[token.name.toLowerCase()] / (10 ** token.decimals))
+    }
+  }
 
   const handleTokenChange = (e) => {
     if (e.value !== token.id) {

@@ -7031,9 +7031,10 @@ onetime@^5.1.0:
   dependencies:
     mimic-fn "^2.1.0"
 
-ontology-ts-sdk@^1.1.18:
-  version "1.1.18"
-  resolved "https://registry.yarnpkg.com/ontology-ts-sdk/-/ontology-ts-sdk-1.1.18.tgz#9321a2ba88a45a1f0a726c6126cbdab00c21cbc2"
+ontology-ts-sdk@^1.1.19:
+  version "1.1.19"
+  resolved "https://registry.yarnpkg.com/ontology-ts-sdk/-/ontology-ts-sdk-1.1.19.tgz#e4dd016cf27280b8b770598f2ce2b6bbc56088ee"
+  integrity sha512-pPGVg8Hzsjg/MumXpggax3pgZmQZBEDEZSDl8LYqfgTxCcvRAwoVxzjgh/Yuzw3IOlDsPJ7QP20DxhkKPgfaBw==
   dependencies:
     "@ont-community/html5-websocket" "^2.0.2"
     "@ont-dev/hdkey-secp256r1" "^1.1.2"
@@ -8464,13 +8465,6 @@ react-select@^3.1.1:
     react-input-autosize "^2.2.2"
     react-transition-group "^4.3.0"
 
-react-tooltip@^4.2.11:
-  version "4.2.11"
-  resolved "https://registry.yarnpkg.com/react-tooltip/-/react-tooltip-4.2.11.tgz#244d4d1833c583160c4e6c95a8a89e0fb320e18a"
-  dependencies:
-    prop-types "^15.7.2"
-    uuid "^7.0.3"
-
 react-transition-group@^4.3.0, react-transition-group@^4.4.1:
   version "4.4.1"
   resolved "https://registry.yarnpkg.com/react-transition-group/-/react-transition-group-4.4.1.tgz#63868f9325a38ea5ee9535d828327f85773345c9"
@@ -8632,6 +8626,7 @@ regexpp@^3.0.0, regexpp@^3.1.0:
 regexpu-core@^4.7.1:
   version "4.7.1"
   resolved "https://registry.yarnpkg.com/regexpu-core/-/regexpu-core-4.7.1.tgz#2dea5a9a07233298fbf0db91fa9abc4c6e0f8ad6"
+  integrity sha512-ywH2VUraA44DZQuRKzARmw6S66mr48pQVva4LBeRhcOltJ6hExvWly5ZjFLYo67xbIxb6W1q4bAGtgfEl20zfQ==
   dependencies:
     regenerate "^1.4.0"
     regenerate-unicode-properties "^8.2.0"
@@ -10101,10 +10096,6 @@ utils-merge@1.0.1:
 uuid@^3.2.1, uuid@^3.3.2, uuid@^3.4.0:
   version "3.4.0"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.4.0.tgz#b23e4358afa8a202fe7a100af1f5f883f02007ee"
-
-uuid@^7.0.3:
-  version "7.0.3"
-  resolved "https://registry.yarnpkg.com/uuid/-/uuid-7.0.3.tgz#c5c9f2c8cf25dc0a372c4df1441c41f5bd0c680b"
 
 uuid@^8.3.0:
   version "8.3.1"

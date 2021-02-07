@@ -1,17 +1,21 @@
 import { client } from '@ont-dev/ontology-dapi'
 import React, { useState, useEffect, useCallback } from 'react'
 import { useHistory, useLocation } from "react-router-dom"
-import { utils } from 'ontology-ts-sdk'
+import { utils, WebsocketClient, CONST, Crypto } from 'ontology-ts-sdk'
 import BigNumber from 'bignumber.js'
 import { useAlert } from 'react-alert'
 import { useMappedState, useDispatch } from 'redux-react-hook';
 import { STAKING_ADDRESS, TRANSACTION_BASE_URL, TRANSACTION_AFTERFIX } from '../../../config'
 import './index.css'
 
-const { StringReader } = utils
+
+const { Address } = Crypto
+const webSocketClient = new WebsocketClient(CONST.TEST_ONT_URL_2.SOCKET_URL, false, false)
+const { StringReader, reverseHex } = utils
 
 const StakingDetail = (props) => {
   const [stakeToken, setStakeToken] = useState({})
+  const [tokenBalance, setTokenBalance] = useState(0)
   const [amount, setAmount] = useState('')
   const [myStake, setMyStake] = useState({})
   const [stakeType, setStakeType] = useState('stake')
@@ -31,6 +35,7 @@ const StakingDetail = (props) => {
   useEffect(() => {
     if (account && tokens.length) {
       setStakeToken(tokens.find((t) => `${t.id}` === tokenId))
+      getTokenBalance()
     }
   }, [tokens, account])
 
@@ -49,6 +54,38 @@ const StakingDetail = (props) => {
       setMyStake({})
     }
   }, [account])
+
+  const getTokenBalance = () => {
+    if (account && stakeToken.id) {
+      if (stakeToken.name !== 'ONT' && stakeToken.name !== 'ONG') {
+        const param = {
+          scriptHash: stakeToken.address,
+          operation: 'balanceOf',
+          args: [
+            {
+              type: 'Address',
+              value: account,
+            },
+          ],
+        }
+        client.api.smartContract.invokeRead(param).then((bl) => {
+          if (bl) {
+            setTokenBalance(parseInt(reverseHex(bl), 16) / (10 ** stakeToken.decimals))
+          }
+        })
+      } else {
+        getNativeTokenBalance(account, stakeToken)
+      }
+    }
+  }
+
+  const getNativeTokenBalance = async (account, token) => {
+    const balance = await webSocketClient.getBalance(new Address(account))
+
+    if (balance.Desc === 'SUCCESS') {
+      setTokenBalance(balance.Result[token.name.toLowerCase()] / (10 ** token.decimals))
+    }
+  }
 
   function getAccountStakeByTokenId(id) {
     return client.api.smartContract.invokeWasmRead({
@@ -208,6 +245,12 @@ const StakingDetail = (props) => {
     history.goBack()
   }
 
+  const maxInput = () => {
+    if (!isNaN(tokenBalance)) {
+      setAmount(tokenBalance)
+    }
+  }
+
   return (
     <div className="stake-container">
       <div className="stake-title">
@@ -234,8 +277,12 @@ const StakingDetail = (props) => {
             <div className="stake-wrapper">
               <div className={`icon-${stakeToken.name} token-placeholder`}></div>
               <div className="form-item">
+                <div className="input-label">Amount
+                  <span className="hint">Balance: {tokenBalance}</span>
+                </div>
                 <div className="input-wrapper">
-                  <input className="input inline-input" placeholder="Amount" type="number" onChange={(event) => setAmount(event.target.value)}></input>
+                  <input className="input inline-input" placeholder="0.0" type="number" onChange={(event) => setAmount(event.target.value)}></input>
+                  <div className="input-max-btn" onClick={() => maxInput()}>MAX</div>
                 </div>
               </div>
               <div className="stake-btn" onClick={() => onStake()}>{ stakeType === 'stake' ? 'Stake' : 'Unstake'}</div>
