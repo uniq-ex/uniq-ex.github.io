@@ -32,7 +32,7 @@ const Staking = () => {
   }, [stakingTokens])
 
   function getStakingTokenBalance() {
-    if (!stakingTokens.length) {
+    if (tokens.length && !stakingTokens.length) {
       try {
         client.api.smartContract.invokeWasmRead({
           scriptHash: STAKING_ADDRESS,
@@ -45,10 +45,11 @@ const Staking = () => {
           for (let i = 0; i < tokenCount; i++) {
             const token = {}
             token.id = strReader.readUint128()
+            const tempToken = tokens.find((t) => t.id === token.id)
             token.weight = strReader.readUint128()
             token.balance = strReader.readUint128()
 
-            parsedTokens.push(token)
+            parsedTokens.push(Object.assign(tempToken, token))
           }
 
           const tokenMap = {}
@@ -59,10 +60,9 @@ const Staking = () => {
           const totalWeight = Object.values(tokenMap).filter((t) => t.balance).reduce((a, b) => a + b.weight, 0)
           const filteredTokens = Object.values(tokenMap).map((t) => {
             return {
-              id: t.id,
+              ...t,
               originWeight: t.weight,
-              weight: t.balance ? (t.weight / totalWeight) : 0,
-              balance: t.balance
+              weight: t.balance ? (t.weight / totalWeight) : 0
             }
           })
 
@@ -118,9 +118,8 @@ const Staking = () => {
   }
 
   function generateStakingPool() {
-    if (tokens.length) {
-      return tokens.map((token) => {
-        const balance = (stakingTokens.find((t) => t.id === token.id) || {}).balance
+    if (stakingTokens.length) {
+      return stakingTokens.map((token) => {
         return (
           <div className="pool-list-item" key={token.name}>
             <div className="item-detail">
@@ -135,7 +134,7 @@ const Staking = () => {
                 }
               </div>
               <div className="earn-line">Earn<span>UNX</span></div>
-              <div className="total-staking">Total Staking<span>{new BigNumber(balance || 0).div(10 ** token.decimals).toString()}</span></div>
+              <div className="total-staking">Total Staking<span>{new BigNumber(token.balance || 0).div(10 ** token.decimals).toString()}</span></div>
               <div className="select-btn" onClick={() => onSelectToken(token)}>Stake</div>
             </div>
           </div>

@@ -190,7 +190,7 @@ const Transaction = () => {
           for (let i = 0; i < tokenCount; i++) {
             const token = {}
             token.id = strReader.readUint128()
-            const tempToken = tokens.filter((t) => t.id === token.id)[0]
+            const tempToken = tokens.find((t) => t.id === token.id)
             token.balance = new BigNumber(strReader.readUint128()).div(new BigNumber(10 ** tempToken.decimals)).toString()
   
             tokenPool.push(Object.assign(tempToken, token))
