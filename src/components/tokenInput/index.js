@@ -1,15 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import { useMappedState } from 'redux-react-hook';
-import { utils, WebsocketClient, CONST, Crypto } from 'ontology-ts-sdk'
-import { client } from '@ont-dev/ontology-dapi'
 import Select, { components } from 'react-select'
 import Input from '../input'
-import request from '../../utils/request'
-import './index.css'
+import { getTokenBalance } from '../../utils/token'
 
-const { Address } = Crypto
-const webSocketClient = new WebsocketClient(CONST.TEST_ONT_URL_2.SOCKET_URL, false, false)
-const { reverseHex } = utils
+import './index.css'
 
 const TokenInput = (props) => {
   const { value, round, tokens, defaultTokenId, inputDisabled = false, showBalance = true, withMax = true, onTokenChange, onAmountChange } = props
@@ -21,47 +16,9 @@ const TokenInput = (props) => {
 
   useEffect(() => {
     if (account && showBalance && token.id) {
-      if (token.name !== 'ONT' && token.name !== 'ONG') {
-        const param = {
-          scriptHash: token.address,
-          operation: 'balanceOf',
-          args: [
-            {
-              type: 'Address',
-              value: account,
-            },
-          ],
-        }
-        client.api.smartContract.invokeRead(param).then((bl) => {
-          if (bl) {
-            setBalance(parseInt(reverseHex(bl), 16) / (10 ** token.decimals))
-          }
-        })
-      } else {
-        // getNativeTokenBalance(account, token)
-        request({
-          method: 'get',
-          url: `/v2/addresses/${account}/native/balances`
-        }).then((resp) => {
-          if (resp.code === 0) {
-            const targetToken = resp.result.find((t) => t.asset_name === token.name.toLowerCase())
-            setBalance(targetToken.balance)
-          }
-        })
-        .catch((e) => {
-          console.log(e)
-        })
-      }
+      getTokenBalance(account, token, setBalance)
     }
   }, [token, showBalance, account])
-
-  const getNativeTokenBalance = async (account, token) => {
-    const balance = await webSocketClient.getBalance(new Address(account))
-
-    if (balance.Desc === 'SUCCESS') {
-      setBalance(balance.Result[token.name.toLowerCase()] / (10 ** token.decimals))
-    }
-  }
 
   const handleTokenChange = (e) => {
     if (e.value !== token.id) {

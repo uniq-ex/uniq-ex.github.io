@@ -452,7 +452,7 @@ const Transaction = () => {
               <span className="hint">{generatePriceHint()}</span>
             </div>
             <div className="input-wrapper">
-              <Input placeholder="Price" value={price} decimals="9" onChange={(amount) => setPrice(amount)} />
+              <Input placeholder="0.0" value={price} decimals="9" onChange={(amount) => setPrice(amount)} />
             </div>
           </div>
           <TokenInput
