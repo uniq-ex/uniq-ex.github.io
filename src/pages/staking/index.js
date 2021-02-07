@@ -25,14 +25,14 @@ const Staking = () => {
 
   useEffect(() => {
     getStakingTokenBalance()
-    let interval = !stakingTokens.length && setInterval(() => getStakingTokenBalance, 1000)
+    let interval = setInterval(() => getStakingTokenBalance, 2000)
     return () => {
       interval && clearInterval(interval)
     }
-  }, [stakingTokens])
+  }, [tokens])
 
   function getStakingTokenBalance() {
-    if (tokens.length && !stakingTokens.length) {
+    if (tokens.length) {
       try {
         client.api.smartContract.invokeWasmRead({
           scriptHash: STAKING_ADDRESS,
