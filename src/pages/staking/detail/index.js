@@ -45,7 +45,7 @@ const StakingDetail = (props) => {
 
   useEffect(() => {
     const getClaimableWing = () => {
-      if (account && stakeToken.id) {
+      if (account && stakeToken.ty === 3) {
         client.api.smartContract.invokeWasmRead({
           scriptHash: GOVERNANCE_ADDRESS,
           operation: 'claimable_wing',
@@ -76,14 +76,14 @@ const StakingDetail = (props) => {
   }, [account, stakeToken])
 
   useEffect(() => {
-    if (account && tokens.length) {
+    if (account && stakeToken.id) {
       getAccountStake()
       const interval = !myStake.id && setInterval(getAccountStake, 2000)
       return () => {
         interval && clearInterval(interval)
       }
     }
-  }, [tokens, account])
+  }, [stakeToken, account])
 
   useEffect(() => {
     if (!account) {
@@ -109,7 +109,7 @@ const StakingDetail = (props) => {
       const strReader = new StringReader(stakeStr)
       return {
         id,
-        balance: strReader.readUint128(),
+        balance: new BigNumber(strReader.readUint128() || 0).div(10 ** (stakeToken.decimals || 0)).toString(),
         interest: strReader.readUint128()
       }
     })
@@ -250,8 +250,10 @@ const StakingDetail = (props) => {
   }
 
   const maxInput = () => {
-    if (!isNaN(tokenBalance)) {
+    if (stakeType === 'stake' && !isNaN(tokenBalance)) {
       setAmount(tokenBalance)
+    } else if (stakeType === 'unstake' && !isNaN(myStake.balance)) {
+      setAmount(myStake.balance)
     }
   }
 
@@ -276,10 +278,10 @@ const StakingDetail = (props) => {
           stakeToken.ty === 4 ? (
             <div className="stake-token-amount">
               {getLPTokenDom(stakeToken.name, 'stake-lp-token-wrapper')}
-              {new BigNumber(myStake.balance || 0).div(10 ** (stakeToken.decimals || 0)).toString()}
+              {myStake.balance}
             </div>
           ) : (
-            <div className={`stake-token-amount icon-${stakeToken.name}`}>{new BigNumber(myStake.balance || 0).div(10 ** (stakeToken.decimals || 0)).toString()}</div>
+            <div className={`stake-token-amount icon-${stakeToken.name}`}>{myStake.balance}</div>
           )
         }
         <div className="stake-token-actions">
@@ -305,12 +307,18 @@ const StakingDetail = (props) => {
       { showStakingModal ? (
         <div className="modal-overlay">
           <div className="modal-wrapper">
-            <div className="close-btn" onClick={() => { setShowStakingModal(false) }}></div>
+            <div className="close-btn" onClick={() => { setShowStakingModal(false); setAmount(''); }}></div>
             <div className="stake-wrapper">
               <div className={`icon-${stakeToken.name} token-placeholder`}></div>
               <div className="form-item">
                 <div className="input-label">Amount
-                  <span className="hint">Balance: {tokenBalance}</span>
+                  {
+                    stakeType === 'stake' ? (
+                      <span className="hint">Balance: {tokenBalance}</span>
+                    ) : (
+                      <span className="hint">Staked: {myStake.balance}</span>
+                    )
+                  }
                 </div>
                 <div className="input-wrapper">
                   <Input placeholder="0.0" value={amount} decimals={stakeToken.decimals || 0} onChange={(amount) => setAmount(amount)} />
