@@ -18,6 +18,7 @@ const AddLiquidity = () => {
   const [isValidPair, setIsValidPair] = useState(true)
   const [isFirstProvider, setIsFirstProvider] = useState(false)
   const [showPriceInfo, setShowPriceInfo] = useState(false)
+  const [balanceChange, setBalanceChange] = useState(0)
   const { account, pairs, swapTokens } = useMappedState((state) => ({
     account: state.wallet.account,
     pairs: state.swap.pairs,
@@ -195,6 +196,9 @@ const AddLiquidity = () => {
       })
 
       if (addResult.transaction) {
+        setBalanceChange(n => n + 1)
+        setToken1Amount("")
+        setToken2Amount("")
         setModal('infoModal', {
           show: true,
           type: 'success',
@@ -228,12 +232,14 @@ const AddLiquidity = () => {
           ) : null
         }
         <TokenInput
+          balanceChange={balanceChange}
           tokens={swapTokens}
           value={token1Amount}
           onTokenChange={(token) => onChangeToken1(token)}
           onAmountChange={(amount) => onToken1AmountChange(amount)} />
         <div className="icon-plus"></div>
         <TokenInput
+          balanceChange={balanceChange}
           tokens={swapTokens}
           value={token2Amount}
           defaultTokenId={swapTokens.length && swapTokens[1].id}

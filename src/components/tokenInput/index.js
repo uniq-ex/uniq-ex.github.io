@@ -7,7 +7,7 @@ import { getTokenBalance } from '../../utils/token'
 import './index.css'
 
 const TokenInput = (props) => {
-  const { value, round, tokens, defaultTokenId, inputDisabled = false, showBalance = true, withMax = true, onTokenChange, onAmountChange } = props
+  const { value, round, tokens, defaultTokenId, inputDisabled = false, showBalance = true, withMax = true, onTokenChange, onAmountChange, balanceChange = 0 } = props
   const [token, setToken] = useState({})
   const [balance, setBalance] = useState('-')
   const { account } = useMappedState((state) => ({
@@ -18,7 +18,7 @@ const TokenInput = (props) => {
     if (account && showBalance && token.id) {
       getTokenBalance(account, token, setBalance)
     }
-  }, [token, showBalance, account])
+  }, [token, showBalance, account, balanceChange])
 
   const handleTokenChange = (e) => {
     if (e.value !== token.id) {
