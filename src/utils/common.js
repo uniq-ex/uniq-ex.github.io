@@ -22,5 +22,5 @@ export function toLocaleFixed(num, n = 9) {
 }
 
 export const formatAccount = (account = '') => {
-  return `${account.substr(0, 6)}...${account.substr(-4)}`
+  return `${account.substr(0, 4)}...${account.substr(-4)}`
 }

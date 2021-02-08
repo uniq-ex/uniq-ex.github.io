@@ -7,6 +7,7 @@ import Tooltip from 'rc-tooltip';
 import { useAlert } from 'react-alert'
 import { useMappedState } from 'redux-react-hook'
 import { STAKING_ADDRESS } from '../../config'
+import { getLPTokenDom } from '../../utils/token'
 
 import 'rc-tooltip/assets/bootstrap.css'
 import './index.css'
@@ -114,7 +115,7 @@ const Staking = () => {
   }
 
   function getTip(token) {
-    return `${token.name} is the hidden receipt for wing ${token.name.replace('f', '')} suppliers`
+    return `${token.name} is the hidden receipt for WING ${token.name.replace('f', '')} suppliers`
   }
 
   function generateStakingPool() {
@@ -123,19 +124,30 @@ const Staking = () => {
         return (
           <div className="pool-list-item" key={token.name}>
             <div className="item-detail">
-              <div className="staking-token">
-                <div className="staking-text">Deposit</div>
-                {
-                  token.name.startsWith('f') ? (
-                    <Tooltip placement="top" overlay={getTip(token)}>
-                      <div className={`staking-token-icon icon-${token.name}`}>{token.name}</div>
-                    </Tooltip>
-                  ) : <div className={`staking-token-icon icon-${token.name}`}>{token.name}</div>
-                }
+              <div className="item-detail-wrapper">
+                { token.ty === 4 && <div className="corner-badge">10X</div> }
+                <div className="staking-token">
+                  {
+                    token.ty === 4 ? (
+                      <div className="staking-text">Deposit
+                        {getLPTokenDom(token.name, 'stake-lp-token')}
+                      </div>
+                    ) : (
+                      <div className={`staking-text icon-${token.name}`}>Deposit</div>
+                    )
+                  }
+                  {
+                    token.name.startsWith('f') ? (
+                      <Tooltip placement="top" overlay={getTip(token)}>
+                        <div className="staking-token-name">{token.name}</div>
+                      </Tooltip>
+                    ) : <div className="staking-token-name">{token.name}</div>
+                  }
+                </div>
+                <div className="earn-line">Earn<span>UNX</span></div>
+                <div className="total-staking">Total Staking<span>{new BigNumber(token.balance || 0).div(10 ** token.decimals).toString()}</span></div>
+                <div className="select-btn" onClick={() => onSelectToken(token)}>Stake</div>
               </div>
-              <div className="earn-line">Earn<span>UNX</span></div>
-              <div className="total-staking">Total Staking<span>{new BigNumber(token.balance || 0).div(10 ** token.decimals).toString()}</span></div>
-              <div className="select-btn" onClick={() => onSelectToken(token)}>Stake</div>
             </div>
           </div>
         )

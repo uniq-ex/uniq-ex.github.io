@@ -60,24 +60,33 @@
 }
 
 .profile-wrapper {
-  float: right;
-  width: 240px;
+  position: relative;
   box-sizing: border-box;
+}
+
+.claimable-wing {
+  float: right;
+  margin: 18px 12px 0 0;
+  padding: 0 20px;
+  line-height: 44px;
+  border-radius: 24px;
+  background: RGBA(43, 190, 127, 0.1);
 }
 
 .account-address {
   position: relative;
-  display: inline-block;
-  width: 130px;
-  vertical-align: top;
-  padding-left: 20px;
-  line-height: 80px;
+  float: right;
+  margin-top: 18px;
+  padding: 0 20px 0 40px;
+  line-height: 44px;
+  border-radius: 24px;
+  background: RGBA(43, 190, 127, 0.1);
 }
 
 .account-address:after {
   position: absolute;
   content: '';
-  left: 0;
+  left: 20px;
   top: 50%;
   width: 8px;
   height: 8px;
@@ -104,4 +113,13 @@
   border: 1px solid RGBA(43, 190, 127, 1.00);
   border-radius: 20px;
   color: RGBA(43, 190, 127, 1.00);
+}
+
+.profile-panel {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, .07);
+  background: #fff;
 }

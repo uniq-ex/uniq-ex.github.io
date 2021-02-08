@@ -5,6 +5,7 @@ import request from './request'
 const { reverseHex } = utils
 
 export const getTokenBalance = (account, token, cb) => {
+  
   if (token.name !== 'ONT' && token.name !== 'ONG') {
     const param = {
       scriptHash: token.address,
@@ -16,7 +17,12 @@ export const getTokenBalance = (account, token, cb) => {
         },
       ],
     }
-    client.api.smartContract.invokeRead(param).then((bl) => {
+    let invokeMethod = client.api.smartContract.invokeRead
+
+    if (token.ty === 3 || token.ty === 4) {
+      invokeMethod = client.api.smartContract.invokeWasmRead
+    }
+    invokeMethod(param).then((bl) => {
       if (bl) {
         cb(parseInt(reverseHex(bl), 16) / (10 ** token.decimals))
       }
@@ -35,4 +41,12 @@ export const getTokenBalance = (account, token, cb) => {
       console.log(e)
     })
   }
+}
+
+export const getLPTokenDom = (name, cls = '') => {
+  return (
+    <div className={`lp-token-wrapper ${cls}`}>
+      { name.split('-').slice(1).map((tokenName) => (<div className={`lp-token icon-${tokenName}`} />)) }
+    </div>
+  )
 }

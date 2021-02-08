@@ -6,8 +6,8 @@ import BigNumber from 'bignumber.js'
 import { useAlert } from 'react-alert'
 import { useMappedState, useDispatch } from 'redux-react-hook';
 import Input from '../../../components/input'
-import { getTokenBalance } from '../../../utils/token'
-import { STAKING_ADDRESS, TRANSACTION_BASE_URL, TRANSACTION_AFTERFIX } from '../../../config'
+import { getTokenBalance, getLPTokenDom } from '../../../utils/token'
+import { GOVERNANCE_ADDRESS, STAKING_ADDRESS, TRANSACTION_BASE_URL, TRANSACTION_AFTERFIX } from '../../../config'
 
 import './index.css'
 
@@ -19,6 +19,7 @@ const StakingDetail = (props) => {
   const [amount, setAmount] = useState('')
   const [myStake, setMyStake] = useState({})
   const [stakeType, setStakeType] = useState('stake')
+  const [claimableWing, setClaimableWing] = useState('-')
   const [showStakingModal, setShowStakingModal] = useState(false)
   const { account, tokens } = useMappedState((state) => ({
     account: state.wallet.account,
@@ -40,6 +41,39 @@ const StakingDetail = (props) => {
       getTokenBalance(account, sToken, setTokenBalance)
     }
   }, [tokens, account])
+
+
+  useEffect(() => {
+    const getClaimableWing = () => {
+      if (account && stakeToken.id) {
+        client.api.smartContract.invokeWasmRead({
+          scriptHash: GOVERNANCE_ADDRESS,
+          operation: 'claimable_wing',
+          args: [
+            {
+              type: 'Address',
+              value: account
+            },
+            {
+              type: 'Long',
+              value: stakeToken.id
+            }
+          ]
+        }).then((resp) => {
+          const strReader = new StringReader(resp)
+
+          setClaimableWing(strReader.readUint128())
+        })
+      }
+    }
+
+    getClaimableWing()
+    let interval = setInterval(() => getClaimableWing, 3000)
+
+    return () => {
+      interval && clearInterval(interval)
+    }
+  }, [account, stakeToken])
 
   useEffect(() => {
     if (account && tokens.length) {
@@ -225,10 +259,29 @@ const StakingDetail = (props) => {
     <div className="stake-container">
       <div className="stake-title">
         <div className="back-icon" onClick={() => onNavigateToStaking()} />
-        Earn <span className="icon-UNX">UNX</span> by <span className={`icon-${stakeToken.name}`}>{stakeToken.name || ''}</span>
+        Earn <span className="icon-UNX">UNX</span> by 
+        {
+          stakeToken.ty === 4 ? (
+            <span className="lp-token-span">
+              {getLPTokenDom(stakeToken.name, 'inline-lp-token')}
+              {stakeToken.name || ''}
+            </span>
+          ) : (
+            <span className={`icon-${stakeToken.name}`}>{stakeToken.name || ''}</span>
+          )
+        }
       </div>
       <div className="stake-token-detail">
-        <div className={`stake-token-amount icon-${stakeToken.name}`}>{new BigNumber(myStake.balance || 0).div(10 ** (stakeToken.decimals || 0)).toString()}</div>
+        {
+          stakeToken.ty === 4 ? (
+            <div className="stake-token-amount">
+              {getLPTokenDom(stakeToken.name, 'stake-lp-token-wrapper')}
+              {new BigNumber(myStake.balance || 0).div(10 ** (stakeToken.decimals || 0)).toString()}
+            </div>
+          ) : (
+            <div className={`stake-token-amount icon-${stakeToken.name}`}>{new BigNumber(myStake.balance || 0).div(10 ** (stakeToken.decimals || 0)).toString()}</div>
+          )
+        }
         <div className="stake-token-actions">
           <div className="stake-token-action" onClick={() => handleStakeClick('stake')}>Stake</div>
           <div className="stake-token-action" onClick={() => handleStakeClick('unstake')}>Unstake</div>
@@ -240,6 +293,15 @@ const StakingDetail = (props) => {
           <div className="harvest-token-action" onClick={() => onHarvest() }>Harvest</div>
         </div>
       </div>
+      {
+        stakeToken.ty === 3 ? (
+          <div className="claimable-wing-detail">
+            <div className="claimable-wing-amount icon-WING">{new BigNumber(claimableWing || 0).div(10 ** 9).toString()}
+              <span className="claimable-wing-label">WING Earned</span>
+            </div>
+          </div>
+        ) : null
+      }
       { showStakingModal ? (
         <div className="modal-overlay">
           <div className="modal-wrapper">

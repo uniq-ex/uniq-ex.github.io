@@ -64,27 +64,14 @@ export const useFetchTokens = () => {
             token.ty = strReader.readUint8()
             token.decimals = strReader.readUint128()
 
+            token.value = token.id
+            token.label = token.name
+
             parsedTokens.push(token)
           }
 
-          const tokenMap = {}
-          for (let i = 0; i < parsedTokens.length; i++) {
-            tokenMap[parsedTokens[i].name] = parsedTokens[i]
-          }
-
-          const filteredTokens = Object.values(tokenMap).map((t) => {
-            return {
-              id: t.id,
-              decimals: t.decimals,
-              address: t.address,
-              name: t.name,
-              value: t.id,
-              label: t.name
-            }
-          })
-
           setLoadingToken(false)
-          setTokens(filteredTokens)
+          setTokens(parsedTokens)
           setPoolStat({
             distributionInfo,
             pools,

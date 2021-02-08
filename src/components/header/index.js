@@ -6,11 +6,11 @@ import { formatAccount } from '../../utils/common'
 import './index.css'
 
 const Header = (props) => {
+  const [showProfilePanel, setShowProfilePanel] = useState(false)
   const { account } = useMappedState((state) => ({
     account: state.wallet.account
   }))
   const [showSiteIntro, setShowSiteIntro] = useState(false)
-
   const toggleShowSiteIntro = (show) => {
     setShowSiteIntro(show)
   }
@@ -58,9 +58,16 @@ const Header = (props) => {
             { READY_TABS.indexOf('/token') >= 0 ? <div className="nav-item"><Link to="/token">Token</Link></div> : null }
           </div>
           <div className={`${account ? 'active' : ''} profile-wrapper`}>
-            { account && <span className="account-address">{formatAccount(account)}</span> }
-            { account && <span className="signout-btn" onClick={() => onSignOut()}>Sign Out</span> }
             { !account && <span className="connect-btn" onClick={() => onConnectWallet()}>Connect Wallet</span>}
+            { account && <span className="account-address">{formatAccount(account)}</span> }
+            {/* { account && <span className="signout-btn" onClick={() => onSignOut()}>Sign Out</span> } */}
+            {
+              showProfilePanel ? (
+                <div className="profile-panel">
+              
+                </div>
+              ) : null
+            }
           </div>
         </div>
       </div>

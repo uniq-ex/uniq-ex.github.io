@@ -10,6 +10,7 @@ import reducers from './reducers';
 import reportWebVitals from './reportWebVitals';
 
 import './styles/font.css';
+import './styles/common.css';
 import './index.css';
 
 const store = createStore(reducers)
