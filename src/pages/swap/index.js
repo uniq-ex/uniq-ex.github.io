@@ -22,6 +22,7 @@ const Swap = () => {
   const [isValidSwap, setIsValidSwap] = useState(false)
   const [bestPath, setBestPath] = useState([])
   const [showPrice, setShowPrice] = useState(false)
+  const [balanceChange, setBalanceChange] = useState(0)
   const { account, pairs, swapTokens } = useMappedState((state) => ({
     account: state.wallet.account,
     pairs: state.swap.pairs,
@@ -171,6 +172,9 @@ const Swap = () => {
       })
 
       if (swapResult.transaction) {
+        setBalanceChange(balanceChange + 1)
+        setToken1Amount('')
+        setToken2Amount('')
         setModal('infoModal', {
           show: true,
           type: 'success',
@@ -243,6 +247,7 @@ const Swap = () => {
         </div>
         <div className="sw-content">
           <TokenInput
+            balanceChange={balanceChange}
             label="From"
             tokens={swapTokens}
             value={token1Amount}
@@ -251,6 +256,7 @@ const Swap = () => {
             onAmountChange={(amount) => onToken1AmountChange(amount)} />
           <div className="icon-arrow-down"></div>
           <TokenInput
+            balanceChange={balanceChange}
             label="To"
             tokens={swapTokens}
             value={token2Amount}
