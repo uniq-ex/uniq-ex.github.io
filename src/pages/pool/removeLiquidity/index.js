@@ -1,15 +1,14 @@
 import { client } from '@ont-dev/ontology-dapi'
 import React, { useState, useEffect, useCallback } from 'react'
 import { useHistory, useLocation } from "react-router-dom"
-import { useMappedState, useDispatch } from 'redux-react-hook';
+import { useMappedState, useDispatch } from 'redux-react-hook'
 import { utils } from 'ontology-ts-sdk'
 import { useAlert } from 'react-alert'
 import BigNumber from 'bignumber.js'
 import Slider from 'rc-slider'
 import { useFetchPairs } from '../../../hooks/usePair';
 import { SWAP_ADDRESS, TRANSACTION_BASE_URL, TRANSACTION_AFTERFIX } from '../../../config'
-import { SLIPPAGE } from '../../../utils/constants'
-import 'rc-slider/assets/index.css';
+import 'rc-slider/assets/index.css'
 import './index.css'
 
 const { StringReader } = utils
@@ -23,8 +22,9 @@ const RemoveLiquidity = () => {
   const [pair, setPair] = useState({})
   const [amount, setAmount] = useState(0)
   const [showPrice, setShowPrice] = useState(false)
-  const { account, tokens, pairs } = useMappedState((state) => ({
+  const { account, slippage, tokens, pairs } = useMappedState((state) => ({
     account: state.wallet.account,
+    slippage: state.wallet.slippage,
     tokens: state.common.tokens,
     pairs: state.swap.pairs
   }))
@@ -123,11 +123,11 @@ const RemoveLiquidity = () => {
         },
         {
           type: 'Long',
-          value: new BigNumber(token1Amount).times(10 ** token1.decimals).times(1 - SLIPPAGE).integerValue(BigNumber.ROUND_UP).toString()
+          value: new BigNumber(token1Amount).times(10 ** token1.decimals).times(1 - slippage / 100).integerValue(BigNumber.ROUND_UP).toString()
         },
         {
           type: 'Long',
-          value: new BigNumber(token2Amount).times(10 ** token2.decimals).times(1 - SLIPPAGE).integerValue(BigNumber.ROUND_UP).toString()
+          value: new BigNumber(token2Amount).times(10 ** token2.decimals).times(1 - slippage / 100).integerValue(BigNumber.ROUND_UP).toString()
         },
         {
           type: 'Address',

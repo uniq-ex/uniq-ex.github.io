@@ -1,13 +1,12 @@
 import { client } from '@ont-dev/ontology-dapi'
 import React, { useState, useEffect, useCallback } from 'react'
 import { useHistory } from "react-router-dom"
-import { useMappedState, useDispatch } from 'redux-react-hook';
+import { useMappedState, useDispatch } from 'redux-react-hook'
 import { useAlert } from 'react-alert'
 import BigNumber from 'bignumber.js'
 import TokenInput from '../../components/tokenInput'
 import { SWAP_ADDRESS, TRANSACTION_BASE_URL, TRANSACTION_AFTERFIX } from '../../config'
-import { useFetchPairs } from '../../hooks/usePair';
-import { SLIPPAGE } from '../../utils/constants'
+import { useFetchPairs } from '../../hooks/usePair'
 import { toLocaleFixed } from '../../utils/common'
 import { bestSwap } from '../../utils/swap'
 import './index.css'
@@ -23,8 +22,9 @@ const Swap = () => {
   const [bestPath, setBestPath] = useState([])
   const [showPrice, setShowPrice] = useState(false)
   const [balanceChange, setBalanceChange] = useState(0)
-  const { account, pairs, swapTokens } = useMappedState((state) => ({
+  const { account, slippage, pairs, swapTokens } = useMappedState((state) => ({
     account: state.wallet.account,
+    slippage: state.wallet.slippage,
     pairs: state.swap.pairs,
     swapTokens: state.swap.tokens
   }))
@@ -200,9 +200,9 @@ const Swap = () => {
 
   function getMinReceiveOrMaxSold() {
     if (swapType === 'exactin') {
-      return <p>Minimum Received:<span>{toLocaleFixed(token2Amount * (1 - SLIPPAGE), 6)} {token2.name}</span></p>
+      return <p>Minimum Received:<span>{toLocaleFixed(token2Amount * (1 - slippage / 100), 6)} {token2.name}</span></p>
     } else {
-      return <p>Maximum Sold:<span>{toLocaleFixed(token1Amount * (1 + SLIPPAGE), 6)} {token1.name}</span></p>
+      return <p>Maximum Sold:<span>{toLocaleFixed(token1Amount * (1 + slippage / 100), 6)} {token1.name}</span></p>
     }
   }
 

@@ -7,7 +7,6 @@ import BigNumber from 'bignumber.js'
 import TokenInput from '../../../components/tokenInput'
 import { useFetchPairs } from '../../../hooks/usePair';
 import { SWAP_ADDRESS, TRANSACTION_BASE_URL, TRANSACTION_AFTERFIX } from '../../../config'
-import { SLIPPAGE } from '../../../utils/constants'
 import './index.css'
 
 const AddLiquidity = () => {
@@ -19,8 +18,9 @@ const AddLiquidity = () => {
   const [isFirstProvider, setIsFirstProvider] = useState(false)
   const [showPriceInfo, setShowPriceInfo] = useState(false)
   const [balanceChange, setBalanceChange] = useState(0)
-  const { account, pairs, swapTokens } = useMappedState((state) => ({
+  const { account, slippage, pairs, swapTokens } = useMappedState((state) => ({
     account: state.wallet.account,
+    slippage: state.wallet.slippage,
     pairs: state.swap.pairs,
     swapTokens: state.swap.tokens
   }))
@@ -175,11 +175,11 @@ const AddLiquidity = () => {
         },
         {
           type: 'Long',
-          value: new BigNumber(token1Amount).times(new BigNumber(10 ** token1.decimals)).times(1 - SLIPPAGE).integerValue(BigNumber.ROUND_UP).toString()
+          value: new BigNumber(token1Amount).times(new BigNumber(10 ** token1.decimals)).times(1 - slippage / 100).integerValue(BigNumber.ROUND_UP).toString()
         },
         {
           type: 'Long',
-          value: new BigNumber(token2Amount).times(new BigNumber(10 ** token2.decimals)).times(1 - SLIPPAGE).integerValue(BigNumber.ROUND_UP).toString()
+          value: new BigNumber(token2Amount).times(new BigNumber(10 ** token2.decimals)).times(1 - slippage / 100).integerValue(BigNumber.ROUND_UP).toString()
         },
         {
           type: 'Address',
