@@ -196,7 +196,7 @@ const AddLiquidity = () => {
       })
 
       if (addResult.transaction) {
-        setBalanceChange(n => ++n)
+        setBalanceChange(balanceChange + 1)
         setToken1Amount('')
         setToken2Amount('')
         setModal('infoModal', {
