@@ -43,10 +43,17 @@ export const getTokenBalance = (account, token, cb) => {
   }
 }
 
-export const getLPTokenDom = (name, cls = '') => {
-  return (
-    <div className={`lp-token-wrapper ${cls}`}>
-      { name.split('-').slice(1).map((tokenName) => (<div className={`lp-token icon-${tokenName}`} />)) }
-    </div>
-  )
+export const getTokenIconDom = (token, cls = '') => {
+  if (token.id) {
+    return (
+      <div className={`token-icon-wrapper ${cls}`}>
+        {
+          token.ty === 4
+            ? token.name.split('-').slice(1).map((tokenName) => (<div className={`token-icon-item with-drop-shadow icon-${tokenName}`} />))
+            : (<div className={`token-icon-item icon-${token.name}`} />)
+        }
+      </div>
+    )
+  }
+  return null
 }

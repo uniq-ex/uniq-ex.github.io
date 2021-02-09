@@ -3,11 +3,11 @@ import React, { useState, useEffect } from 'react'
 import { useHistory } from "react-router-dom"
 import { utils } from 'ontology-ts-sdk'
 import BigNumber from 'bignumber.js'
-import Tooltip from 'rc-tooltip';
+import Tooltip from 'rc-tooltip'
 import { useAlert } from 'react-alert'
 import { useMappedState } from 'redux-react-hook'
 import { STAKING_ADDRESS } from '../../config'
-import { getLPTokenDom } from '../../utils/token'
+import { getTokenIconDom } from '../../utils/token'
 
 import 'rc-tooltip/assets/bootstrap.css'
 import './index.css'
@@ -130,7 +130,7 @@ const Staking = () => {
                   {
                     token.ty === 4 ? (
                       <div className="staking-text">Deposit
-                        {getLPTokenDom(token.name, 'stake-lp-token')}
+                        {getTokenIconDom(token, 'stake-lp-token')}
                       </div>
                     ) : (
                       <div className={`staking-text icon-${token.name}`}>Deposit</div>

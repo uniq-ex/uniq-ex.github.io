@@ -5,8 +5,9 @@ import { utils } from 'ontology-ts-sdk'
 import BigNumber from 'bignumber.js'
 import { useAlert } from 'react-alert'
 import { useMappedState, useDispatch } from 'redux-react-hook';
+import Tooltip from 'rc-tooltip';
 import Input from '../../../components/input'
-import { getTokenBalance, getLPTokenDom } from '../../../utils/token'
+import { getTokenBalance, getTokenIconDom } from '../../../utils/token'
 import { GOVERNANCE_ADDRESS, STAKING_ADDRESS, TRANSACTION_BASE_URL, TRANSACTION_AFTERFIX } from '../../../config'
 
 import './index.css'
@@ -19,7 +20,7 @@ const StakingDetail = (props) => {
   const [amount, setAmount] = useState('')
   const [myStake, setMyStake] = useState({})
   const [stakeType, setStakeType] = useState('stake')
-  const [claimableWing, setClaimableWing] = useState('-')
+  const [claimableWing, setClaimableWing] = useState(0)
   const [showStakingModal, setShowStakingModal] = useState(false)
   const { account, tokens } = useMappedState((state) => ({
     account: state.wallet.account,
@@ -68,7 +69,7 @@ const StakingDetail = (props) => {
     }
 
     getClaimableWing()
-    let interval = setInterval(() => getClaimableWing, 3000)
+    let interval = setInterval(getClaimableWing, 10000)
 
     return () => {
       interval && clearInterval(interval)
@@ -78,7 +79,7 @@ const StakingDetail = (props) => {
   useEffect(() => {
     if (account && stakeToken.id) {
       getAccountStake()
-      const interval = !myStake.id && setInterval(getAccountStake, 2000)
+      const interval = setInterval(getAccountStake, 10000)
       return () => {
         interval && clearInterval(interval)
       }
@@ -261,36 +262,28 @@ const StakingDetail = (props) => {
     <div className="stake-container">
       <div className="stake-title">
         <div className="back-icon" onClick={() => onNavigateToStaking()} />
-        Earn <span className="icon-UNX">UNX</span> by 
-        {
-          stakeToken.ty === 4 ? (
-            <span className="lp-token-span">
-              {getLPTokenDom(stakeToken.name, 'inline-lp-token')}
-              {stakeToken.name || ''}
-            </span>
-          ) : (
-            <span className={`icon-${stakeToken.name}`}>{stakeToken.name || ''}</span>
-          )
-        }
+        Earn <span className="icon-UNX">UNX</span> by
+        {getTokenIconDom(stakeToken, 'inline-token-wrapper')}
+        {stakeToken.name || ''}
       </div>
       <div className="stake-token-detail">
-        {
-          stakeToken.ty === 4 ? (
-            <div className="stake-token-amount">
-              {getLPTokenDom(stakeToken.name, 'stake-lp-token-wrapper')}
-              {myStake.balance}
-            </div>
-          ) : (
-            <div className={`stake-token-amount icon-${stakeToken.name}`}>{myStake.balance}</div>
-          )
-        }
+        <div className="stake-token-amount">
+          {getTokenIconDom(stakeToken, 'stake-token-wrapper')}
+          <div className="stake-token-amount-detail">
+            <div className="stake-token-amount-label">Current Staked</div>
+            <div className="stake-token-amount-info">{myStake.balance}</div>
+          </div>
+        </div>
         <div className="stake-token-actions">
           <div className="stake-token-action" onClick={() => handleStakeClick('stake')}>Stake</div>
           <div className="stake-token-action" onClick={() => handleStakeClick('unstake')}>Unstake</div>
         </div>
       </div>
       <div className="harvest-token-detail">
-        <div className="harvest-token-amount icon-UNX">{new BigNumber(myStake.interest || 0).div(10 ** 9).toString()}</div>
+        <div className="harvest-token-amount icon-UNX">
+          <div className="harvest-token-amount-label">Rewards Available</div>
+          <div className="harvest-token-amount-info">{new BigNumber(myStake.interest || 0).div(10 ** 9).toString()}</div>
+        </div>
         <div className="harvest-token-actions">
           <div className="harvest-token-action" onClick={() => onHarvest() }>Harvest</div>
         </div>
@@ -299,7 +292,11 @@ const StakingDetail = (props) => {
         stakeToken.ty === 3 ? (
           <div className="claimable-wing-detail">
             <div className="claimable-wing-amount icon-WING">{new BigNumber(claimableWing || 0).div(10 ** 9).toString()}
-              <span className="claimable-wing-label">WING Earned</span>
+              <div className="claimable-wing-label">WING Earned
+                <Tooltip placement="top" overlay="WING earned by ftoken will be transferred to your account when you stake or unstake">
+                  <span>?</span>
+                </Tooltip>
+              </div>
             </div>
           </div>
         ) : null
