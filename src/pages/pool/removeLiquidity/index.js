@@ -157,7 +157,8 @@ const RemoveLiquidity = () => {
         show: true,
         type: 'error',
         text: 'Transaction Failed',
-        extraText: `${e}`,
+        // extraText: `${e}`,
+        extraText: '',
         extraLink: ''
       })
     }

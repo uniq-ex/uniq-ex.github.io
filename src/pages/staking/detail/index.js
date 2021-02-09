@@ -191,7 +191,8 @@ const StakingDetail = (props) => {
           show: true,
           type: 'error',
           text: 'Transaction Failed',
-          extraText: `${e}`,
+          // extraText: `${e}`,
+          extraText: '',
           extraLink: ''
         })
       }
@@ -240,7 +241,8 @@ const StakingDetail = (props) => {
         show: true,
         type: 'error',
         text: 'Transaction Failed',
-        extraText: `${e}`,
+        // extraText: `${e}`,
+        extraText: '',
         extraLink: ''
       })
     }
