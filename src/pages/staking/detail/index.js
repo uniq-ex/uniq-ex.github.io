@@ -8,7 +8,7 @@ import { useMappedState, useDispatch } from 'redux-react-hook';
 import Tooltip from 'rc-tooltip';
 import Input from '../../../components/input'
 import { getTokenBalance, getTokenIconDom } from '../../../utils/token'
-import { GOVERNANCE_ADDRESS, STAKING_ADDRESS, TRANSACTION_BASE_URL, TRANSACTION_AFTERFIX } from '../../../config'
+import { GOVERNANCE_ADDRESS, TRANSACTION_BASE_URL, TRANSACTION_AFTERFIX } from '../../../config'
 
 import './index.css'
 
@@ -17,14 +17,17 @@ const { StringReader } = utils
 const StakingDetail = (props) => {
   const [stakeToken, setStakeToken] = useState({})
   const [tokenBalance, setTokenBalance] = useState('-')
+  const [tokenWeight, setTokenWeight] = useState(1)
   const [amount, setAmount] = useState('')
   const [myStake, setMyStake] = useState({})
   const [stakeType, setStakeType] = useState('stake')
   const [claimableWing, setClaimableWing] = useState(0)
   const [showStakingModal, setShowStakingModal] = useState(false)
-  const { account, tokens } = useMappedState((state) => ({
+  const { account, tokens, stakingTokens, STAKING_ADDRESS } = useMappedState((state) => ({
     account: state.wallet.account,
-    tokens: state.common.tokens
+    tokens: state.common.tokens,
+    stakingTokens: state.staking.tokens,
+    STAKING_ADDRESS: state.gov.poolStat.pools.staking.address
   }))
   const dispatch = useDispatch()
   const setModal = useCallback((modalType, modalDetail) => dispatch({ type: 'SET_MODAL', modalType, modalDetail }), [])
@@ -33,6 +36,12 @@ const StakingDetail = (props) => {
   const location = useLocation()
   const history = useHistory()
   const tokenId = location.pathname.match(/\/([^/]+)$/)[1]
+
+  useEffect(() => {
+    if (stakingTokens.length) {
+      setTokenWeight(stakingTokens.find((t) => `${t.id}` === tokenId).originWeight)
+    }
+  }, [stakingTokens])
 
   useEffect(() => {
     if (account && tokens.length) {
@@ -46,7 +55,7 @@ const StakingDetail = (props) => {
 
   useEffect(() => {
     const getClaimableWing = () => {
-      if (account && stakeToken.ty === 3) {
+      if (account && stakeToken.ty === 2) {
         client.api.smartContract.invokeWasmRead({
           scriptHash: GOVERNANCE_ADDRESS,
           operation: 'claimable_wing',
@@ -77,14 +86,14 @@ const StakingDetail = (props) => {
   }, [account, stakeToken])
 
   useEffect(() => {
-    if (account && stakeToken.id) {
+    if (account && stakeToken.id && STAKING_ADDRESS) {
       getAccountStake()
       const interval = setInterval(getAccountStake, 10000)
       return () => {
         interval && clearInterval(interval)
       }
     }
-  }, [stakeToken, account])
+  }, [stakeToken, account, STAKING_ADDRESS])
 
   useEffect(() => {
     if (!account) {
@@ -140,7 +149,7 @@ const StakingDetail = (props) => {
       Alert.show('Please Connect Wallet First')
       return
     }
-    if (stakeToken.id) {
+    if (stakeToken.id && STAKING_ADDRESS) {
       if (amount <= 0) {
         Alert.error('Amount should be greater than 0')
         return
@@ -169,7 +178,7 @@ const StakingDetail = (props) => {
           operation: stakeType,
           args,
           gasPrice: 2500,
-          gasLimit: 30000000,
+          gasLimit: 60000000,
           requireIdentity: false
         }
 
@@ -204,47 +213,50 @@ const StakingDetail = (props) => {
       Alert.show('Please Connect Wallet First')
       return
     }
-    try {
-      const args = [
-        {
-          type: 'Address',
-          value: account
-        },
-        {
-          type: 'Long',
-          value: stakeToken.id
+
+    if (STAKING_ADDRESS) {
+      try {
+        const args = [
+          {
+            type: 'Address',
+            value: account
+          },
+          {
+            type: 'Long',
+            value: stakeToken.id
+          }
+        ]
+        const param = {
+          scriptHash: STAKING_ADDRESS,
+          operation: 'harvest',
+          args,
+          gasPrice: 2500,
+          gasLimit: 60000000,
+          requireIdentity: false
         }
-      ]
-      const param = {
-        scriptHash: STAKING_ADDRESS,
-        operation: 'harvest',
-        args,
-        gasPrice: 2500,
-        gasLimit: 30000000,
-        requireIdentity: false
-      }
 
-      const harvestResult = await client.api.smartContract.invokeWasm(param)
+        const harvestResult = await client.api.smartContract.invokeWasm(param)
 
-      if (harvestResult.transaction) {
-        setShowStakingModal(false)
+        if (harvestResult.transaction) {
+          setShowStakingModal(false)
+          setModal('infoModal', {
+            show: true,
+            type: 'success',
+            text: 'Transaction Successful',
+            extraText: 'View Transaction',
+            extraLink: `${TRANSACTION_BASE_URL}${harvestResult.transaction}${TRANSACTION_AFTERFIX}`
+          })
+        }
+      } catch (e) {
         setModal('infoModal', {
           show: true,
-          type: 'success',
-          text: 'Transaction Successful',
-          extraText: 'View Transaction',
-          extraLink: `${TRANSACTION_BASE_URL}${harvestResult.transaction}${TRANSACTION_AFTERFIX}`
+          type: 'error',
+          text: 'Transaction Failed',
+          // extraText: `${e}`,
+          extraText: '',
+          extraLink: ''
         })
       }
-    } catch (e) {
-      setModal('infoModal', {
-        show: true,
-        type: 'error',
-        text: 'Transaction Failed',
-        // extraText: `${e}`,
-        extraText: '',
-        extraLink: ''
-      })
     }
   }
 
@@ -273,25 +285,25 @@ const StakingDetail = (props) => {
           {getTokenIconDom(stakeToken, 'stake-token-wrapper')}
           <div className="stake-token-amount-detail">
             <div className="stake-token-amount-label">Current Staked</div>
-            <div className="stake-token-amount-info">{myStake.balance}</div>
+            <div className="stake-token-amount-info">{myStake.balance} {stakeToken.name}</div>
           </div>
         </div>
         <div className="stake-token-actions">
-          <div className="stake-token-action" onClick={() => handleStakeClick('stake')}>Stake</div>
+          { tokenWeight ? <div className="stake-token-action" onClick={() => handleStakeClick('stake')}>Stake</div> : null }
           <div className="stake-token-action" onClick={() => handleStakeClick('unstake')}>Unstake</div>
         </div>
       </div>
       <div className="harvest-token-detail">
         <div className="harvest-token-amount icon-UNX">
           <div className="harvest-token-amount-label">Rewards Available</div>
-          <div className="harvest-token-amount-info">{new BigNumber(myStake.interest || 0).div(10 ** 9).toString()}</div>
+          <div className="harvest-token-amount-info">{new BigNumber(myStake.interest || 0).div(10 ** 9).toString()} UNX</div>
         </div>
         <div className="harvest-token-actions">
           <div className="harvest-token-action" onClick={() => onHarvest() }>Harvest</div>
         </div>
       </div>
       {
-        stakeToken.ty === 3 ? (
+        stakeToken.ty === 2 ? (
           <div className="claimable-wing-detail">
             <div className="claimable-wing-amount icon-WING">{new BigNumber(claimableWing || 0).div(10 ** 9).toString()}
               <div className="claimable-wing-label">WING Earned

@@ -21,7 +21,7 @@ const Header = (props) => {
 
   const renderSiteIntro = () => {
     if (showSiteIntro) {
-      const href = `${window.location.origin}${window.location.pathname}#/trade?asset=ONT&price=UNX`
+      const href = `${window.location.origin}${window.location.pathname}#/trade?pair=ONTd%2FUNX`
       return (
         <div className="modal-overlay">
           <div className="modal-wrapper">
@@ -57,10 +57,11 @@ const Header = (props) => {
         <div className="content-wrapper">
           <div className="logo-wrapper">
             UNIQ-EX
-            <div className="site-intro" onClick={() => toggleShowSiteIntro(true)}></div>
+            {/* <div className="site-intro" onClick={() => toggleShowSiteIntro(true)}></div> */}
           </div>
           <div className="nav-list">
             { READY_TABS.indexOf('/') >= 0 ? <div className="nav-item"><Link to="/">Staking</Link></div> : null }
+            { READY_TABS.indexOf('/synth') >= 0 ? <div className="nav-item"><Link to="/synth">Synth</Link></div> : null }
             { READY_TABS.indexOf('/swap') >= 0 ? <div className="nav-item"><Link to="/swap">Swap</Link></div> : null }
             { READY_TABS.indexOf('/trade') >= 0 ? <div className="nav-item"><Link to="/trade">Trade</Link></div> : null }
             { READY_TABS.indexOf('/governance') >= 0 ? <div className="nav-item"><Link to="/governance">Governance</Link></div> : null }
