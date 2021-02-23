@@ -808,7 +808,7 @@ const Synth = () => {
                 <div>{asset.tokenName}{asset.times !== 1 ? ` (${asset.times}x)` : ''}
                   {
                     asset.unprocessedFrozen ? (
-                      <Tooltip placement="top" overlay="Freeze Asset">
+                      <Tooltip placement="top" overlay="The first one that freezes an asset will get 1‰ of burning fee from all holders">
                         <span onClick={() => handleFreezeAsset(asset)}></span>
                       </Tooltip>
                     ) : null
