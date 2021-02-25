@@ -42,7 +42,19 @@
 }
 
 .nav-item {
+  position: relative;
   display: inline-block;
+}
+
+.nav-item.selected:after {
+  position: absolute;
+  z-index: 1;
+  content: '';
+  bottom: 0;
+  left: 0;
+  right: 12px;
+  height: 4px;
+  background: RGBA(43, 190, 127, 1.00);
 }
 
 .nav-item a {

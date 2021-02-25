@@ -1,12 +1,13 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useMappedState, useDispatch } from 'redux-react-hook'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import Input from '../input'
 import { READY_TABS } from '../../config'
 import { formatAccount } from '../../utils/common'
 import './index.css'
 
 const Header = (props) => {
+  const [selectedTab, setSelectedTab] = useState('')
   const [showProfilePanel, setShowProfilePanel] = useState(false)
   const { account, slippage } = useMappedState((state) => ({
     account: state.wallet.account,
@@ -15,13 +16,34 @@ const Header = (props) => {
   const [showSiteIntro, setShowSiteIntro] = useState(false)
   const dispatch = useDispatch()
   const setSlippage = useCallback((slippage) => dispatch({ type: 'SET_SLIPPAGE', slippage }), [])
+  const pathname = useLocation().pathname
+
   const toggleShowSiteIntro = (show) => {
     setShowSiteIntro(show)
   }
 
+  useEffect(() => {
+    let tab = ''
+    if (pathname === '/' || pathname.indexOf('/staking') >= 0) {
+      tab = '/'
+    } else if (pathname.indexOf('/synth') >= 0) {
+      tab = '/synth'
+    } else if (pathname.indexOf('/swap') >= 0 || pathname.indexOf('/pool') >= 0) {
+      tab = '/swap'
+    } else if (pathname.indexOf('/trade') >= 0) {
+      tab = '/trade'
+    } else if (pathname.indexOf('/governance') >= 0) {
+      tab = '/governance'
+    } else if (pathname.indexOf('/token') >= 0) {
+      tab = '/token'
+    }
+    
+    setSelectedTab(tab)
+  }, [pathname])
+
   const renderSiteIntro = () => {
     if (showSiteIntro) {
-      const href = `${window.location.origin}${window.location.pathname}#/trade?pair=ONTd%2FUNX`
+      const href = `${window.location.origin}${window.location.pathname}#/trade?pair=pDAI%2FUNX`
       return (
         <div className="modal-overlay">
           <div className="modal-wrapper">
@@ -60,12 +82,12 @@ const Header = (props) => {
             {/* <div className="site-intro" onClick={() => toggleShowSiteIntro(true)}></div> */}
           </div>
           <div className="nav-list">
-            { READY_TABS.indexOf('/') >= 0 ? <div className="nav-item"><Link to="/">Staking</Link></div> : null }
-            { READY_TABS.indexOf('/synth') >= 0 ? <div className="nav-item"><Link to="/synth">Synth</Link></div> : null }
-            { READY_TABS.indexOf('/swap') >= 0 ? <div className="nav-item"><Link to="/swap">Swap</Link></div> : null }
-            { READY_TABS.indexOf('/trade') >= 0 ? <div className="nav-item"><Link to="/trade">Trade</Link></div> : null }
-            { READY_TABS.indexOf('/governance') >= 0 ? <div className="nav-item"><Link to="/governance">Governance</Link></div> : null }
-            { READY_TABS.indexOf('/token') >= 0 ? <div className="nav-item"><Link to="/token">Token</Link></div> : null }
+            { READY_TABS.indexOf('/') >= 0 ? <div className={`nav-item ${selectedTab === '/' ? 'selected' : ''}`}><Link to="/">Staking</Link></div> : null }
+            { READY_TABS.indexOf('/synth') >= 0 ? <div className={`nav-item ${selectedTab === '/synth' ? 'selected' : ''}`}><Link to="/synth">Synth</Link></div> : null }
+            { READY_TABS.indexOf('/swap') >= 0 ? <div className={`nav-item ${selectedTab === '/swap' ? 'selected' : ''}`}><Link to="/swap">Swap</Link></div> : null }
+            { READY_TABS.indexOf('/trade') >= 0 ? <div className={`nav-item ${selectedTab === '/trade' ? 'selected' : ''}`}><Link to="/trade">Trade</Link></div> : null }
+            { READY_TABS.indexOf('/governance') >= 0 ? <div className={`nav-item ${selectedTab === '/governance' ? 'selected' : ''}`}><Link to="/governance">Governance</Link></div> : null }
+            { READY_TABS.indexOf('/token') >= 0 ? <div className={`nav-item ${selectedTab === '/token' ? 'selected' : ''}`}><Link to="/token">Token</Link></div> : null }
           </div>
           <div className={`${account ? 'active' : ''} profile-wrapper`}>
             { !account && <span className="connect-btn" onClick={() => onConnectWallet()}>Connect Wallet</span>}

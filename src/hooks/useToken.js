@@ -43,13 +43,19 @@ export const useFetchTokens = () => {
     
           const pools = {}
           const poolCount = strReader.readNextLen()
+          let totalWeight = 0
           for (let i = 0; i < poolCount; i++) {
             const pool = {}
             const nameLength = strReader.readNextLen()
             pool.name = hexstr2str(strReader.read(nameLength))
             pool.address = reverseHex(strReader.read(20))
             pool.weight = strReader.readUint128()
+            totalWeight += pool.weight
             pools[pool.name] = pool
+          }
+
+          for (let poolName in pools) {
+            pools[poolName].ratio = pools[poolName].weight / totalWeight
           }
     
           const upgrade = strReader.readBoolean()

@@ -47,7 +47,7 @@ const Transaction = () => {
 
   useEffect(() => {
     if (pairs.length && !tokenPair.name) {
-      setTokenPair(pairs.find((p) => p.name === `${urlPairName}`) || pairs[0])
+      setTokenPair(pairs.find((p) => p.name === `${urlPairName}`) || pairs.find((p) => p.name === 'pDAI/UNX'))
     }
   }, [pairs])
 
@@ -97,7 +97,7 @@ const Transaction = () => {
               }
             }
     
-            setLastPrice(pairLastPrice ? pairLastPrice / PRICE_DECIMALS : 0)
+            setLastPrice(pairLastPrice ? new BigNumber(pairLastPrice).div(PRICE_DECIMALS).toString() : 0)
             setMakes(parsedMakes)
           })
           .catch((e) => {
@@ -239,13 +239,13 @@ const Transaction = () => {
 
   useEffect(() => {
     if (price > 0 && amount > 0) {
-      setTotal(price * amount)
+      setTotal(new BigNumber(price).times(amount).toString())
     }
   }, [price, amount])
 
   useEffect(() => {
     if (price > 0) {
-      setAmount((total || 0) / price)
+      setAmount(new BigNumber(total || 0).div(price).toString())
     }
   }, [total])
 
@@ -276,7 +276,7 @@ const Transaction = () => {
         return curMakes.filter((m) => m.asset_token_id === tokenPair.tokens[0].id && m.price_token_id === tokenPair.tokens[1].id).map((m) => {
           return (
             <div key={m.make_id} className="my-make-item reverse">
-              <div className="make-item-detail make-sell">{m.price / PRICE_DECIMALS}</div>
+              <div className="make-item-detail make-sell">{new BigNumber(m.price).div(PRICE_DECIMALS).toString()}</div>
               <div className="make-item-detail">{new BigNumber(m.amount).div(Math.pow(10, tokenPair.tokens[0].decimals)).toString()}</div>
               { makeView === 'my' && <div className="unmake-btn" onClick={() => onUnmake(m.make_id)}>Cancel</div> }
             </div>)
@@ -285,7 +285,7 @@ const Transaction = () => {
         return curMakes.filter((m) => m.asset_token_id === tokenPair.tokens[1].id && m.price_token_id === tokenPair.tokens[0].id).map((m) => {
           return (
             <div key={m.make_id} className="my-make-item">
-              <div className="make-item-detail make-buy">{PRICE_DECIMALS / m.price}</div>
+              <div className="make-item-detail make-buy">{new BigNumber(PRICE_DECIMALS).div(m.price).toString()}</div>
               <div className="make-item-detail">{new BigNumber(m.amount).times(m.price).div(PRICE_DECIMALS).div(Math.pow(10, tokenPair.tokens[1].decimals)).toString()}</div>
               { makeView === 'my' && <div className="unmake-btn" onClick={() => onUnmake(m.make_id)}>Cancel</div> }
             </div>)
@@ -314,7 +314,7 @@ const Transaction = () => {
       try {
         const assetToken = tradeType === 'buy' ? tokenPair.tokens[1] : tokenPair.tokens[0]
         const priceToken = tradeType === 'buy' ? tokenPair.tokens[0] : tokenPair.tokens[1]
-        const tradePrice = tradeType === 'buy' ? 1 / price : price
+        const tradePrice = tradeType === 'buy' ? new BigNumber(1).div(price).toString() : price
         const tradeAmount = tradeType === 'buy' ? total : amount
         const args = [
           {

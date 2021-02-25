@@ -1,3 +1,5 @@
+import BigNumber from 'bignumber.js'
+
 const REST = 0.997
 
 export const findAllPaths = (pairs, sourceId, targetId) => {
@@ -39,21 +41,25 @@ export const findAllPaths = (pairs, sourceId, targetId) => {
 const getInputAmount = (output, pair, reverse = false) => {
   let amount
   if (reverse) {
-    amount = (pair.reserve1 * pair.reserve2 / (pair.reserve1 - output) - pair.reserve2) / REST
+    amount = new BigNumber(pair.reserve1).times(pair.reserve2).div(new BigNumber(pair.reserve1).minus(output)).minus(pair.reserve2).div(REST).integerValue(BigNumber.ROUND_CEIL).toString()
+    // amount = (pair.reserve1 * pair.reserve2 / (pair.reserve1 - output) - pair.reserve2) / REST
   } else {
-    amount = (pair.reserve1 * pair.reserve2 / (pair.reserve2 - output) - pair.reserve1) / REST
+    amount = new BigNumber(pair.reserve1).times(pair.reserve2).div(new BigNumber(pair.reserve2).minus(output)).minus(pair.reserve1).div(REST).integerValue(BigNumber.ROUND_CEIL).toString()
+    // amount = (pair.reserve1 * pair.reserve2 / (pair.reserve2 - output) - pair.reserve1) / REST
   }
-  return Math.ceil(amount)
+  return amount
 }
 
 const getOutputAmount = (input, pair, reverse = false) => {
   let amount
   if (reverse) {
-    amount = pair.reserve1 - pair.reserve1 * pair.reserve2 / (pair.reserve2 + REST * input)
+    amount = new BigNumber(pair.reserve1).minus(new BigNumber(pair.reserve1).times(pair.reserve2).div(new BigNumber(input).times(REST).plus(pair.reserve2))).integerValue(BigNumber.ROUND_FLOOR).toString()
+    // amount = pair.reserve1 - pair.reserve1 * pair.reserve2 / (pair.reserve2 + REST * input)
   } else {
-    amount = pair.reserve2 - pair.reserve1 * pair.reserve2 / (pair.reserve1 + REST * input)
+    amount = new BigNumber(pair.reserve2).minus(new BigNumber(pair.reserve1).times(pair.reserve2).div(new BigNumber(input).times(REST).plus(pair.reserve1))).integerValue(BigNumber.ROUND_FLOOR).toString()
+    // amount = pair.reserve2 - pair.reserve1 * pair.reserve2 / (pair.reserve1 + REST * input)
   }
-  return Math.floor(amount)
+  return amount
 }
 
 const findNextOutput = (input, pairs, token1, token2) => {

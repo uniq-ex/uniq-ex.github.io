@@ -48,8 +48,8 @@ const Swap = () => {
 
   useEffect(() => {
     if (swapTokens.length) {
-      setToken1(swapTokens[0])
-      setToken2(swapTokens[1])
+      setToken1(swapTokens.find((st) => st.name === 'pDAI'))
+      setToken2(swapTokens.find((st) => st.name === 'UNX'))
     }
   }, [swapTokens])
 
@@ -256,6 +256,7 @@ const Swap = () => {
             tokens={swapTokens}
             value={token1Amount}
             round='up'
+            defaultTokenId={swapTokens.length && swapTokens.find((st) => st.name === 'pDAI').id}
             onTokenChange={(token) => onChangeToken1(token)}
             onAmountChange={(amount) => onToken1AmountChange(amount)} />
           <div className="icon-arrow-down"></div>
@@ -265,7 +266,7 @@ const Swap = () => {
             tokens={swapTokens}
             value={token2Amount}
             round='down'
-            defaultTokenId={swapTokens.length && swapTokens[1].id}
+            defaultTokenId={swapTokens.length && swapTokens.find((st) => st.name === 'UNX').id}
             onTokenChange={(token) => onChangeToken2(token)}
             onAmountChange={(amount) => onToken2AmountChange(amount)} />
           { showPrice ? <div className="sw-price-wrapper">Price<span className="sw-price-info">{getPrice()}</span></div> : null }

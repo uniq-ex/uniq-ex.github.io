@@ -1,7 +1,7 @@
 .synth-container {
   position: relative;
-  width: 1200px;
-  margin: 20px -100px 0;
+  width: 1280px;
+  margin: 20px -140px 0;
 }
 
 .synth-overview-sections {
@@ -13,12 +13,33 @@
   background: #fff;
 }
 
-.synth-overview-section {
+.synth-overview-section,
+.synth-overview-sub-section {
   flex: 1;
   text-align: center;
 }
 
+.synth-overview-section {
+  padding-right: 20px;
+}
+
+.synth-overview-section-right {
+  flex: 2;
+  padding-left: 20px;
+  box-shadow: 15px 0 20px -20px inset rgba(0, 0, 0, .1);
+}
+
+.synth-overview-section-group {
+  display: flex;
+  box-shadow: 0 15px 20px -20px inset rgba(0, 0, 0, .1);
+}
+
+.synth-overview-section-group .synth-overview-sub-section:nth-child(2) {
+  box-shadow: 15px 0 20px -20px inset rgba(0, 0, 0, .1);
+}
+
 .synth-overview-section-title {
+  margin: 20px 0;
   font-size: 20px;
   font-weight: bold;
   color: #2c2c2c;
@@ -26,7 +47,7 @@
 
 .synth-overview-detail {
   margin: 20px 0;
-  font-size: 36px;
+  font-size: 32px;
   font-weight: bold;
   color: #2BBE7F;
 }
@@ -36,14 +57,22 @@
 }
 
 .synth-overview-action-btn {
+  display: inline-block;
   width: 80px;
-  margin: 0 auto;
+  margin-left: 16px;
   padding: 8px 0;
   text-align: center;
+  vertical-align: 6px;
+  font-size: 16px;
+  font-weight: bold;
   color: #fff;
   border-radius: 4px;
   cursor: pointer;
   background: RGBA(43, 190, 127, 1.00);
+}
+
+.synth-overview-action-btn.synth-overview-action-btn-burn {
+  background: RGBA(254, 51, 47, 1.00);
 }
 
 .mint-burn-wrapper {
@@ -58,7 +87,6 @@
 .mint-burn-main {
   flex: 1;
   padding-right: 20px;
-  border-right: 1px solid #E5E5E5;
 }
 
 .synth-type-switch {
@@ -95,6 +123,16 @@
   flex: 1;
 }
 
+.panel-header-item.panel-header-item-asset {
+  width: 160px;
+  flex: none;
+}
+
+.panel-header-item.panel-header-item-action {
+  width: 200px;
+  flex: none;
+}
+
 .panel-header-item.burn-all-btn {
   text-align: center;
   font-weight: bold;
@@ -112,6 +150,30 @@
 
 .synth-assets-list-item.frozen {
   background: RGBA(254, 51, 47, 0.05);
+}
+
+.synth-assets-list-item > div {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.synth-assets-list-item .synth-assets-list-item-name {
+  width: 160px;
+  flex: none;
+}
+
+.synth-assets-list-item-name .synth-assets-list-item-icon {
+  padding-left: 36px;
+  background-size: 24px auto;
+  background-position: left center;
+  background-repeat: no-repeat;
+}
+
+.synth-assets-list-item .synth-assets-list-item-action {
+  width: 200px;
+  flex: none;
 }
 
 .synth-assets-list-item.frozen .synth-assets-list-item-name,
@@ -135,13 +197,6 @@
   border-radius: 20px;
   cursor: pointer;
   background: RGBA(254, 51, 47, 1.00) url('../../assets/snow.svg') center / 12px auto no-repeat;
-}
-
-.synth-assets-list-item > div {
-  position: relative;
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .synth-assets-list-item-action {
@@ -170,6 +225,7 @@
 .mint-burn-info {
   width: 240px;
   padding-left: 20px;
+  box-shadow: 15px 0 20px -20px inset rgba(0, 0, 0, .1);
 }
 
 .mint-burn-info-title {

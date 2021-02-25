@@ -59,8 +59,8 @@ const AddLiquidity = () => {
 
   useEffect(() => {
     if (swapTokens.length) {
-      setToken1(swapTokens[0])
-      setToken2(swapTokens[1])
+      setToken1(swapTokens.find((st) => st.name === 'pDAI'))
+      setToken2(swapTokens.find((st) => st.name === 'UNX'))
     }
   }, [account, swapTokens])
 
@@ -243,6 +243,7 @@ const AddLiquidity = () => {
           balanceChange={balanceChange}
           tokens={swapTokens}
           value={token1Amount}
+          defaultTokenId={swapTokens.length && swapTokens.find((st) => st.name === 'pDAI').id}
           onTokenChange={(token) => onChangeToken1(token)}
           onAmountChange={(amount) => onToken1AmountChange(amount)} />
         <div className="icon-plus"></div>
@@ -250,7 +251,7 @@ const AddLiquidity = () => {
           balanceChange={balanceChange}
           tokens={swapTokens}
           value={token2Amount}
-          defaultTokenId={swapTokens.length && swapTokens[1].id}
+          defaultTokenId={swapTokens.length && swapTokens.find((st) => st.name === 'UNX').id}
           onTokenChange={(token) => onChangeToken2(token)}
           onAmountChange={(amount) => onToken2AmountChange(amount)} />
         {

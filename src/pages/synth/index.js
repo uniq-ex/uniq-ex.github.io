@@ -7,7 +7,7 @@ import { useMappedState, useDispatch } from 'redux-react-hook'
 import Tooltip from 'rc-tooltip';
 import TokenInput from '../../components/tokenInput';
 import Input from '../../components/input'
-import { DAI_PRICE, SYNTH_PRICE_DECIMALS, ASSET_STATUS, LEVERAGE_TYPE } from '../../utils/constants'
+import { DAI_PRICE, SYNTH_PRICE_DECIMALS, ASSET_STATUS, LEVERAGE_TYPE, TRANSACTION_FEE_RATE } from '../../utils/constants'
 import { TRANSACTION_BASE_URL, TRANSACTION_AFTERFIX } from '../../config'
 import { useFetchPairs } from '../../hooks/usePair'
 import './index.css'
@@ -29,24 +29,22 @@ const Synth = () => {
   const [exchangeToAmount, setExchangeToAmount] = useState('')
   const [unxToken, setUnxToken] = useState({})
   const [unxPrice, setUnxPrice] = useState(0)
-  const [roi, setRoi] = useState(0)
-  const [marketAssetValue, setMarketAssetValue] = useState(0)
-  const [accountAssetValue, setAccountAssetValue] = useState(0)
   const [showMintModal, setShowMintModal] = useState(false)
   const [showBurnModal, setShowBurnModal] = useState(false)
   const [showExchangeModal, setShowExchangeModal] = useState(false)
-  const [availableReward, setAvailableReward] = useState('-')
+  const [availableReward, setAvailableReward] = useState(0)
   const [marketStat, setMarketStat] = useState({})
   const [stat, setStat] = useState({})
-  const { account, tokens, pairs, SYNTH_ADDRESS } = useMappedState((state) => ({
+  const { account, tokens, pairs, poolStat, synthPoolWeightRatio, SYNTH_ADDRESS } = useMappedState((state) => ({
     account: state.wallet.account,
     tokens: state.common.tokens,
     pairs: state.swap.pairs,
+    poolStat: state.gov.poolStat,
+    synthPoolWeightRatio: state.gov.poolStat.pools.synth.ratio,
     SYNTH_ADDRESS: state.gov.poolStat.pools.synth.address
   }))
   const dispatch = useDispatch()
   const setModal = useCallback((modalType, modalDetail) => dispatch({ type: 'SET_MODAL', modalType, modalDetail }), [])
-  const setStopInterval = useCallback((stopInterval) => dispatch({ type: 'SET_STOP_INTERVAL', stopInterval }), [])
 
   const Alert = useAlert()
 
@@ -59,7 +57,7 @@ const Synth = () => {
   }, [tokens])
 
   useEffect(() => {
-    if (tokens.length && pairs.length && !unxPrice && marketStat.marketAssetBalances) {
+    if (tokens.length && pairs.length && (!unxPrice || unxPrice === '0') && marketStat.marketAssetValue) {
       const unxTk = tokens.find((t) => t.name === 'UNX')
       if (!marketStat.marketAssetBalances.length) {
         const daiTk = tokens.find((t) => t.name === 'pDAI')
@@ -67,29 +65,18 @@ const Synth = () => {
 
         if (pair) {
           if (pair.token1 === unxTk.id) {
-            setUnxPrice((pair.reserve2 / (10 ** daiTk.decimals)) / (pair.reserve1 / (10 ** unxTk.decimals)) * DAI_PRICE)
+            setUnxPrice(new BigNumber(pair.reserve2).div(10 ** daiTk.decimals).div(pair.reserve1).times(10 ** unxTk.decimals).times(DAI_PRICE).times(SYNTH_PRICE_DECIMALS).toString())
           } else {
-            setUnxPrice((pair.reserve1 / (10 ** daiTk.decimals)) / (pair.reserve2 / (10 ** unxTk.decimals)) * DAI_PRICE)
+            setUnxPrice(new BigNumber(pair.reserve1).div(10 ** daiTk.decimals).div(pair.reserve2).times(10 ** unxTk.decimals).times(DAI_PRICE).times(SYNTH_PRICE_DECIMALS).toString())
           }
         }
       } else {
-        setUnxPrice(marketAssetValue / marketStat.marketTokenBalance * (10 ** unxTk.decimals))
+        setUnxPrice(new BigNumber(marketStat.marketAssetValue).div(marketStat.marketTokenBalance).times(10 ** unxTk.decimals).toString())
       }
 
       setUnxToken(unxTk)
     }
   }, [pairs, tokens, marketStat])
-
-  useEffect(() => {
-    if (marketStat.accountStakeValue) {
-      const claimed = marketStat.accountClaimedValue
-      const reward = availableReward * (10 ** unxToken.decimals)
-      const transferable = marketStat.accountStakeValue / marketStat.marketStakeValue * marketStat.marketTokenBalance
-      const minted = marketStat.accountStakeValue
-      const withdrawed = marketStat.accountWithdrawedStakeValue
-      setRoi(((claimed + reward + transferable - minted - withdrawed) / minted * 100).toFixed(2))
-    }
-  }, [marketStat, availableReward, unxToken])
 
   useEffect(() => {
     function getAvailableReward() {
@@ -113,7 +100,7 @@ const Synth = () => {
             const strReader = new StringReader(claimStr)
             const availableReward = strReader.readUint128()
 
-            setAvailableReward(availableReward / (10 ** unxToken.decimals))
+            setAvailableReward(new BigNumber(availableReward).toString())
           })
           .catch((e) => {
             console.log('get market stat', e)
@@ -125,7 +112,7 @@ const Synth = () => {
     }
 
     getAvailableReward()
-    const interval = setInterval(getAvailableReward, 10000)
+    const interval = setInterval(getAvailableReward, 5000)
     return () => {
       interval && clearInterval(interval)
     }
@@ -165,6 +152,13 @@ const Synth = () => {
               asset.status = strReader.readNextByte()
               asset.frozenBy = reverseHex(strReader.read(20))
               asset.frozenTime = strReader.readUint64()
+
+              if (asset.tokenName.startsWith('p')) {
+                asset.tokenName = asset.tokenName.replace('p', '')
+              }
+              if (asset.leverageType === LEVERAGE_TYPE.Negative) {
+                asset.tokenName = `i${asset.tokenName}`
+              }
     
               asset.id = asset.assetId
               asset.value = asset.assetId
@@ -190,6 +184,15 @@ const Synth = () => {
               asset.status = strReader.readNextByte()
               asset.frozenBy = reverseHex(strReader.read(20))
               asset.frozenTime = strReader.readUint64()
+
+              if (asset.tokenName.startsWith('p')) {
+                asset.tokenName = asset.tokenName.replace('p', '')
+              }
+              if (asset.leverageType === LEVERAGE_TYPE.Negative) {
+                asset.tokenName = `i${asset.tokenName}`
+              }
+
+              asset.label = `${asset.tokenName}${asset.times !== 1 ? ` (${asset.times}x)` : ''}`
     
               frozenAssets.push(asset)
             }
@@ -217,9 +220,13 @@ const Synth = () => {
               liveAsset.tokenPrice = tokenPrice
 
               if (liveAsset.leverageType === LEVERAGE_TYPE.Positive) {
-                liveAsset.price = liveAsset.entryPrice + tokenPrice * liveAsset.times - liveAsset.entryPrice * liveAsset.times
+                liveAsset.price = new BigNumber(liveAsset.entryPrice).plus(new BigNumber(tokenPrice).times(liveAsset.times)).minus(new BigNumber(liveAsset.entryPrice).times(liveAsset.times)).toString()
               } else {
-                liveAsset.price = liveAsset.entryPrice + liveAsset.entryPrice * liveAsset.times - tokenPrice * liveAsset.times
+                liveAsset.price = new BigNumber(liveAsset.entryPrice).plus(new BigNumber(liveAsset.entryPrice).times(liveAsset.times)).minus(new BigNumber(tokenPrice).times(liveAsset.times)).toString()
+              }
+
+              if ((liveAsset.lowLimit && liveAsset.tokenPrice <= liveAsset.lowLimit) || (liveAsset.highLimit && liveAsset.tokenPrice >= liveAsset.highLimit)) {
+                liveAsset.unprocessedFrozen = true
               }
             }
 
@@ -275,17 +282,17 @@ const Synth = () => {
 
             const marketAssetBalanceCount = strReader.readNextLen()
             const marketAssetBalances = []
-            let marketAssetValueSum = 0
+            let marketAssetValueSum = new BigNumber(0)
             for (let i = 0; i < marketAssetBalanceCount; i++) {
               const assetBalance = {}
               assetBalance.assetId = strReader.readUint128()
               assetBalance.balance = strReader.readUint128()
               assetBalance.assetPrice = strReader.readUint128()
 
-              const asset = stat.liveAssets ? stat.liveAssets.find((la) => la.assetId === assetBalance.assetId) : null
+              const asset = stat.liveAssets ? [...stat.liveAssets, ...stat.frozenAssets].find((la) => la.assetId === assetBalance.assetId) : null
 
               if (asset) {
-                marketAssetValueSum += assetBalance.assetPrice / SYNTH_PRICE_DECIMALS * assetBalance.balance / (10 ** asset.decimals)
+                marketAssetValueSum = marketAssetValueSum.plus(new BigNumber(assetBalance.assetPrice).times(assetBalance.balance).div(10 ** asset.decimals))
               }
     
               marketAssetBalances.push(assetBalance)
@@ -293,17 +300,17 @@ const Synth = () => {
 
             const accountAssetBalanceCount = strReader.readNextLen()
             const accountAssetBalances = []
-            let accountAssetValueSum = 0
+            let accountAssetValueSum = new BigNumber(0)
             for (let i = 0; i < accountAssetBalanceCount; i++) {
               const assetBalance = {}
               assetBalance.assetId = strReader.readUint128()
               assetBalance.balance = strReader.readUint128()
               assetBalance.assetPrice = strReader.readUint128()
 
-              const asset = stat.liveAssets ? stat.liveAssets.find((la) => la.assetId === assetBalance.assetId) : null
+              const asset = stat.liveAssets ? [...stat.liveAssets, ...stat.frozenAssets].find((la) => la.assetId === assetBalance.assetId) : null
 
               if (asset) {
-                accountAssetValueSum += assetBalance.assetPrice / SYNTH_PRICE_DECIMALS * assetBalance.balance / (10 ** asset.decimals)
+                accountAssetValueSum = accountAssetValueSum.plus(new BigNumber(assetBalance.assetPrice).times(assetBalance.balance).div(10 ** asset.decimals))
               }
     
               accountAssetBalances.push(assetBalance)
@@ -314,10 +321,14 @@ const Synth = () => {
             const marketTokenBalance = strReader.readUint128()
             const accountClaimedValue = strReader.readUint128()
             const accountWithdrawedStakeValue = strReader.readUint128()
+            const transferable = (marketAssetValueSum.toString() !== '0') ? accountAssetValueSum.div(marketAssetValueSum).times(marketTokenBalance).toString() : '0'
 
             const parsedMarketStat = {
               marketAssetBalances,
               accountAssetBalances,
+              marketAssetValue: marketAssetValueSum.toString(),
+              accountAssetValue: accountAssetValueSum.toString(),
+              transferable,
               marketStakeValue,
               accountStakeValue,
               marketTokenBalance,
@@ -325,8 +336,8 @@ const Synth = () => {
               accountWithdrawedStakeValue
             }
 
-            setMarketAssetValue(marketAssetValueSum)
-            setAccountAssetValue(accountAssetValueSum)
+            // setMarketAssetValue(marketAssetValueSum.toString())
+            // setAccountAssetValue(accountAssetValueSum.toString())
             setMarketStat(parsedMarketStat)
           })
           .catch((e) => {
@@ -348,42 +359,42 @@ const Synth = () => {
   const handleMintAmountChange = (amount) => {
     setMintAmount(amount)
     if (unxPrice && amount) {
-      setUnxNeededForMint((amount * mintAsset.price / SYNTH_PRICE_DECIMALS / unxPrice).toFixed(unxToken.decimals))
+      setUnxNeededForMint(new BigNumber(amount).times(mintAsset.price).div(unxPrice).div(1 - TRANSACTION_FEE_RATE).toFixed(unxToken.decimals))
     }
   }
 
   const handleUnxNeededForMintChange = (amount) => {
     setUnxNeededForMint(amount)
     if (unxPrice && amount) {
-      setMintAmount((amount * unxPrice * SYNTH_PRICE_DECIMALS / mintAsset.price).toFixed(mintAsset.decimals))
+      setMintAmount(new BigNumber(amount).times(unxPrice).div(mintAsset.price).times(1 - TRANSACTION_FEE_RATE).toFixed(mintAsset.decimals))
     }
   }
 
   const handleBurnAmountChange = (amount) => {
     setBurnAmount(amount)
     if (unxPrice && amount) {
-      setUnxGetForBurn((amount * burnAsset.assetPrice / SYNTH_PRICE_DECIMALS / unxPrice).toFixed(unxToken.decimals))
+      setUnxGetForBurn(new BigNumber(amount).times(burnAsset.assetPrice).div(unxPrice).times(1 - TRANSACTION_FEE_RATE).toFixed(unxToken.decimals))
     }
   }
 
   const handleUnxGetForBurnChange = (amount) => {
     setUnxGetForBurn(amount)
     if (unxPrice && amount) {
-      setBurnAmount((amount * unxPrice * SYNTH_PRICE_DECIMALS / burnAsset.assetPrice).toFixed(burnAsset.decimals))
+      setBurnAmount(new BigNumber(amount).times(unxPrice).div(burnAsset.assetPrice).div(1 - TRANSACTION_FEE_RATE).toFixed(burnAsset.decimals))
     }
   }
 
   const handleExchangeAmountChange = (amount) => {
     setExchangeAmount(amount)
     if (amount) {
-      setExchangeToAmount((exchangeAsset.price / exchangeToAsset.price * amount * (10 ** exchangeAsset.decimals) / (10 ** exchangeToAsset.decimals)).toFixed(exchangeToAsset.decimals))
+      setExchangeToAmount(new BigNumber(exchangeAsset.price).div(exchangeToAsset.price).times(amount).times(10 ** exchangeAsset.decimals).div(10 ** exchangeToAsset.decimals).times(1 - TRANSACTION_FEE_RATE).toFixed(exchangeToAsset.decimals))
     }
   }
 
   const handleChengeExchangeToAmount = (amount) => {
     setExchangeToAmount(amount)
     if (amount) {
-      setExchangeAmount((amount * (10 ** exchangeToAsset.decimals) / (10 ** exchangeAsset.decimals) * exchangeToAsset.price / exchangeAsset.price).toFixed(exchangeAsset.decimals))
+      setExchangeAmount(new BigNumber(amount).times(10 ** exchangeToAsset.decimals).div(10 ** exchangeAsset.decimals).times(exchangeToAsset.price).div(exchangeAsset.price).div(1 - TRANSACTION_FEE_RATE).toFixed(exchangeAsset.decimals))
     }
   }
 
@@ -740,13 +751,13 @@ const Synth = () => {
 
   const maxBurnAmount = () => {
     if (burnAsset) {
-      handleBurnAmountChange(burnAsset.balance / (10 ** burnAsset.decimals))
+      handleBurnAmountChange(new BigNumber(burnAsset.balance).div(10 ** burnAsset.decimals).toString())
     }
   }
 
   const maxExchangeAmount = () => {
     if (exchangeAsset) {
-      handleExchangeAmountChange(exchangeAsset.balance / (10 ** exchangeAsset.decimals))
+      handleExchangeAmountChange(new BigNumber(exchangeAsset.balance).div(10 ** exchangeAsset.decimals).toString())
     }
   }
 
@@ -763,13 +774,24 @@ const Synth = () => {
           const accountAsset = marketStat.accountAssetBalances ? marketStat.accountAssetBalances.find((ab) => ab.assetId === la.assetId) : null
 
           if (accountAsset) {
-            la.holdings = accountAsset.assetPrice / SYNTH_PRICE_DECIMALS * accountAsset.balance / (10 ** la.decimals)
+            la.holdings = new BigNumber(accountAsset.assetPrice).div(SYNTH_PRICE_DECIMALS).times(accountAsset.balance).div(10 ** la.decimals).toString()
           }
 
           return (
-            <div className="synth-assets-list-item" key={la.assetId}>
-              <div className="synth-assets-list-item-name">{la.tokenName}{la.times !== 1 ? ` (${la.times}x)` : ''}</div>
-              <div className="synth-assets-list-item-price">{la.price / SYNTH_PRICE_DECIMALS}</div>
+            <div className={`synth-assets-list-item ${la.unprocessedFrozen ? 'unprocessed-frozen' : ''}`} key={la.assetId}>
+              <div className="synth-assets-list-item-name">
+                <div className={`synth-assets-list-item-icon icon-${la.tokenName}`}>
+                  {la.label}
+                  {
+                    la.unprocessedFrozen ? (
+                      <Tooltip placement="top" overlay="The first one that freezes an asset will get 1‰ of burning fee from all holders">
+                        <span onClick={() => handleFreezeAsset(la)}></span>
+                      </Tooltip>
+                    ) : null
+                  }
+                </div>
+              </div>
+              <div className="synth-assets-list-item-price">{new BigNumber(la.price).div(SYNTH_PRICE_DECIMALS).toString()}</div>
               <div className="synth-assets-list-item-holding">{la.holdings || 0}</div>
               <div className="synth-assets-list-item-action">
                 <div className="synth-assets-list-item-action-mint" onClick={() => { setShowMintModal(true); setMintAsset(la); }}>Mint</div>
@@ -800,12 +822,13 @@ const Synth = () => {
             }
             asset.balance = ab.balance
             asset.assetPrice = ab.assetPrice
-            asset.effectiveLeverage = asset.assetPrice * asset.times / (asset.entryPrice + (asset.tokenPrice - asset.entryPrice) * asset.times)
+            asset.effectiveLeverage = new BigNumber(asset.assetPrice).times(asset.times).div(new BigNumber(asset.entryPrice).plus((new BigNumber(asset.tokenPrice).minus(asset.entryPrice)).times(asset.times))).toString()
           }
           return asset ? (
             <div className={`synth-assets-list-item ${asset.isFrozen ? 'frozen' : ''} ${asset.unprocessedFrozen ? 'unprocessed-frozen' : ''}`} key={ab.assetId}>
               <div className="synth-assets-list-item-name">
-                <div>{asset.tokenName}{asset.times !== 1 ? ` (${asset.times}x)` : ''}
+                <div className={`synth-assets-list-item-icon icon-${asset.tokenName}`}>
+                  {asset.label}
                   {
                     asset.unprocessedFrozen ? (
                       <Tooltip placement="top" overlay="The first one that freezes an asset will get 1‰ of burning fee from all holders">
@@ -815,8 +838,8 @@ const Synth = () => {
                   }
                 </div>
               </div>
-              <div className="synth-assets-list-item-price">{ab.assetPrice / SYNTH_PRICE_DECIMALS}</div>
-              <div className="synth-assets-list-item-holding">{ab.assetPrice / SYNTH_PRICE_DECIMALS * ab.balance / (10 ** asset.decimals)}</div>
+              <div className="synth-assets-list-item-price">{new BigNumber(ab.assetPrice).div(SYNTH_PRICE_DECIMALS).toString()}</div>
+              <div className="synth-assets-list-item-holding">{new BigNumber(ab.assetPrice).div(SYNTH_PRICE_DECIMALS).times(ab.balance).div(10 ** asset.decimals).toString()}</div>
               <div className="synth-assets-list-item-leverage">{asset.effectiveLeverage}</div>
               <div className="synth-assets-list-item-action">
                 <div className="synth-assets-list-item-action-burn" onClick={() => { setShowBurnModal(true); setBurnAsset(asset); }}>Burn</div>
@@ -843,17 +866,36 @@ const Synth = () => {
     <div className="synth-container">
       <div className="synth-overview-sections">
         <div className="synth-overview-section">
-          <p className="synth-overview-section-title">Transferable</p>
-          <p className="synth-overview-detail">{marketStat.accountStakeValue ? ((marketStat.accountStakeValue / marketStat.marketStakeValue * marketStat.marketTokenBalance) / (10 ** unxToken.decimals)).toFixed(unxToken.decimals) : '0'} <span>UNX</span></p>
+          <div className="synth-overview-sub-section">
+            <p className="synth-overview-section-title">Staking APY</p>
+            <p className="synth-overview-detail">{(marketStat.marketStakeValue && unxToken.id) ? new BigNumber(poolStat.distributionInfo.amount || 0).div(poolStat.distributionInfo.period || 1).times(86400 * 365).times(10 ** unxToken.decimals).times(synthPoolWeightRatio || 0).div(marketStat.marketStakeValue).toFixed(2) : 0}%</p>
+          </div>
+          <div className="synth-overview-section-group">
+            <div className="synth-overview-sub-section">
+              <p className="synth-overview-section-title">Market Balance</p>
+              <p className="synth-overview-detail">{marketStat.marketTokenBalance ? new BigNumber(marketStat.marketTokenBalance).div(10 ** unxToken.decimals).toFixed(unxToken.decimals) : '0'} <span>UNX</span></p>
+            </div>
+          </div>
         </div>
-        <div className="synth-overview-section">
-          <p className="synth-overview-section-title">ROI</p>
-          <p className="synth-overview-detail">{roi}%</p>
-        </div>
-        <div className="synth-overview-section">
-          <p className="synth-overview-section-title">Rewards Available</p>
-          <p className="synth-overview-detail">{availableReward} <span>UNX</span></p>
-          { (availableReward && availableReward !== '-') ? <div className="synth-overview-action-btn" onClick={() => onClaim()}>Claim</div> : null }
+        <div className="synth-overview-section-right">
+          <div className="synth-overview-sub-section">
+            <p className="synth-overview-section-title">Transferable</p>
+            <p className="synth-overview-detail">{(marketStat.transferable && marketStat.transferable !== '0') ? new BigNumber(marketStat.transferable).plus(availableReward).div(10 ** unxToken.decimals).toFixed(unxToken.decimals) : '0'} <span>UNX</span></p>
+          </div>
+          <div className="synth-overview-section-group">
+            <div className="synth-overview-sub-section">
+              <p className="synth-overview-section-title">Staked Available</p>
+              <p className="synth-overview-detail">{(marketStat.transferable && marketStat.transferable !== '0') ? (new BigNumber(marketStat.transferable)).div(10 ** unxToken.decimals).toFixed(unxToken.decimals) : '0'} <span>UNX</span>
+                { (marketStat.transferable && marketStat.transferable !== '0') ? <div className="synth-overview-action-btn synth-overview-action-btn-burn" onClick={() => onBurnAll()}>Burn All</div> : null }
+              </p>
+            </div>
+            <div className="synth-overview-sub-section">
+              <p className="synth-overview-section-title">Rewards Available</p>
+              <p className="synth-overview-detail">{unxToken.id ? new BigNumber(availableReward).div(10 ** unxToken.decimals).toString() : 0} <span>UNX</span>
+                { (availableReward && availableReward !== '0') ? <div className="synth-overview-action-btn" onClick={() => onClaim()}>Claim</div> : null }
+              </p>
+            </div>
+          </div>
         </div>
       </div>
       <div className="mint-burn-wrapper">
@@ -864,7 +906,7 @@ const Synth = () => {
           </div>
           <div className="synth-assets-panel">
             <div className="synth-assets-panel-header">
-              <div className="panel-header-item">Asset</div>
+              <div className="panel-header-item panel-header-item-asset">Asset</div>
               <div className="panel-header-item">Price($)</div>
               <div className="panel-header-item">Holdings($)</div>
               {
@@ -872,13 +914,7 @@ const Synth = () => {
                   <div className="panel-header-item">Effective Leverage</div>
                 ) : null
               }
-              {
-                (synthType === 'burn' && marketStat.accountAssetBalances && marketStat.accountAssetBalances.length) ? (
-                  <div className="panel-header-item burn-all-btn" onClick={() => onBurnAll()}>Burn All</div>
-                ) : (
-                  <div className="panel-header-item"></div>
-                )
-              }
+              <div className="panel-header-item panel-header-item-action"></div>
             </div>
             <div className="synth-assets-list">
               {renderAssetList()}
@@ -891,8 +927,7 @@ const Synth = () => {
               <div className="mint-burn-info-title">Mint Synthetics by staking UNX</div>
               <div className="mint-burn-info-desc">UNX stakers earn staking rewards once minted.</div>
               <div className="mint-burn-account-info">
-                {/* <div className="mint-burn-account-info-line">Total <span>{(marketStat.marketStakeValue || 0) / (10 ** unxToken.decimals) || '-'} UNX</span></div> */}
-                <div className="mint-burn-account-info-line">Minted With <span>{(marketStat.accountStakeValue || 0) / (10 ** unxToken.decimals) || '0'} UNX</span></div>
+                <div className="mint-burn-account-info-line">Minted With <span>{new BigNumber(marketStat.accountStakeValue || 0).div(10 ** unxToken.decimals).toString() || '0'} UNX</span></div>
               </div>
             </div>
           ) : (
@@ -900,8 +935,7 @@ const Synth = () => {
               <div className="mint-burn-info-title">Burn Synthetics to unstake UNX</div>
               <div className="mint-burn-info-desc">Burn your synthetics to withdraw UNX.</div>
               <div className="mint-burn-account-info">
-                {/* <div className="mint-burn-account-info-line">Total <span>{(marketStat.marketStakeValue || 0) / (10 ** unxToken.decimals) || '-'} UNX</span></div> */}
-                <div className="mint-burn-account-info-line">Assets($) <span>{accountAssetValue}</span></div>
+                <div className="mint-burn-account-info-line">Assets($) <span>{new BigNumber(marketStat.accountAssetValue).div(SYNTH_PRICE_DECIMALS).toString()}</span></div>
               </div>
               <div className="mint-burn-info-note"><span>NOTE</span>: when " Effective Leverage" is lower than 0.5 or higher than 2.0 times of nominal leverage, your asset will be frozen. <span>You have to burn it within 3 days.</span> Otherwise, asset will be burned and the UNX will be donated to staked pool.</div>
             </div>
@@ -915,8 +949,8 @@ const Synth = () => {
             <div className="modal-wrapper">
               <div className="close-btn" onClick={() => setShowMintModal(false)}></div>
               <div className="mint-wrapper">
-                <div className="mint-wrapper-title">Mint {mintAsset.tokenName}</div>
-                <div className="mint-wrapper-info">Price($)<span>{mintAsset.price / SYNTH_PRICE_DECIMALS}</span></div>
+                <div className="mint-wrapper-title">Mint {mintAsset.label}</div>
+                <div className="mint-wrapper-info">Price($)<span>{new BigNumber(mintAsset.price).div(SYNTH_PRICE_DECIMALS).toString()}</span></div>
                 <div className="form-item">
                   <div className="input-label">Amount</div>
                   <div className="input-wrapper">
@@ -941,11 +975,11 @@ const Synth = () => {
             <div className="modal-wrapper">
               <div className="close-btn" onClick={() => setShowBurnModal(false)}></div>
               <div className="burn-wrapper">
-                <div className="burn-wrapper-title">Burn {burnAsset.tokenName}</div>
-                <div className="burn-wrapper-info">Price($)<span>{burnAsset.assetPrice / SYNTH_PRICE_DECIMALS}</span></div>
+                <div className="burn-wrapper-title">Burn {burnAsset.label}</div>
+                <div className="burn-wrapper-info">Price($)<span>{new BigNumber(burnAsset.assetPrice).div(SYNTH_PRICE_DECIMALS).toString()}</span></div>
                 <div className="form-item">
                   <div className="input-label">Amount
-                    <span className="hint">Balance: {burnAsset.balance / (10 ** burnAsset.decimals)}</span>
+                    <span className="hint">Balance: {new BigNumber(burnAsset.balance).div(10 ** burnAsset.decimals).toString()}</span>
                   </div>
                   <div className="input-wrapper">
                     <Input placeholder="0.0" value={burnAmount} decimals={burnAsset.decimals || 0} onChange={(amount) => handleBurnAmountChange(amount)} />
@@ -970,8 +1004,7 @@ const Synth = () => {
             <div className="modal-wrapper">
               <div className="close-btn" onClick={() => setShowExchangeModal(false)}></div>
               <div className="exchange-wrapper">
-                <div className="exchange-wrapper-title">Exchange {exchangeAsset.tokenName}</div>
-                {/* <div className="exchange-wrapper-info">Price($)<span>{exchangeAsset.assetPrice / SYNTH_PRICE_DECIMALS}</span></div> */}
+                <div className="exchange-wrapper-title">Exchange {exchangeAsset.label}</div>
                 <div className="form-item">
                   <div className="input-label">Amount</div>
                   <div className="input-wrapper">
@@ -989,12 +1022,6 @@ const Synth = () => {
                   onTokenChange={(asset) => handleChangeExchangeToAsset(asset)}
                   onAmountChange={(amount) => handleChengeExchangeToAmount(amount)}
                   />
-                {/* <div className="form-item">
-                  <div className="input-label">Exchange to</div>
-                  <div className="input-wrapper">
-                    <Input placeholder="0.0" value={unxGetForBurn} decimals={unxToken.decimals || 0} onChange={(amount) => setUnxGetForBurn(amount)} />
-                  </div>
-                </div> */}
                 <div className="exchange-btn" onClick={() => onExchange()}>Exchange</div>
               </div>
             </div>
