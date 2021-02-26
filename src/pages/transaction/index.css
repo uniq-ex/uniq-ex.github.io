@@ -392,16 +392,19 @@ input[type=number] {
 
 .icon-WBTC,
 .icon-iWBTC,
+.icon-sWBTC,
 .icon-pWBTC {
   background-image: url('../../assets/pWBTC.svg');
 }
 
 .icon-iONTd,
+.icon-sONTd,
 .icon-ONTd {
   background-image: url('../../assets/ONTd.svg');
 }
 
 .icon-renBTC,
+.icon-srenBTC,
 .icon-irenBTC,
 .icon-prenBTC {
   background-image: url('../../assets/prenBTC.svg');
@@ -409,57 +412,67 @@ input[type=number] {
 
 .icon-USDC,
 .icon-iUSDC,
+.icon-sUSDC,
 .icon-pUSDC {
   background-image: url('../../assets/pUSDC.svg');
 }
 
 .icon-iWING,
+.icon-sWING,
 .icon-WING {
   background-image: url('../../assets/wing_icon.svg');
 }
 
 .icon-ETH,
 .icon-iETH,
+.icon-sETH,
 .icon-pETH {
   background-image: url('../../assets/ETH.svg');
 }
 
 .icon-DAI,
 .icon-iDAI,
+.icon-sDAI,
 .icon-pDAI {
   background-image: url('../../assets/oDAI.svg');
 }
 
 .icon-USDT,
 .icon-iUSDT,
+.icon-sUSDT,
 .icon-pUSDT {
   background-image: url('../../assets/pusdt.svg');
 }
 
 .icon-sUSD,
 .icon-isUSD,
+.icon-ssUSD,
 .icon-psUSD {
   background-image: url('../../assets/psusd.svg');
 }
 
 .icon-NEO,
 .icon-iNEO,
+.icon-sNEO,
 .icon-pNEO {
   background-image: url('../../assets/neo-ont.svg');
 }
 
 .icon-UNI,
 .icon-iUNI,
+.icon-sUNI,
 .icon-pUNI {
   background-image: url('../../assets/UNI-ONT.svg');
 }
 
 .icon-iONG,
+.icon-sONG,
 .icon-ONG {
   background-image: url('../../assets/ONG_icon.svg');
 }
 
 .icon-iONT,
+.icon-sONT,
 .icon-ONT {
   background-image: url('../../assets/ONT.svg');
 }

@@ -7,6 +7,8 @@ import { useMappedState, useDispatch } from 'redux-react-hook'
 import Tooltip from 'rc-tooltip';
 import TokenInput from '../../components/tokenInput';
 import Input from '../../components/input'
+import EventRequest from '../../utils/eventRequest'
+import { readBigNumberUint128 } from '../../utils/token'
 import { DAI_PRICE, SYNTH_PRICE_DECIMALS, ASSET_STATUS, LEVERAGE_TYPE, TRANSACTION_FEE_RATE } from '../../utils/constants'
 import { TRANSACTION_BASE_URL, TRANSACTION_AFTERFIX } from '../../config'
 import { useFetchPairs } from '../../hooks/usePair'
@@ -146,9 +148,9 @@ const Synth = () => {
               asset.decimals = token.decimals
               asset.leverageType = strReader.readNextByte()
               asset.times = strReader.readUint128()
-              asset.entryPrice = strReader.readUint128()
-              asset.lowLimit = strReader.readUint128()
-              asset.highLimit = strReader.readUint128()
+              asset.entryPrice = readBigNumberUint128(strReader)
+              asset.lowLimit = readBigNumberUint128(strReader)
+              asset.highLimit = readBigNumberUint128(strReader)
               asset.status = strReader.readNextByte()
               asset.frozenBy = reverseHex(strReader.read(20))
               asset.frozenTime = strReader.readUint64()
@@ -156,10 +158,7 @@ const Synth = () => {
               if (asset.tokenName.startsWith('p')) {
                 asset.tokenName = asset.tokenName.replace('p', '')
               }
-              if (asset.leverageType === LEVERAGE_TYPE.Negative) {
-                asset.tokenName = `i${asset.tokenName}`
-              }
-    
+              asset.tokenName = `${asset.leverageType === LEVERAGE_TYPE.Negative ? 'i' : 's'}${asset.tokenName}`
               asset.id = asset.assetId
               asset.value = asset.assetId
               asset.label = `${asset.tokenName}${asset.times !== 1 ? ` (${asset.times}x)` : ''}`
@@ -178,9 +177,9 @@ const Synth = () => {
               asset.decimals = token.decimals
               asset.leverageType = strReader.readNextByte()
               asset.times = strReader.readUint128()
-              asset.entryPrice = strReader.readUint128()
-              asset.lowLimit = strReader.readUint128()
-              asset.highLimit = strReader.readUint128()
+              asset.entryPrice = readBigNumberUint128(strReader)
+              asset.lowLimit = readBigNumberUint128(strReader)
+              asset.highLimit = readBigNumberUint128(strReader)
               asset.status = strReader.readNextByte()
               asset.frozenBy = reverseHex(strReader.read(20))
               asset.frozenTime = strReader.readUint64()
@@ -188,10 +187,7 @@ const Synth = () => {
               if (asset.tokenName.startsWith('p')) {
                 asset.tokenName = asset.tokenName.replace('p', '')
               }
-              if (asset.leverageType === LEVERAGE_TYPE.Negative) {
-                asset.tokenName = `i${asset.tokenName}`
-              }
-
+              asset.tokenName = `${asset.leverageType === LEVERAGE_TYPE.Negative ? 'i' : 's'}${asset.tokenName}`
               asset.label = `${asset.tokenName}${asset.times !== 1 ? ` (${asset.times}x)` : ''}`
     
               frozenAssets.push(asset)
@@ -202,7 +198,7 @@ const Synth = () => {
             for (let i = 0; i < tokenPriceCount; i++) {
               const tokenPrice = {}
               tokenPrice.tokenId = strReader.readUint128()
-              tokenPrice.price = strReader.readUint128()
+              tokenPrice.price = readBigNumberUint128(strReader)
     
               tokenPrices.push(tokenPrice)
             }
@@ -286,8 +282,8 @@ const Synth = () => {
             for (let i = 0; i < marketAssetBalanceCount; i++) {
               const assetBalance = {}
               assetBalance.assetId = strReader.readUint128()
-              assetBalance.balance = strReader.readUint128()
-              assetBalance.assetPrice = strReader.readUint128()
+              assetBalance.balance = readBigNumberUint128(strReader)
+              assetBalance.assetPrice = readBigNumberUint128(strReader)
 
               const asset = stat.liveAssets ? [...stat.liveAssets, ...stat.frozenAssets].find((la) => la.assetId === assetBalance.assetId) : null
 
@@ -304,8 +300,8 @@ const Synth = () => {
             for (let i = 0; i < accountAssetBalanceCount; i++) {
               const assetBalance = {}
               assetBalance.assetId = strReader.readUint128()
-              assetBalance.balance = strReader.readUint128()
-              assetBalance.assetPrice = strReader.readUint128()
+              assetBalance.balance = readBigNumberUint128(strReader)
+              assetBalance.assetPrice = readBigNumberUint128(strReader)
 
               const asset = stat.liveAssets ? [...stat.liveAssets, ...stat.frozenAssets].find((la) => la.assetId === assetBalance.assetId) : null
 
@@ -316,11 +312,11 @@ const Synth = () => {
               accountAssetBalances.push(assetBalance)
             }
 
-            const marketStakeValue = strReader.readUint128()
-            const accountStakeValue = strReader.readUint128()
-            const marketTokenBalance = strReader.readUint128()
-            const accountClaimedValue = strReader.readUint128()
-            const accountWithdrawedStakeValue = strReader.readUint128()
+            const marketStakeValue = readBigNumberUint128(strReader)
+            const accountStakeValue = readBigNumberUint128(strReader)
+            const marketTokenBalance = readBigNumberUint128(strReader)
+            const accountClaimedValue = readBigNumberUint128(strReader)
+            const accountWithdrawedStakeValue = readBigNumberUint128(strReader)
             const transferable = (marketAssetValueSum.toString() !== '0') ? accountAssetValueSum.div(marketAssetValueSum).times(marketTokenBalance).toString() : '0'
 
             const parsedMarketStat = {
@@ -441,26 +437,33 @@ const Synth = () => {
           setShowMintModal(false)
           setMintAmount('')
           setUnxNeededForMint('')
-          setModal('infoModal', {
-            show: true,
-            type: 'success',
-            text: 'Transaction Successful',
-            extraText: 'View Transaction',
-            extraLink: `${TRANSACTION_BASE_URL}${mintResult.transaction}${TRANSACTION_AFTERFIX}`
+
+          let detail = ''
+
+          EventRequest({
+            method: 'get',
+            url: `${mintResult.transaction}`
+          }).then((resp) => {
+            if (resp.Desc === 'SUCCESS') {
+              try {
+                const eventStates = resp.Result.Notify.find((notify) => notify.States[0] === 'mint').States
+
+                if (eventStates[5] === '0') {
+                  detail = `Your last transaction successfully freezed the ${mintAsset.label} asset, you'll get 1‰ of the redeemed UNX when burnt.`
+                }
+              } catch (e) {}
+
+              setInfoModal('success', mintResult.transaction, detail)
+            }
+          }).catch((e) => {
+            setInfoModal('success', mintResult.transaction)
           })
         }
       } catch (e) {
         setShowMintModal(false)
         setMintAmount('')
         setUnxNeededForMint('')
-        setModal('infoModal', {
-          show: true,
-          type: 'error',
-          text: 'Transaction Failed',
-          // extraText: `${e}`,
-          extraText: '',
-          extraLink: ''
-        })
+        setInfoModal('error')
       }
     }
   }
@@ -508,26 +511,13 @@ const Synth = () => {
           setShowBurnModal(false)
           setBurnAmount('')
           setUnxGetForBurn('')
-          setModal('infoModal', {
-            show: true,
-            type: 'success',
-            text: 'Transaction Successful',
-            extraText: 'View Transaction',
-            extraLink: `${TRANSACTION_BASE_URL}${burnResult.transaction}${TRANSACTION_AFTERFIX}`
-          })
+          setInfoModal('success', burnResult.transaction)
         }
       } catch (e) {
         setShowBurnModal(false)
         setBurnAmount('')
         setUnxGetForBurn('')
-        setModal('infoModal', {
-          show: true,
-          type: 'error',
-          text: 'Transaction Failed',
-          // extraText: `${e}`,
-          extraText: '',
-          extraLink: ''
-        })
+        setInfoModal('error')
       }
     }
   }
@@ -560,23 +550,10 @@ const Synth = () => {
         })
 
         if (burnAllResult.transaction) {
-          setModal('infoModal', {
-            show: true,
-            type: 'success',
-            text: 'Transaction Successful',
-            extraText: 'View Transaction',
-            extraLink: `${TRANSACTION_BASE_URL}${burnAllResult.transaction}${TRANSACTION_AFTERFIX}`
-          })
+          setInfoModal('success', burnAllResult.transaction)
         }
       } catch (e) {
-        setModal('infoModal', {
-          show: true,
-          type: 'error',
-          text: 'Transaction Failed',
-          // extraText: `${e}`,
-          extraText: '',
-          extraLink: ''
-        })
+        setInfoModal('error')
       }
     }
   }
@@ -627,26 +604,33 @@ const Synth = () => {
           setShowExchangeModal(false)
           setExchangeAmount('')
           setExchangeToAmount('')
-          setModal('infoModal', {
-            show: true,
-            type: 'success',
-            text: 'Transaction Successful',
-            extraText: 'View Transaction',
-            extraLink: `${TRANSACTION_BASE_URL}${exchangeResult.transaction}${TRANSACTION_AFTERFIX}`
+
+          let detail = ''
+
+          EventRequest({
+            method: 'get',
+            url: `${exchangeResult.transaction}`
+          }).then((resp) => {
+            if (resp.Desc === 'SUCCESS') {
+              try {
+                const eventStates = resp.Result.Notify.find((notify) => notify.States[0] === 'asset_swap').States
+
+                if (eventStates[4] === '0') {
+                  detail = `Your last transaction successfully freezed the ${exchangeAsset.label} asset, you'll get 1‰ of the redeemed UNX when burnt.`
+                }
+              } catch (e) {}
+
+              setInfoModal('success', exchangeResult.transaction, detail)
+            }
+          }).catch((e) => {
+            setInfoModal('success', exchangeResult.transaction)
           })
         }
       } catch (e) {
         setShowExchangeModal(false)
         setExchangeAmount('')
         setExchangeToAmount('')
-        setModal('infoModal', {
-          show: true,
-          type: 'error',
-          text: 'Transaction Failed',
-          // extraText: `${e}`,
-          extraText: '',
-          extraLink: ''
-        })
+        setInfoModal('error')
       }
     }
   }
@@ -669,7 +653,7 @@ const Synth = () => {
             value: account
           }
         ]
-        const mintResult = await client.api.smartContract.invokeWasm({
+        const claimResult = await client.api.smartContract.invokeWasm({
           scriptHash: SYNTH_ADDRESS,
           operation: 'claim_unx',
           args,
@@ -678,24 +662,11 @@ const Synth = () => {
           requireIdentity: false
         })
 
-        if (mintResult.transaction) {
-          setModal('infoModal', {
-            show: true,
-            type: 'success',
-            text: 'Transaction Successful',
-            extraText: 'View Transaction',
-            extraLink: `${TRANSACTION_BASE_URL}${mintResult.transaction}${TRANSACTION_AFTERFIX}`
-          })
+        if (claimResult.transaction) {
+          setInfoModal('success', claimResult.transaction)
         }
       } catch (e) {
-        setModal('infoModal', {
-          show: true,
-          type: 'error',
-          text: 'Transaction Failed',
-          // extraText: `${e}`,
-          extraText: '',
-          extraLink: ''
-        })
+        setInfoModal('error')
       }
     }
   }
@@ -728,23 +699,10 @@ const Synth = () => {
         })
 
         if (freezeResult.transaction) {
-          setModal('infoModal', {
-            show: true,
-            type: 'success',
-            text: 'Transaction Successful',
-            extraText: 'View Transaction',
-            extraLink: `${TRANSACTION_BASE_URL}${freezeResult.transaction}${TRANSACTION_AFTERFIX}`
-          })
+          setInfoModal('success', freezeResult.transaction)
         }
       } catch (e) {
-        setModal('infoModal', {
-          show: true,
-          type: 'error',
-          text: 'Transaction Failed',
-          // extraText: `${e}`,
-          extraText: '',
-          extraLink: ''
-        })
+        setInfoModal('error')
       }
     }
   }
@@ -767,6 +725,18 @@ const Synth = () => {
     setExchangeToAmount('')
   }
 
+  const calcEffectiveLeverage = (asset) => {
+    if (asset.leverageType === LEVERAGE_TYPE.Positive) {
+      return new BigNumber(asset.tokenPrice).times(asset.times)
+        .div(new BigNumber(asset.tokenPrice).times(asset.times).plus(asset.entryPrice).minus(new BigNumber(asset.entryPrice).times(asset.times)))
+        .toFixed(2)
+    } else if (asset.leverageType === LEVERAGE_TYPE.Negative) {
+      return new BigNumber(asset.tokenPrice).times(asset.times)
+        .div(new BigNumber(asset.entryPrice).times(asset.times).plus(asset.entryPrice).minus(new BigNumber(asset.tokenPrice).times(asset.times)))
+        .toFixed(2)
+    }
+  }
+
   const renderAssetList = () => {
     if (synthType === 'mint') {
       if (stat.liveAssets) {
@@ -776,6 +746,8 @@ const Synth = () => {
           if (accountAsset) {
             la.holdings = new BigNumber(accountAsset.assetPrice).div(SYNTH_PRICE_DECIMALS).times(accountAsset.balance).div(10 ** la.decimals).toString()
           }
+
+          la.effectiveLeverage = calcEffectiveLeverage(la)
 
           return (
             <div className={`synth-assets-list-item ${la.unprocessedFrozen ? 'unprocessed-frozen' : ''}`} key={la.assetId}>
@@ -793,6 +765,7 @@ const Synth = () => {
               </div>
               <div className="synth-assets-list-item-price">{new BigNumber(la.price).div(SYNTH_PRICE_DECIMALS).toString()}</div>
               <div className="synth-assets-list-item-holding">{la.holdings || 0}</div>
+              <div className="synth-assets-list-item-leverage">{la.effectiveLeverage}</div>
               <div className="synth-assets-list-item-action">
                 <div className="synth-assets-list-item-action-mint" onClick={() => { setShowMintModal(true); setMintAsset(la); }}>Mint</div>
               </div>
@@ -822,7 +795,7 @@ const Synth = () => {
             }
             asset.balance = ab.balance
             asset.assetPrice = ab.assetPrice
-            asset.effectiveLeverage = new BigNumber(asset.assetPrice).times(asset.times).div(new BigNumber(asset.entryPrice).plus((new BigNumber(asset.tokenPrice).minus(asset.entryPrice)).times(asset.times))).toString()
+            asset.effectiveLeverage = calcEffectiveLeverage(asset)
           }
           return asset ? (
             <div className={`synth-assets-list-item ${asset.isFrozen ? 'frozen' : ''} ${asset.unprocessedFrozen ? 'unprocessed-frozen' : ''}`} key={ab.assetId}>
@@ -860,6 +833,17 @@ const Synth = () => {
         return assetList
       }
     }
+  }
+
+  const setInfoModal = (type, transaction, detail) => {
+    setModal('infoModal', {
+      show: true,
+      type,
+      text: type === 'success' ? 'Transaction Successful' : 'Transaction Failed',
+      detail,
+      extraText: type === 'success' ? 'View Transaction' : '',
+      extraLink: type === 'success' ? `${TRANSACTION_BASE_URL}${transaction}${TRANSACTION_AFTERFIX}` : ''
+    })
   }
 
   return (
@@ -909,11 +893,7 @@ const Synth = () => {
               <div className="panel-header-item panel-header-item-asset">Asset</div>
               <div className="panel-header-item">Price($)</div>
               <div className="panel-header-item">Holdings($)</div>
-              {
-                synthType === 'burn' ? (
-                  <div className="panel-header-item">Effective Leverage</div>
-                ) : null
-              }
+              <div className="panel-header-item">Effective Leverage</div>
               <div className="panel-header-item panel-header-item-action"></div>
             </div>
             <div className="synth-assets-list">
@@ -947,7 +927,7 @@ const Synth = () => {
         showMintModal ? (
           <div className="modal-overlay">
             <div className="modal-wrapper">
-              <div className="close-btn" onClick={() => setShowMintModal(false)}></div>
+              <div className="close-btn" onClick={() => {setShowMintModal(false);setMintAmount('');setUnxNeededForMint('');}}></div>
               <div className="mint-wrapper">
                 <div className="mint-wrapper-title">Mint {mintAsset.label}</div>
                 <div className="mint-wrapper-info">Price($)<span>{new BigNumber(mintAsset.price).div(SYNTH_PRICE_DECIMALS).toString()}</span></div>
@@ -957,12 +937,12 @@ const Synth = () => {
                     <Input placeholder="0.0" value={mintAmount} decimals={mintAsset.decimals || 0} onChange={(amount) => handleMintAmountChange(amount)} />
                   </div>
                 </div>
-                <div className="form-item">
-                  <div className="input-label">You need to pay (UNX)</div>
-                  <div className="input-wrapper">
-                    <Input placeholder="0.0" value={unxNeededForMint} decimals={unxToken.decimals || 0} onChange={(amount) => handleUnxNeededForMintChange(amount)} />
-                  </div>
-                </div>
+                <TokenInput
+                  label="You need to pay (UNX)"
+                  value={unxNeededForMint}
+                  defaultToken={unxToken}
+                  decimals={unxToken.decimals || 0}
+                  onAmountChange={(amount) => handleUnxNeededForMintChange(amount)} />
                 <div className="mint-btn" onClick={() => onMint()}>Mint</div>
               </div>
             </div>
@@ -973,7 +953,7 @@ const Synth = () => {
         showBurnModal ? (
           <div className="modal-overlay">
             <div className="modal-wrapper">
-              <div className="close-btn" onClick={() => setShowBurnModal(false)}></div>
+              <div className="close-btn" onClick={() => {setShowBurnModal(false);setBurnAmount('');setUnxGetForBurn('');}}></div>
               <div className="burn-wrapper">
                 <div className="burn-wrapper-title">Burn {burnAsset.label}</div>
                 <div className="burn-wrapper-info">Price($)<span>{new BigNumber(burnAsset.assetPrice).div(SYNTH_PRICE_DECIMALS).toString()}</span></div>
@@ -1002,7 +982,7 @@ const Synth = () => {
         showExchangeModal ? (
           <div className="modal-overlay">
             <div className="modal-wrapper">
-              <div className="close-btn" onClick={() => setShowExchangeModal(false)}></div>
+              <div className="close-btn" onClick={() => {setShowExchangeModal(false);setExchangeAmount('');setExchangeToAmount('');}}></div>
               <div className="exchange-wrapper">
                 <div className="exchange-wrapper-title">Exchange {exchangeAsset.label}</div>
                 <div className="form-item">

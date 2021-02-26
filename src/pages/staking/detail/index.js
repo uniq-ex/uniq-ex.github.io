@@ -7,7 +7,7 @@ import { useAlert } from 'react-alert'
 import { useMappedState, useDispatch } from 'redux-react-hook';
 import Tooltip from 'rc-tooltip';
 import Input from '../../../components/input'
-import { getTokenBalance, getTokenIconDom } from '../../../utils/token'
+import { readBigNumberUint128, getTokenBalance, getTokenIconDom } from '../../../utils/token'
 import { GOVERNANCE_ADDRESS, TRANSACTION_BASE_URL, TRANSACTION_AFTERFIX } from '../../../config'
 
 import './index.css'
@@ -72,7 +72,7 @@ const StakingDetail = (props) => {
         }).then((resp) => {
           const strReader = new StringReader(resp)
 
-          setClaimableWing(strReader.readUint128())
+          setClaimableWing(readBigNumberUint128(strReader))
         })
       }
     }
@@ -119,8 +119,8 @@ const StakingDetail = (props) => {
       const strReader = new StringReader(stakeStr)
       return {
         id,
-        balance: new BigNumber(strReader.readUint128() || 0).div(10 ** (stakeToken.decimals || 0)).toString(),
-        interest: strReader.readUint128()
+        balance: new BigNumber(readBigNumberUint128(strReader) || 0).div(10 ** (stakeToken.decimals || 0)).toString(),
+        interest: readBigNumberUint128(strReader)
       }
     })
   }

@@ -6,7 +6,7 @@ import BigNumber from 'bignumber.js'
 import Tooltip from 'rc-tooltip'
 import { useAlert } from 'react-alert'
 import { useMappedState, useDispatch } from 'redux-react-hook'
-import { getTokenIconDom } from '../../utils/token'
+import { readBigNumberUint128, getTokenIconDom } from '../../utils/token'
 
 import './index.css'
 
@@ -49,7 +49,7 @@ const Staking = () => {
             token.id = strReader.readUint128()
             const tempToken = tokens.find((t) => t.id === token.id)
             token.weight = strReader.readUint128()
-            token.balance = strReader.readUint128()
+            token.balance = readBigNumberUint128(strReader)
 
             parsedTokens.push(Object.assign(tempToken, token))
           }

@@ -277,7 +277,7 @@ const Transaction = () => {
           return (
             <div key={m.make_id} className="my-make-item reverse">
               <div className="make-item-detail make-sell">{new BigNumber(m.price).div(PRICE_DECIMALS).toString()}</div>
-              <div className="make-item-detail">{new BigNumber(m.amount).div(Math.pow(10, tokenPair.tokens[0].decimals)).toString()}</div>
+              <div className="make-item-detail">{new BigNumber(m.amount).div((10 ** tokenPair.tokens[0].decimals)).toString()}</div>
               { makeView === 'my' && <div className="unmake-btn" onClick={() => onUnmake(m.make_id)}>Cancel</div> }
             </div>)
         })
@@ -286,7 +286,7 @@ const Transaction = () => {
           return (
             <div key={m.make_id} className="my-make-item">
               <div className="make-item-detail make-buy">{new BigNumber(PRICE_DECIMALS).div(m.price).toString()}</div>
-              <div className="make-item-detail">{new BigNumber(m.amount).times(m.price).div(PRICE_DECIMALS).div(Math.pow(10, tokenPair.tokens[1].decimals)).toString()}</div>
+              <div className="make-item-detail">{new BigNumber(m.amount).times(m.price).div(PRICE_DECIMALS).div((10 ** tokenPair.tokens[1].decimals)).toString()}</div>
               { makeView === 'my' && <div className="unmake-btn" onClick={() => onUnmake(m.make_id)}>Cancel</div> }
             </div>)
         })

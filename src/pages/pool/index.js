@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react'
 import { useHistory } from "react-router-dom"
 import { useMappedState } from 'redux-react-hook';
 import { utils } from 'ontology-ts-sdk'
+import BigNumber from 'bignumber.js'
+import { readBigNumberUint128 } from '../../utils/token'
 import { useFetchPairs } from '../../hooks/usePair'
 import './index.css'
 
@@ -39,7 +41,7 @@ const Pool = () => {
           ]
         }).then((resp) => {
           const strReader = new StringReader(resp)
-          const balance = strReader.readUint128()
+          const balance = readBigNumberUint128(strReader)
           
           return { [id]: balance }
         })
@@ -70,10 +72,10 @@ const Pool = () => {
         const pair = pairs.find((p) => `${p.id}` === pairId)
         const token1 = tokens.find((t) => t.id === pair.token1)
         const token2 = tokens.find((t) => t.id === pair.token2)
-        const balance = lb[pairId] / (10 ** 18)
-        const shareOfPool = Math.sqrt(Math.pow(balance, 2) / (pair.reserve1 * pair.reserve2 / (10 ** (token1.decimals + token2.decimals))))
-        const token1Amount = (pair.reserve1 * shareOfPool / (10 ** token1.decimals)).toFixed(token1.decimals)
-        const token2Amount = (pair.reserve2 * shareOfPool / (10 ** token2.decimals)).toFixed(token2.decimals)
+        const balance = new BigNumber(lb[pairId]).div(10 ** 18)
+        const shareOfPool = balance.times(balance).div(pair.reserve1).div(pair.reserve2).times(10 ** (token1.decimals + token2.decimals)).sqrt()
+        const token1Amount = shareOfPool.times(pair.reserve1).div(10 ** token1.decimals).toFixed(token1.decimals)
+        const token2Amount = shareOfPool.times(pair.reserve2).div(10 ** token2.decimals).toFixed(token2.decimals)
         
         return (
           <div className="pool-liquidity-item">

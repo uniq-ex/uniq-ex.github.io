@@ -9,6 +9,7 @@ const InfoModal = (props) => {
         <div className="close-btn" onClick={() => props.onCloseModal()}></div>
         <div className={`modal-icon-${props.type} modal-icon`}></div>
         <div className={`modal-text-${props.type} modal-text`}>{props.text}</div>
+        { props.detail ? <div className="modal-detail">{props.detail}</div> : null }
         <div className="modal-extra-text">
         {
           props.extraLink ? (

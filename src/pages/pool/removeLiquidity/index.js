@@ -6,12 +6,13 @@ import { utils } from 'ontology-ts-sdk'
 import { useAlert } from 'react-alert'
 import BigNumber from 'bignumber.js'
 import Slider from 'rc-slider'
+import { readBigNumberUint128 } from '../../../utils/token'
 import { useFetchPairs } from '../../../hooks/usePair';
 import { TRANSACTION_BASE_URL, TRANSACTION_AFTERFIX } from '../../../config'
 import 'rc-slider/assets/index.css'
 import './index.css'
 
-const { StringReader } = utils
+const { StringReader, reverseHex } = utils
 
 const RemoveLiquidity = () => {
   const [liquidityBalance, setLiquidityBalance] = useState(0)
@@ -58,13 +59,13 @@ const RemoveLiquidity = () => {
 
   useEffect(() => {
     if (pair && token1.id && token2.id && pairId && liquidityBalance) {
-      const balance = liquidityBalance / (10 ** 18)
-      const shareOfPool = Math.sqrt(Math.pow(balance, 2) / (pair.reserve1 * pair.reserve2 / (10 ** (token1.decimals + token2.decimals))))
-      const token1Amount = (pair.reserve1 * shareOfPool / (10 ** token1.decimals))
-      const token2Amount = (pair.reserve2 * shareOfPool / (10 ** token2.decimals))
+      const balance = new BigNumber(liquidityBalance).div(10 ** 18)
+      const shareOfPool = balance.times(balance).div(pair.reserve1 * pair.reserve2).times(10 ** (token1.decimals + token2.decimals))
+      const token1Amount = shareOfPool.times(pair.reserve1).div(10 ** token1.decimals)
+      const token2Amount = shareOfPool.times(pair.reserve2).div(10 ** token2.decimals)
 
-      setToken1Amount(amount / 100 * token1Amount)
-      setToken2Amount(amount / 100 * token2Amount)
+      setToken1Amount(new BigNumber(amount).div(100).times(token1Amount).toString())
+      setToken2Amount(new BigNumber(amount).div(100).times(token2Amount).toString())
     }
   }, [amount, pair, token1, token2])
 
@@ -85,7 +86,9 @@ const RemoveLiquidity = () => {
         ]
       }).then((resp) => {
         const strReader = new StringReader(resp)
-        const balance = strReader.readUint128()
+        const balance = readBigNumberUint128(strReader)
+
+        console.log('balance', balance)
         
         return balance
       })
@@ -93,7 +96,7 @@ const RemoveLiquidity = () => {
   }
 
   function getPairPrice() {
-    return (pair.reserve2 / (10 ** token2.decimals)) / (pair.reserve1 / (10 ** token1.decimals))
+    return new BigNumber(pair.reserve2).div(10 ** token2.decimals).div(pair.reserve1).times(10 ** token1.decimals).toString()
   }
 
   function onNavigateToPool() {
@@ -138,6 +141,7 @@ const RemoveLiquidity = () => {
             value: account
           }
         ]
+
         const addResult = await client.api.smartContract.invokeWasm({
           scriptHash: SWAP_ADDRESS,
           operation: 'remove_liquidity',
@@ -201,7 +205,7 @@ const RemoveLiquidity = () => {
             <div className="rl-price-wrapper">
               <div className="price-wrapper-lable">Price</div>
               <div className="price">1 {token1.name} = {getPairPrice()} {token2.name}</div>
-              <div className="price-reverse">1 {token2.name} = {1 / getPairPrice()} {token1.name}</div>
+              <div className="price-reverse">1 {token2.name} = {new BigNumber(1).div(getPairPrice()).toString()} {token1.name}</div>
             </div>
           ) : null
         }

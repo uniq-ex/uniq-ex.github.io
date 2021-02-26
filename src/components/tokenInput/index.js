@@ -7,8 +7,8 @@ import { getTokenBalance } from '../../utils/token'
 import './index.css'
 
 const TokenInput = (props) => {
-  const { cls, value, round, tokens, defaultTokenId, inputDisabled = false, showBalance = true, withMax = true, onTokenChange, onAmountChange, balanceChange = 0 } = props
-  const [token, setToken] = useState({})
+  const { cls, value, round, tokens = [], defaultToken, inputDisabled = false, showBalance = true, withMax = true, onTokenChange, onAmountChange, balanceChange = 0 } = props
+  const [token, setToken] = useState(defaultToken || {})
   const [balance, setBalance] = useState('-')
   const { account } = useMappedState((state) => ({
     account: state.wallet.account
@@ -18,7 +18,7 @@ const TokenInput = (props) => {
     if (account && showBalance && token.id) {
       getTokenBalance(account, token, setBalance)
     }
-  }, [tokens, token, showBalance, account, balanceChange])
+  }, [token, showBalance, account, balanceChange])
 
   const handleTokenChange = (e) => {
     if (e.value !== token.id) {
@@ -29,7 +29,7 @@ const TokenInput = (props) => {
     }
   }
 
-  const renderTokenSeletion = (defaultId) => {
+  const renderTokenSeletion = (dToken) => {
     if (tokens.length) {
       const CustomOption = (props) => {
         const label = props.label.split(' ')[0]
@@ -53,7 +53,7 @@ const TokenInput = (props) => {
           </components.SingleValue>
         )
       }
-      let defaultToken = defaultId ? (tokens.find((t) => t.id === defaultId) || tokens[0]) : tokens[0]
+      let defaultToken = dToken ? dToken : tokens[0]
 
       if (!token.id || !tokens.find((t) => t.id === token.id)) {
         setToken(defaultToken)
@@ -92,7 +92,7 @@ const TokenInput = (props) => {
         { showBalance ? <span className="hint">Balance: {balance}</span> : null }
       </div>
       <div className="input-wrapper">
-        { renderTokenSeletion(defaultTokenId) }
+        { renderTokenSeletion(defaultToken) }
         <Input decimals={token.decimals} disabled={inputDisabled} value={value} round={round} onChange={(value) => onAmountChange(value)} />
         { withMax && <div className="input-max-btn" onClick={() => maxInput()}>MAX</div> }
       </div>

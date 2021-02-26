@@ -141,3 +141,7 @@
   color: #fff;
   background: #222;
 }
+
+.stake-wrapper .form-item {
+  padding: 0;
+}

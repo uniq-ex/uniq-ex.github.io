@@ -91,8 +91,12 @@
   color: RGBA(254, 51, 47, 1.00);
 }
 
+.modal-detail {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
 .modal-extra-text {
-  max-width: 400px;
   text-align: center;
   font-size: 16px;
   color: #2c2c2c;

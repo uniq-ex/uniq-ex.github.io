@@ -88,7 +88,7 @@ const AddLiquidity = () => {
     setToken1Amount(amount)
     if (!isFirstProvider) {
       if (amount) {
-        setToken2Amount(Math.ceil(amount * getPairPrice() * (10 ** token2.decimals)) / (10 ** token2.decimals))
+        setToken2Amount(new BigNumber(amount).times(getPairPrice()).times(10 ** token2.decimals).integerValue(BigNumber.ROUND_CEIL).div(10 ** token2.decimals).toString())
       } else if (Number(amount) === 0) {
         setToken2Amount('')
       }
@@ -99,7 +99,7 @@ const AddLiquidity = () => {
     setToken2Amount(amount)
     if (!isFirstProvider) {
       if (amount) {
-        setToken1Amount(Math.ceil(amount / getPairPrice() * (10 ** token1.decimals)) / (10 ** token1.decimals))
+        setToken2Amount(new BigNumber(amount).times(getPairPrice()).times(10 ** token1.decimals).integerValue(BigNumber.ROUND_CEIL).div(10 ** token1.decimals).toString())
       } else if (Number(amount) === 0) {
         setToken1Amount('')
       }
@@ -243,7 +243,7 @@ const AddLiquidity = () => {
           balanceChange={balanceChange}
           tokens={swapTokens}
           value={token1Amount}
-          defaultTokenId={swapTokens.length && swapTokens.find((st) => st.name === 'pDAI').id}
+          defaultToken={swapTokens.length && swapTokens.find((st) => st.name === 'pDAI')}
           onTokenChange={(token) => onChangeToken1(token)}
           onAmountChange={(amount) => onToken1AmountChange(amount)} />
         <div className="icon-plus"></div>
@@ -251,7 +251,7 @@ const AddLiquidity = () => {
           balanceChange={balanceChange}
           tokens={swapTokens}
           value={token2Amount}
-          defaultTokenId={swapTokens.length && swapTokens.find((st) => st.name === 'UNX').id}
+          defaultToken={swapTokens.length && swapTokens.find((st) => st.name === 'UNX')}
           onTokenChange={(token) => onChangeToken2(token)}
           onAmountChange={(amount) => onToken2AmountChange(amount)} />
         {

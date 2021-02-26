@@ -2,6 +2,7 @@ import { useEffect, useCallback } from 'react'
 import { client } from '@ont-dev/ontology-dapi'
 import { utils } from 'ontology-ts-sdk'
 import { useMappedState, useDispatch } from 'redux-react-hook'
+import { readBigNumberUint128 } from '../utils/token'
 
 const { StringReader, reverseHex } = utils
 
@@ -42,8 +43,8 @@ export const useFetchPairs = () => {
             pair.token1 = strReader.readUint128()
             pair.token2 = strReader.readUint128()
             pair.id = strReader.readUint128()
-            pair.reserve1 = strReader.readUint128()
-            pair.reserve2 = strReader.readUint128()
+            pair.reserve1 = readBigNumberUint128(strReader)
+            pair.reserve2 = readBigNumberUint128(strReader)
             pair.lp = strReader.readUint128()
 
             parsedPairs.push(pair)

@@ -91,7 +91,7 @@ const Swap = () => {
       setSwapType('exactin')
       setToken1Amount(amount)
       if (pairs.length && amount) {
-        const inputAmount = amount * (10 ** token1.decimals)
+        const inputAmount = new BigNumber(amount).times(10 ** token1.decimals).toString()
         const [maxOutput, path] = bestSwap('exactin', inputAmount, pairs, token1.id, token2.id)
 
         setToken2Amount(new BigNumber(maxOutput).div(10 ** token2.decimals).toString())
@@ -215,12 +215,12 @@ const Swap = () => {
     let pair = pairs.find((p) => p.token1 === token1.id && p.token2 === token2.id)
 
     if (pair) {
-      price = (pair.reserve2 / (10 ** token2.decimals)) / (pair.reserve1 / (10 ** token1.decimals))
+      price = new BigNumber(pair.reserve2).div(10 ** token2.decimals).div(pair.reserve1).times(10 ** token1.decimals).toString()
     } else {
       pair = pairs.find((p) => p.token1 === token2.id && p.token2 === token1.id)
 
       if (pair) {
-        price = (pair.reserve1 / (10 ** token1.decimals)) / (pair.reserve2 / (10 ** token2.decimals))
+        price = new BigNumber(pair.reserve1).div(10 ** token1.decimals).div(pair.reserve2).times(10 ** token2.decimals).toString()
       }
     }
 
@@ -256,7 +256,7 @@ const Swap = () => {
             tokens={swapTokens}
             value={token1Amount}
             round='up'
-            defaultTokenId={swapTokens.length && swapTokens.find((st) => st.name === 'pDAI').id}
+            defaultToken={swapTokens.length && swapTokens.find((st) => st.name === 'pDAI')}
             onTokenChange={(token) => onChangeToken1(token)}
             onAmountChange={(amount) => onToken1AmountChange(amount)} />
           <div className="icon-arrow-down"></div>
@@ -266,7 +266,7 @@ const Swap = () => {
             tokens={swapTokens}
             value={token2Amount}
             round='down'
-            defaultTokenId={swapTokens.length && swapTokens.find((st) => st.name === 'UNX').id}
+            defaultToken={swapTokens.length && swapTokens.find((st) => st.name === 'UNX')}
             onTokenChange={(token) => onChangeToken2(token)}
             onAmountChange={(amount) => onToken2AmountChange(amount)} />
           { showPrice ? <div className="sw-price-wrapper">Price<span className="sw-price-info">{getPrice()}</span></div> : null }

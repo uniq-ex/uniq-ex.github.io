@@ -1,9 +1,21 @@
 import { client } from '@ont-dev/ontology-dapi'
 import { utils } from 'ontology-ts-sdk'
 import BigNumber from 'bignumber.js'
-import request from './request'
+import Request from './request'
 
 const { reverseHex } = utils
+
+export const readBigNumberUint128 = (reader) => {
+  const hexRev = reverseHex(reader.read(16))
+  const str = hexRev.split('').reverse()
+  let total = new BigNumber(0)
+  
+  for (let i = 0; i < str.length; i++) {
+    total = total.plus(new BigNumber(16).pow(i).times(parseInt(str[i], 16)))
+  }
+
+  return total.isZero() ? 0 : total.toString()
+}
 
 export const getTokenBalance = (account, token, cb) => {
   
@@ -36,7 +48,7 @@ export const getTokenBalance = (account, token, cb) => {
       }
     })
   } else {
-    request({
+    Request({
       method: 'get',
       url: `/v2/addresses/${account}/native/balances`
     }).then((resp) => {

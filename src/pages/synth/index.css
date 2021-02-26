@@ -213,6 +213,9 @@
 }
 
 .synth-assets-list-item-action-mint {
+  flex: none;
+  width: 100px;
+  margin-left: 100px;
   background: RGBA(43, 190, 127, 1.00);
 }
 .synth-assets-list-item-action-burn {
@@ -300,6 +303,7 @@
 .mint-wrapper .form-item,
 .burn-wrapper .form-item,
 .exchange-wrapper .form-item,
+.mint-wrapper .token-input-wrapper,
 .exchange-wrapper .token-input-wrapper {
   padding: 0;
 }
