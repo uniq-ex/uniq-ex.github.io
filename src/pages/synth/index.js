@@ -17,7 +17,6 @@ import './index.css'
 const { StringReader, reverseHex } = utils
 
 const Synth = () => {
-  const [synthType, setSynthType] = useState('mint')
   const [mintAsset, setMintAsset] = useState({})
   const [mintAmount, setMintAmount] = useState('')
   const [unxNeededForMint, setUnxNeededForMint] = useState('')
@@ -34,19 +33,21 @@ const Synth = () => {
   const [showMintModal, setShowMintModal] = useState(false)
   const [showBurnModal, setShowBurnModal] = useState(false)
   const [showExchangeModal, setShowExchangeModal] = useState(false)
-  const [availableReward, setAvailableReward] = useState(0)
-  const [marketStat, setMarketStat] = useState({})
-  const [stat, setStat] = useState({})
-  const { account, tokens, pairs, poolStat, synthPoolWeightRatio, SYNTH_ADDRESS } = useMappedState((state) => ({
+  const { account, tokens, pairs, poolStat, stat, marketStat, availableReward, synthType, synthPoolWeightRatio, SYNTH_ADDRESS } = useMappedState((state) => ({
     account: state.wallet.account,
     tokens: state.common.tokens,
     pairs: state.swap.pairs,
     poolStat: state.gov.poolStat,
+    ...state.synth,
     synthPoolWeightRatio: state.gov.poolStat.pools.synth.ratio,
     SYNTH_ADDRESS: state.gov.poolStat.pools.synth.address
   }))
   const dispatch = useDispatch()
   const setModal = useCallback((modalType, modalDetail) => dispatch({ type: 'SET_MODAL', modalType, modalDetail }), [])
+  const setStat = useCallback((stat) => dispatch({ type: 'SET_SYNTH_STAT', stat }), [])
+  const setMarketStat = useCallback((marketStat) => dispatch({ type: 'SET_SYNTH_MARKET_STAT', marketStat }), [])
+  const setAvailableReward = useCallback((availableReward) => dispatch({ type: 'SET_SYNTH_AVAILABLE_REWARD', availableReward }), [])
+  const setSynthType = useCallback((synthType) => dispatch({ type: 'SET_SYNTH_TYPE', synthType }), [])
 
   const Alert = useAlert()
 
