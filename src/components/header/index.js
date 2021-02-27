@@ -36,6 +36,8 @@ const Header = (props) => {
       tab = '/governance'
     } else if (pathname.indexOf('/token') >= 0) {
       tab = '/token'
+    } else if (pathname.indexOf('/option') >= 0) {
+      tab = '/option'
     }
     
     setSelectedTab(tab)
@@ -85,9 +87,10 @@ const Header = (props) => {
             { READY_TABS.indexOf('/') >= 0 ? <div className={`nav-item ${selectedTab === '/' ? 'selected' : ''}`}><Link to="/">Staking</Link></div> : null }
             { READY_TABS.indexOf('/synth') >= 0 ? <div className={`nav-item ${selectedTab === '/synth' ? 'selected' : ''}`}><Link to="/synth">Synth</Link></div> : null }
             { READY_TABS.indexOf('/swap') >= 0 ? <div className={`nav-item ${selectedTab === '/swap' ? 'selected' : ''}`}><Link to="/swap">Swap</Link></div> : null }
-            { READY_TABS.indexOf('/trade') >= 0 ? <div className={`nav-item ${selectedTab === '/trade' ? 'selected' : ''}`}><Link to="/trade">Trade</Link></div> : null }
             { READY_TABS.indexOf('/governance') >= 0 ? <div className={`nav-item ${selectedTab === '/governance' ? 'selected' : ''}`}><Link to="/governance">Governance</Link></div> : null }
+            { READY_TABS.indexOf('/trade') >= 0 ? <div className={`nav-item ${selectedTab === '/trade' ? 'selected' : ''}`}><Link to="/trade">Trade</Link></div> : null }
             { READY_TABS.indexOf('/token') >= 0 ? <div className={`nav-item ${selectedTab === '/token' ? 'selected' : ''}`}><Link to="/token">Token</Link></div> : null }
+            { READY_TABS.indexOf('/option') >= 0 ? <div className={`nav-item ${selectedTab === '/option' ? 'selected' : ''}`}><Link to="/option">Option</Link></div> : null }
           </div>
           <div className={`${account ? 'active' : ''} profile-wrapper`}>
             { !account && <span className="connect-btn" onClick={() => onConnectWallet()}>Connect Wallet</span>}

@@ -59,13 +59,12 @@ const RemoveLiquidity = () => {
 
   useEffect(() => {
     if (pair && token1.id && token2.id && pairId && liquidityBalance) {
-      const balance = new BigNumber(liquidityBalance).div(10 ** 18)
-      const shareOfPool = balance.times(balance).div(pair.reserve1 * pair.reserve2).times(10 ** (token1.decimals + token2.decimals))
+      const shareOfPool = new BigNumber(liquidityBalance).div(pair.lp)
       const token1Amount = shareOfPool.times(pair.reserve1).div(10 ** token1.decimals)
       const token2Amount = shareOfPool.times(pair.reserve2).div(10 ** token2.decimals)
 
-      setToken1Amount(new BigNumber(amount).div(100).times(token1Amount).toString())
-      setToken2Amount(new BigNumber(amount).div(100).times(token2Amount).toString())
+      setToken1Amount(new BigNumber(amount).div(100).times(token1Amount).toFixed(token1.decimals))
+      setToken2Amount(new BigNumber(amount).div(100).times(token2Amount).toFixed(token2.decimals))
     }
   }, [amount, pair, token1, token2])
 
@@ -87,8 +86,6 @@ const RemoveLiquidity = () => {
       }).then((resp) => {
         const strReader = new StringReader(resp)
         const balance = readBigNumberUint128(strReader)
-
-        console.log('balance', balance)
         
         return balance
       })
@@ -152,6 +149,7 @@ const RemoveLiquidity = () => {
         })
 
         if (addResult.transaction) {
+          onNavigateToPool()
           setModal('infoModal', {
             show: true,
             type: 'success',

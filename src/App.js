@@ -1,5 +1,5 @@
 import { client } from '@ont-dev/ontology-dapi'
-import React, { useCallback } from 'react'
+import React, { useEffect, useCallback } from 'react'
 import {
   // BrowserRouter as Router,
   HashRouter as Router,
@@ -18,6 +18,8 @@ import RemoveLiquidity from './pages/pool/removeLiquidity'
 import Staking from './pages/staking'
 import StakingDetail from './pages/staking/detail'
 import Token from './pages/token'
+import Option from './pages/option'
+import Trade from './pages/trade'
 import Synth from './pages/synth'
 import Overview from './pages/governance'
 import { NETWORK_TYPE, READY_TABS } from './config'
@@ -35,9 +37,17 @@ export const App = () => {
 
   useFetchTokens()
 
+  useEffect(() => {
+    client.api.provider.getProvider()
+      .catch((e) => {
+        if (e === 'NO_PROVIDER') {
+          Alert.error('Please install wallet extension first')
+        }
+      })
+  }, [])
+
   async function onConnectWallet() {
     try {
-      await client.api.provider.getProvider()
       const network = await client.api.network.getNetwork()
       if (network && network.type !== NETWORK_TYPE) {
         Alert.error(`Please connect to the ${NETWORK_TYPE}-Net`)
@@ -47,9 +57,7 @@ export const App = () => {
       setAccount(accountAddress)
       localStorage.setItem('account', accountAddress)
     } catch (e) {
-      if (e === 'NO_PROVIDER') {
-        Alert.error('Please install wallet extension first')
-      }
+      console.log(e)
     }
   }
 
@@ -127,7 +135,7 @@ export const App = () => {
             {
               READY_TABS.indexOf('/trade') >= 0 ?
               <Route exact path="/trade">
-                <Transaction />
+                <Trade />
               </Route> : null
             }
             {
@@ -140,6 +148,12 @@ export const App = () => {
               READY_TABS.indexOf('/token') >= 0 ?
               <Route exact path="/token">
                 <Token />
+              </Route> : null
+            }
+            {
+              READY_TABS.indexOf('/option') >= 0 ?
+              <Route exact path="/option">
+                <Option />
               </Route> : null
             }
             {

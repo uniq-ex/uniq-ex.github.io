@@ -72,8 +72,8 @@ const Pool = () => {
         const pair = pairs.find((p) => `${p.id}` === pairId)
         const token1 = tokens.find((t) => t.id === pair.token1)
         const token2 = tokens.find((t) => t.id === pair.token2)
-        const balance = new BigNumber(lb[pairId]).div(10 ** 18)
-        const shareOfPool = balance.times(balance).div(pair.reserve1).div(pair.reserve2).times(10 ** (token1.decimals + token2.decimals)).sqrt()
+        const balance = new BigNumber(lb[pairId])
+        const shareOfPool = balance.div(pair.lp)
         const token1Amount = shareOfPool.times(pair.reserve1).div(10 ** token1.decimals).toFixed(token1.decimals)
         const token2Amount = shareOfPool.times(pair.reserve2).div(10 ** token2.decimals).toFixed(token2.decimals)
         
@@ -84,7 +84,7 @@ const Pool = () => {
               <div className={`token-icon icon-${token2.name}`}></div>
               <div className="token-pair"><strong>{token1.name}/{token2.name}</strong></div>
               <div className="pair-position"><strong>Pooled</strong>: {token1Amount} / {token2Amount}</div>
-              <div className="pool-tokens"><strong>Pool Tokens</strong>: {balance.toFixed(9)}</div>
+              <div className="pool-tokens"><strong>Pool Tokens</strong>: {balance.div(10 ** 18).toString()}</div>
             </div>
             <div className="remove-liquidity-btn" onClick={() => onRemoveLiquidity(pairId)}>Remove</div>
           </div>

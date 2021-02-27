@@ -92,6 +92,7 @@
 }
 
 .modal-detail {
+  color: RGBA(254, 51, 47, 1.00);
   text-align: center;
   margin-bottom: 40px;
 }

@@ -105,11 +105,10 @@
   margin-bottom: 0;
 }
 
-.token-placeholder {
-  padding-top: 120px;
-  background-position: center;
-  background-size: 48px auto;
-  background-repeat: no-repeat;
+.token-icon-wrapper.token-placeholder {
+  display: flex;
+  justify-content: center;
+  padding: 30px 0;
 }
 
 .stake-btn {

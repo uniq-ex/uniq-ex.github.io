@@ -25,45 +25,41 @@ export const useFetchPairs = () => {
     }
   }, [account, tokens, swapTokens, SWAP_ADDRESS])
 
-  function getSwapStat() {
+  async function getSwapStat() {
     if (SWAP_ADDRESS) {
       try {
-        client.api.smartContract.invokeWasmRead({
+        const pairStr = await client.api.smartContract.invokeWasmRead({
           scriptHash: SWAP_ADDRESS,
           operation: 'stat',
           args: []
         })
-        .then((pairStr) => {
-          const parsedPairs = []
-          const strReader = new StringReader(pairStr)
-          const pairCount = strReader.readNextLen()
-          for (let i = 0; i < pairCount; i++) {
-            const pair = {}
-            pair.address = reverseHex(strReader.read(20))
-            pair.token1 = strReader.readUint128()
-            pair.token2 = strReader.readUint128()
-            pair.id = strReader.readUint128()
-            pair.reserve1 = readBigNumberUint128(strReader)
-            pair.reserve2 = readBigNumberUint128(strReader)
-            pair.lp = strReader.readUint128()
 
-            parsedPairs.push(pair)
-          }
+        const parsedPairs = []
+        const strReader = new StringReader(pairStr)
+        const pairCount = strReader.readNextLen()
+        for (let i = 0; i < pairCount; i++) {
+          const pair = {}
+          pair.address = reverseHex(strReader.read(20))
+          pair.token1 = strReader.readUint128()
+          pair.token2 = strReader.readUint128()
+          pair.id = strReader.readUint128()
+          pair.reserve1 = readBigNumberUint128(strReader)
+          pair.reserve2 = readBigNumberUint128(strReader)
+          pair.lp = readBigNumberUint128(strReader)
 
-          const tokenIds = []
-          const tokenCount = strReader.readNextLen()
-          for (let i = 0; i < tokenCount; i++) {
-            tokenIds.push(strReader.readUint128())
-          }
+          parsedPairs.push(pair)
+        }
 
-          setPairs(parsedPairs)
-          if (tokens.length && !swapTokens.length) {
-            setSwapTokens(tokenIds.map((t) => tokens.find((tk) => tk.id === t)))
-          }
-        })
-        .catch((e) => {
-          console.log(e)
-        })
+        const tokenIds = []
+        const tokenCount = strReader.readNextLen()
+        for (let i = 0; i < tokenCount; i++) {
+          tokenIds.push(strReader.readUint128())
+        }
+
+        setPairs(parsedPairs)
+        if (tokens.length && !swapTokens.length) {
+          setSwapTokens(tokenIds.map((t) => tokens.find((tk) => tk.id === t)))
+        }
       } catch (e) {
         console.log(e)
       }

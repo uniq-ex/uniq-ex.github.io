@@ -54,26 +54,29 @@ const StakingDetail = (props) => {
 
 
   useEffect(() => {
-    const getClaimableWing = () => {
+    const getClaimableWing = async () => {
       if (account && stakeToken.ty === 2) {
-        client.api.smartContract.invokeWasmRead({
-          scriptHash: GOVERNANCE_ADDRESS,
-          operation: 'claimable_wing',
-          args: [
-            {
-              type: 'Address',
-              value: account
-            },
-            {
-              type: 'Long',
-              value: stakeToken.id
-            }
-          ]
-        }).then((resp) => {
+        try {
+          const resp = await client.api.smartContract.invokeWasmRead({
+            scriptHash: GOVERNANCE_ADDRESS,
+            operation: 'claimable_wing',
+            args: [
+              {
+                type: 'Address',
+                value: account
+              },
+              {
+                type: 'Long',
+                value: stakeToken.id
+              }
+            ]
+          })
           const strReader = new StringReader(resp)
 
           setClaimableWing(readBigNumberUint128(strReader))
-        })
+        } catch (e) {
+          console.log(e)
+        }
       }
     }
 
@@ -154,7 +157,7 @@ const StakingDetail = (props) => {
         Alert.error('Amount should be greater than 0')
         return
       }
-      if (stakeType === 'unstake' && amount > myStake.balance) {
+      if (stakeType === 'unstake' && new BigNumber(amount).gt(new BigNumber(myStake.balance))) {
         Alert.error('Amount should be less than your balance')
         return
       }
@@ -320,7 +323,8 @@ const StakingDetail = (props) => {
           <div className="modal-wrapper">
             <div className="close-btn" onClick={() => { setShowStakingModal(false); setAmount(''); }}></div>
             <div className="stake-wrapper">
-              <div className={`icon-${stakeToken.name} token-placeholder`}></div>
+              {/* <div className={`icon-${stakeToken.name} token-placeholder`}></div> */}
+              {getTokenIconDom(stakeToken, 'token-placeholder')}
               <div className="form-item">
                 <div className="input-label">Amount
                   {

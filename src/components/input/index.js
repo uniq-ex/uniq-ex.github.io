@@ -25,8 +25,8 @@ const Input = (props) => {
       return v
     } else {
       const reg = (decimals > 0) ? new RegExp(
-        `^(([0-9]{0,9})|(([0]\\.\\d{0,${decimals}}|[0-9]{0,9}\\.\\d{0,${decimals}})))$`
-      ) : new RegExp('^[0-9]{0,9}$')
+        `^(([0-9]{0,20})|(([0]\\.\\d{0,${decimals}}|[0-9]{0,20}\\.\\d{0,${decimals}})))$`
+      ) : new RegExp('^[0-9]{0,20}$')
       if (reg.test(v)) {
         return v
       } else {

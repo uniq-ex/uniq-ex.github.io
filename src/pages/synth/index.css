@@ -85,6 +85,7 @@
 }
 
 .mint-burn-main {
+  position: relative;
   flex: 1;
   padding-right: 20px;
 }
@@ -109,6 +110,18 @@
 .synth-type-item.selected {
   color: #fff;
   background: RGBA(43, 190, 127, 1.00);
+}
+
+.market-asset-value {
+  position: absolute;
+  right: 20px;
+  top: 0;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.market-asset-value span {
+  font-size: 20px;
 }
 
 .synth-assets-panel-header {
@@ -187,7 +200,7 @@
   position: relative;
 }
 
-.synth-assets-list-item.unprocessed-frozen .synth-assets-list-item-name span {
+.synth-assets-list-item.unprocessed-frozen .synth-assets-list-item-name .freeze-asset-btn {
   position: absolute;
   display: inline-block;
   top: 4px;
@@ -267,6 +280,7 @@
 
 .mint-burn-info-note span {
   font-weight: bold;
+  color: RGBA(254, 51, 47, 1.00);
 }
 
 

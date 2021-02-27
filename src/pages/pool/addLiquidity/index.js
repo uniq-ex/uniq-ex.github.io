@@ -99,7 +99,7 @@ const AddLiquidity = () => {
     setToken2Amount(amount)
     if (!isFirstProvider) {
       if (amount) {
-        setToken2Amount(new BigNumber(amount).times(getPairPrice()).times(10 ** token1.decimals).integerValue(BigNumber.ROUND_CEIL).div(10 ** token1.decimals).toString())
+        setToken1Amount(new BigNumber(amount).div(getPairPrice()).times(10 ** token1.decimals).integerValue(BigNumber.ROUND_CEIL).div(10 ** token1.decimals).toString())
       } else if (Number(amount) === 0) {
         setToken1Amount('')
       }
@@ -113,11 +113,11 @@ const AddLiquidity = () => {
       }
       let pair = pairs.find((p) => p.token1 === token1.id && p.token2 === token2.id)
       if (pair) {
-        return pair.reserve1 ? (pair.reserve2 / (10 ** token2.decimals)) / (pair.reserve1 / (10 ** token1.decimals)) : 0
+        return pair.reserve1 ? new BigNumber(pair.reserve2).div(10 ** token2.decimals).div(pair.reserve1).times(10 ** token1.decimals) : 0
       }
       pair = pairs.find((p) => p.token1 === token2.id && p.token2 === token1.id)
       if (pair) {
-        return pair.reserve2 ? (pair.reserve1 / (10 ** token1.decimals)) / (pair.reserve2 / (10 ** token2.decimals)) : 0
+        return pair.reserve2 ? new BigNumber(pair.reserve1).div(10 ** token1.decimals).div(pair.reserve2).times(10 ** token2.decimals) : 0
       }
     }
 
@@ -129,10 +129,10 @@ const AddLiquidity = () => {
       return '100%'
     } else {
       const pair = getPairByToken()
-      const amountProduct = token1Amount * (10 ** token1.decimals) * token2Amount * (10 ** token2.decimals)
+      const amountProduct = new BigNumber(token1Amount || 0).times(10 ** token1.decimals).times(token2Amount || 0).times(10 ** token2.decimals)
 
       if (pair) {
-        return `${(amountProduct / (amountProduct + pair.reserve1 * pair.reserve2) * 100).toFixed(2)}%`
+        return `${amountProduct.times(100).div(new BigNumber(pair.reserve1).times(pair.reserve2).plus(amountProduct)).toFixed(2)}%`
       }
       return `0%`
     }
@@ -205,6 +205,7 @@ const AddLiquidity = () => {
           setBalanceChange(balanceChange + 1)
           setToken1Amount('')
           setToken2Amount('')
+          onNavigateToPool()
           setModal('infoModal', {
             show: true,
             type: 'success',

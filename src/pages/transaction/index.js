@@ -61,10 +61,10 @@ const Transaction = () => {
   }, [account, tokenPair, tradeType])
 
   useEffect(() => {
-    function getMakesOfPair() {
+    async function getMakesOfPair() {
       if (tokenPair.name && CONTRACT_ADDRESS) {
         try {
-          client.api.smartContract.invokeWasmRead({
+          const makeStr = await client.api.smartContract.invokeWasmRead({
             scriptHash: CONTRACT_ADDRESS,
             operation: 'get_makes_of_pair',
             args: [
@@ -78,39 +78,34 @@ const Transaction = () => {
               }
             ]
           })
-          .then((makeStr) => {
-            const parsedMakes = []
-            const strReader = new StringReader(makeStr)
-            const pairLastPrice = strReader.readUint128()
-    
-            for (let j = 0; j <= 1; j++) {
-              const makeCount = strReader.readNextLen()
-              for (let i = 0; i < makeCount; i++) {
-                const make = {}
-                make.make_id = strReader.readUint128()
-                make.price = strReader.readUint128()
-                make.amount = new BigNumber(strReader.readUint128()).toString()
-                make.asset_token_id = (j === 0 ? tokenPair.tokens[0].id : tokenPair.tokens[1].id)
-                make.price_token_id = (j === 0 ? tokenPair.tokens[1].id : tokenPair.tokens[0].id)
-        
-                parsedMakes.push(make)
-              }
+          const parsedMakes = []
+          const strReader = new StringReader(makeStr)
+          const pairLastPrice = strReader.readUint128()
+  
+          for (let j = 0; j <= 1; j++) {
+            const makeCount = strReader.readNextLen()
+            for (let i = 0; i < makeCount; i++) {
+              const make = {}
+              make.make_id = strReader.readUint128()
+              make.price = strReader.readUint128()
+              make.amount = new BigNumber(strReader.readUint128()).toString()
+              make.asset_token_id = (j === 0 ? tokenPair.tokens[0].id : tokenPair.tokens[1].id)
+              make.price_token_id = (j === 0 ? tokenPair.tokens[1].id : tokenPair.tokens[0].id)
+      
+              parsedMakes.push(make)
             }
-    
-            setLastPrice(pairLastPrice ? new BigNumber(pairLastPrice).div(PRICE_DECIMALS).toString() : 0)
-            setMakes(parsedMakes)
-          })
-          .catch((e) => {
-            handleError(e, (errorCode) => {
-              if (errorCode === 'CONTRACT_ADDRESS_ERROR') {
-                setStopInterval(true)
-              } else {
-                console.log('get makes of pair', e)
-              }
-            })
-          })
+          }
+  
+          setLastPrice(pairLastPrice ? new BigNumber(pairLastPrice).div(PRICE_DECIMALS).toString() : 0)
+          setMakes(parsedMakes)
         } catch (e) {
-          console.log(e)
+          handleError(e, (errorCode) => {
+            if (errorCode === 'CONTRACT_ADDRESS_ERROR') {
+              setStopInterval(true)
+            } else {
+              console.log('get makes of pair', e)
+            }
+          })
         }
       }
     }
@@ -122,10 +117,10 @@ const Transaction = () => {
   }, [tokenPair, account, stopInterval, CONTRACT_ADDRESS])
 
   useEffect(() => {
-    function getUserMakes() {
+    async function getUserMakes() {
       if (account && CONTRACT_ADDRESS) {
         try {
-          client.api.smartContract.invokeWasmRead({
+          const makeStr = await client.api.smartContract.invokeWasmRead({
             scriptHash: CONTRACT_ADDRESS,
             operation: 'get_user_makes',
             args: [
@@ -135,35 +130,30 @@ const Transaction = () => {
               }
             ]
           })
-          .then((makeStr) => {
-            const parsedMakes = []
-            const strReader = new StringReader(makeStr)
-            const makeCount = strReader.readNextLen()
-            for (let i = 0; i < makeCount; i++) {
-              const make = {}
-              make.address = client.api.utils.hexToAddress(strReader.read(20))
-              make.asset_token_id = strReader.readUint128()
-              make.price_token_id = strReader.readUint128()
-              make.price = strReader.readUint128()
-              make.amount = strReader.readUint128()
-              make.make_id = strReader.readUint128()
-    
-              parsedMakes.push(make)
-            }
-    
-            setMyMakes(parsedMakes)
-          })
-          .catch((e) => {
-            handleError(e, (errorCode) => {
-              if (errorCode === 'CONTRACT_ADDRESS_ERROR') {
-                setStopInterval(true)
-              } else {
-                console.log('get user makes', e)
-              }
-            })
-          })
+          const parsedMakes = []
+          const strReader = new StringReader(makeStr)
+          const makeCount = strReader.readNextLen()
+          for (let i = 0; i < makeCount; i++) {
+            const make = {}
+            make.address = client.api.utils.hexToAddress(strReader.read(20))
+            make.asset_token_id = strReader.readUint128()
+            make.price_token_id = strReader.readUint128()
+            make.price = strReader.readUint128()
+            make.amount = strReader.readUint128()
+            make.make_id = strReader.readUint128()
+  
+            parsedMakes.push(make)
+          }
+  
+          setMyMakes(parsedMakes)
         } catch (e) {
-          console.log(e)
+          handleError(e, (errorCode) => {
+            if (errorCode === 'CONTRACT_ADDRESS_ERROR') {
+              setStopInterval(true)
+            } else {
+              console.log('get user makes', e)
+            }
+          })
         }
       }
     }
@@ -526,12 +516,16 @@ const Transaction = () => {
           </div>
         </div>
       </div>
-      <div className="token-pool">
-        <div className="container-header">Token Balance</div>
-        <div className="pool-items">
-        {generateTokenPool()}
-        </div>
-      </div>
+      {
+        pool.filter((tp) => Number(tp.balance) !== 0).length ? (
+          <div className="token-pool">
+            <div className="container-header">Token Balance</div>
+            <div className="pool-items">
+            {generateTokenPool()}
+            </div>
+          </div>
+        ) : null
+      }
       {
         showPairSelectModal ? (
           <div className="modal-overlay">

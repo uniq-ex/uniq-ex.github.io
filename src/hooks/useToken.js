@@ -26,77 +26,74 @@ export const useFetchTokens = () => {
     }
   }, [tokens, stopInterval])
 
-  function getGovStat() {
+  async function getGovStat() {
     if (!tokens.length) {
       try {
-        client.api.smartContract.invokeWasmRead({
+        const statStr = await client.api.smartContract.invokeWasmRead({
           scriptHash: GOVERNANCE_ADDRESS,
           operation: 'stat',
           args: []
-        }).then((statStr) => {
-          const strReader = new StringReader(statStr)
-          const distributionInfo = {}
-          distributionInfo.amount = strReader.readUint128() / (10 ** 9)
-          distributionInfo.period = strReader.readUint128()
-          distributionInfo.startTimeStamp = strReader.readUint128()
-          distributionInfo.settledTimeStamp = strReader.readUint128()
-    
-          const pools = {}
-          const poolCount = strReader.readNextLen()
-          let totalWeight = 0
-          for (let i = 0; i < poolCount; i++) {
-            const pool = {}
-            const nameLength = strReader.readNextLen()
-            pool.name = hexstr2str(strReader.read(nameLength))
-            pool.address = reverseHex(strReader.read(20))
-            pool.weight = strReader.readUint128()
-            totalWeight += pool.weight
-            pools[pool.name] = pool
-          }
-
-          for (let poolName in pools) {
-            pools[poolName].ratio = pools[poolName].weight / totalWeight
-          }
-    
-          const upgrade = strReader.readBoolean()
-          const parsedTokens = []
-          const tokenCount = strReader.readNextLen()
-          for (let i = 0; i < tokenCount; i++) {
-            const token = {}
-            token.id = strReader.readUint128()
-            const nameLength = strReader.readNextLen()
-            token.name = hexstr2str(strReader.read(nameLength))
-            token.address = reverseHex(strReader.read(20))
-            token.ty = strReader.readUint8()
-            token.decimals = strReader.readUint128()
-
-            token.value = token.id
-            token.label = token.name
-
-            parsedTokens.push(token)
-          }
-
-          setLoadingToken(false)
-          setTokens(parsedTokens)
-          setPoolStat({
-            distributionInfo,
-            pools,
-            upgrade
-          })
         })
-        .catch((e) => {
-          console.log(e)
-          handleError(e, (errorCode) => {
-            console.log(errorCode)
-            if (errorCode === 'CONTRACT_ADDRESS_ERROR') {
-              setStopInterval(true)
-            } else {
-              console.log('get all tokens', e)
-            }
-          })
+
+        const strReader = new StringReader(statStr)
+        const distributionInfo = {}
+        distributionInfo.amount = strReader.readUint128() / (10 ** 9)
+        distributionInfo.period = strReader.readUint128()
+        distributionInfo.startTimeStamp = strReader.readUint128()
+        distributionInfo.settledTimeStamp = strReader.readUint128()
+  
+        const pools = {}
+        const poolCount = strReader.readNextLen()
+        let totalWeight = 0
+        for (let i = 0; i < poolCount; i++) {
+          const pool = {}
+          const nameLength = strReader.readNextLen()
+          pool.name = hexstr2str(strReader.read(nameLength))
+          pool.address = reverseHex(strReader.read(20))
+          pool.weight = strReader.readUint128()
+          totalWeight += pool.weight
+          pools[pool.name] = pool
+        }
+
+        for (let poolName in pools) {
+          pools[poolName].ratio = pools[poolName].weight / totalWeight
+        }
+  
+        const upgrade = strReader.readBoolean()
+        const parsedTokens = []
+        const tokenCount = strReader.readNextLen()
+        for (let i = 0; i < tokenCount; i++) {
+          const token = {}
+          token.id = strReader.readUint128()
+          const nameLength = strReader.readNextLen()
+          token.name = hexstr2str(strReader.read(nameLength))
+          token.address = reverseHex(strReader.read(20))
+          token.ty = strReader.readUint8()
+          token.decimals = strReader.readUint128()
+
+          token.value = token.id
+          token.label = token.name
+
+          parsedTokens.push(token)
+        }
+
+        setLoadingToken(false)
+        setTokens(parsedTokens)
+        setPoolStat({
+          distributionInfo,
+          pools,
+          upgrade
         })
       } catch (e) {
         console.log(e)
+        handleError(e, (errorCode) => {
+          console.log(errorCode)
+          if (errorCode === 'CONTRACT_ADDRESS_ERROR') {
+            setStopInterval(true)
+          } else {
+            console.log('get all tokens', e)
+          }
+        })
       }
     }
   }

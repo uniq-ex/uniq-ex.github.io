@@ -42,10 +42,8 @@ const getInputAmount = (output, pair, reverse = false) => {
   let amount
   if (reverse) {
     amount = new BigNumber(pair.reserve1).times(pair.reserve2).div(new BigNumber(pair.reserve1).minus(output)).minus(pair.reserve2).div(REST).integerValue(BigNumber.ROUND_CEIL).toString()
-    // amount = (pair.reserve1 * pair.reserve2 / (pair.reserve1 - output) - pair.reserve2) / REST
   } else {
     amount = new BigNumber(pair.reserve1).times(pair.reserve2).div(new BigNumber(pair.reserve2).minus(output)).minus(pair.reserve1).div(REST).integerValue(BigNumber.ROUND_CEIL).toString()
-    // amount = (pair.reserve1 * pair.reserve2 / (pair.reserve2 - output) - pair.reserve1) / REST
   }
   return amount
 }
@@ -54,10 +52,8 @@ const getOutputAmount = (input, pair, reverse = false) => {
   let amount
   if (reverse) {
     amount = new BigNumber(pair.reserve1).minus(new BigNumber(pair.reserve1).times(pair.reserve2).div(new BigNumber(input).times(REST).plus(pair.reserve2))).integerValue(BigNumber.ROUND_FLOOR).toString()
-    // amount = pair.reserve1 - pair.reserve1 * pair.reserve2 / (pair.reserve2 + REST * input)
   } else {
     amount = new BigNumber(pair.reserve2).minus(new BigNumber(pair.reserve1).times(pair.reserve2).div(new BigNumber(input).times(REST).plus(pair.reserve1))).integerValue(BigNumber.ROUND_FLOOR).toString()
-    // amount = pair.reserve2 - pair.reserve1 * pair.reserve2 / (pair.reserve1 + REST * input)
   }
   return amount
 }
@@ -104,7 +100,7 @@ export const bestSwap = (type = 'exactin', amount, pairs, token1, token2) => {
         amount = findNextOutput(amount, pairs, paths[i][j], paths[i][j + 1])
       }
   
-      if (amount > maxOutput) {
+      if (new BigNumber(amount).gt(new BigNumber(maxOutput))) {
         maxOutput = amount
         path = paths[i]
       }
@@ -113,7 +109,7 @@ export const bestSwap = (type = 'exactin', amount, pairs, token1, token2) => {
         amount = findPrevInput(amount, pairs, paths[i][j - 1], paths[i][j])
       }
   
-      if (amount < minInput && amount > 0) {
+      if (new BigNumber(amount).lt(new BigNumber(minInput)) && amount > 0) {
         minInput = amount
         path = paths[i]
       }

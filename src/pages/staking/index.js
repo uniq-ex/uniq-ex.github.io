@@ -13,6 +13,7 @@ import './index.css'
 const { StringReader } = utils
 
 const Staking = () => {
+  const [showClosedEntry, setShowClosedEntry] = useState(false)
   const [showClosed, setShowClosed] = useState(false)
   const { account, tokens, stakingTokens, STAKING_ADDRESS } = useMappedState((state) => ({
     account: state.wallet.account,
@@ -27,80 +28,56 @@ const Staking = () => {
 
   useEffect(() => {
     getStakingTokenBalance()
-    let interval = setInterval(() => getStakingTokenBalance, 2000)
+    let interval = setInterval(() => getStakingTokenBalance, 3000)
     return () => {
       interval && clearInterval(interval)
     }
   }, [tokens, STAKING_ADDRESS])
 
-  function getStakingTokenBalance() {
+  useEffect(() => {
+    if (stakingTokens.filter((st) => !st.originWeight).length) {
+      setShowClosedEntry(true)
+    } else {
+      setShowClosedEntry(false)
+    }
+  }, [stakingTokens])
+
+  async function getStakingTokenBalance() {
     if (tokens.length && STAKING_ADDRESS) {
       try {
-        client.api.smartContract.invokeWasmRead({
+        const statStr = await client.api.smartContract.invokeWasmRead({
           scriptHash: STAKING_ADDRESS,
           operation: 'stat',
           args: []
-        }).then((statStr) => {
-          const parsedTokens = []
-          const strReader = new StringReader(statStr)
-          const tokenCount = strReader.readNextLen()
-          for (let i = 0; i < tokenCount; i++) {
-            const token = {}
-            token.id = strReader.readUint128()
-            const tempToken = tokens.find((t) => t.id === token.id)
-            token.weight = strReader.readUint128()
-            token.balance = readBigNumberUint128(strReader)
+        })
+        const parsedTokens = []
+        const strReader = new StringReader(statStr)
+        const tokenCount = strReader.readNextLen()
+        for (let i = 0; i < tokenCount; i++) {
+          const token = {}
+          token.id = strReader.readUint128()
+          const tempToken = tokens.find((t) => t.id === token.id)
+          token.weight = strReader.readUint128()
+          token.balance = readBigNumberUint128(strReader)
 
-            parsedTokens.push(Object.assign(tempToken, token))
+          parsedTokens.push(Object.assign(tempToken, token))
+        }
+
+        const totalWeight = parsedTokens.filter((t) => t.balance).reduce((a, b) => a + b.weight, 0)
+        const filteredTokens = parsedTokens.map((t) => {
+          return {
+            ...t,
+            originWeight: t.weight,
+            weight: t.balance ? (t.weight / totalWeight) : 0
           }
-
-          const totalWeight = parsedTokens.filter((t) => t.balance).reduce((a, b) => a + b.weight, 0)
-          const filteredTokens = parsedTokens.map((t) => {
-            return {
-              ...t,
-              originWeight: t.weight,
-              weight: t.balance ? (t.weight / totalWeight) : 0
-            }
-          })
-
-          setStakingTokens(filteredTokens)
         })
-        .catch((e) => {
-          console.log(e)
-        })
+
+        setStakingTokens(filteredTokens)
       } catch (e) {
         console.log(e)
       }
     }
   }
-
-  // useEffect(() => {
-  //   client.api.smartContract.invokeWasmRead({
-  //     scriptHash: STAKING_ADDRESS,
-  //     operation: 'staking_info',
-  //     args: []
-  //   })
-  //   .then((infoStr) => {
-  //     const info = {}
-  //     const strReader = new StringReader(infoStr)
-  //     info.amount = strReader.readUint128()
-  //     info.period = strReader.readUint128()
-  //     info.start_time = strReader.readUint128()
-  //     info.settled_time = strReader.readUint128()
-  //     info.interest = info.amount / info.period
-
-  //     setStakingInfo(info)
-  //   })
-  //   .catch((e) => {
-  //     handleError(e, (errorCode) => {
-  //       if (errorCode === 'CONTRACT_ADDRESS_ERROR') {
-  //         setStopStakingInterval(true)
-  //       } else {
-  //         console.log('get staking info', e)
-  //       }
-  //     })
-  //   })
-  // }, [])
 
   function onSelectToken(token) {
     if (!account) {
@@ -169,7 +146,7 @@ const Staking = () => {
         <div className="pool-list">
           {generateStakingPool()}
         </div>
-        { !showClosed ? <div className="closed-pool-entrance" onClick={() => setShowClosed(true)}>Unstake from Closed Pool</div> : null }
+        { showClosedEntry ? <div className="closed-pool-entrance" onClick={() => setShowClosed(true)}>Unstake from Closed Pool</div> : null }
       </div>
     </div>
   )

@@ -81,10 +81,10 @@ const Synth = () => {
   }, [pairs, tokens, marketStat])
 
   useEffect(() => {
-    function getAvailableReward() {
+    async function getAvailableReward() {
       if (account && unxToken.id && SYNTH_ADDRESS) {
         try {
-          client.api.smartContract.invokeWasmRead({
+          const claimStr = await client.api.smartContract.invokeWasmRead({
             scriptHash: SYNTH_ADDRESS,
             operation: 'claim_unx',
             args: [
@@ -98,15 +98,11 @@ const Synth = () => {
               }
             ]
           })
-          .then((claimStr) => {
-            const strReader = new StringReader(claimStr)
-            const availableReward = strReader.readUint128()
 
-            setAvailableReward(new BigNumber(availableReward).toString())
-          })
-          .catch((e) => {
-            console.log('get market stat', e)
-          })
+          const strReader = new StringReader(claimStr)
+          const availableReward = strReader.readUint128()
+
+          setAvailableReward(new BigNumber(availableReward).toString())
         } catch (e) {
           console.log(e)
         }
@@ -121,127 +117,124 @@ const Synth = () => {
   }, [account, unxToken, SYNTH_ADDRESS])
 
   useEffect(() => {
-    function getStat() {
+    async function getStat() {
       if (tokens.length && SYNTH_ADDRESS) {
         try {
-          client.api.smartContract.invokeWasmRead({
+          const statStr = await client.api.smartContract.invokeWasmRead({
             scriptHash: SYNTH_ADDRESS,
             operation: 'stat',
             args: []
-          }).then((statStr) => {
-            const strReader = new StringReader(statStr)
-    
-            reverseHex(strReader.read(20)) // govAddress
-            strReader.readUint128() // daiTokenId
-            strReader.readUint128() // unxTokenId
-            strReader.readUint128() // pairId
+          })
+          const strReader = new StringReader(statStr)
+  
+          reverseHex(strReader.read(20)) // govAddress
+          strReader.readUint128() // daiTokenId
+          strReader.readUint128() // unxTokenId
+          strReader.readUint128() // pairId
 
-            const liveAssetCount = strReader.readNextLen()
-            const liveAssets = []
-            for (let i = 0; i < liveAssetCount; i++) {
-              const asset = {}
-              asset.assetId = strReader.readUint128()
-              asset.tokenId = strReader.readUint128()
+          const liveAssetCount = strReader.readNextLen()
+          const liveAssets = []
+          for (let i = 0; i < liveAssetCount; i++) {
+            const asset = {}
+            asset.assetId = strReader.readUint128()
+            asset.tokenId = strReader.readUint128()
 
-              const token = tokens.find((t) => t.id === asset.tokenId)
-              asset.tokenName = token.name
-              asset.decimals = token.decimals
-              asset.leverageType = strReader.readNextByte()
-              asset.times = strReader.readUint128()
-              asset.entryPrice = readBigNumberUint128(strReader)
-              asset.lowLimit = readBigNumberUint128(strReader)
-              asset.highLimit = readBigNumberUint128(strReader)
-              asset.status = strReader.readNextByte()
-              asset.frozenBy = reverseHex(strReader.read(20))
-              asset.frozenTime = strReader.readUint64()
+            const token = tokens.find((t) => t.id === asset.tokenId)
+            asset.tokenName = token.name
+            asset.decimals = token.decimals
+            asset.leverageType = strReader.readNextByte()
+            asset.times = strReader.readUint128()
+            asset.entryPrice = readBigNumberUint128(strReader)
+            asset.lowLimit = readBigNumberUint128(strReader)
+            asset.highLimit = readBigNumberUint128(strReader)
+            asset.status = strReader.readNextByte()
+            asset.frozenBy = reverseHex(strReader.read(20))
+            asset.frozenTime = strReader.readUint64()
 
-              if (asset.tokenName.startsWith('p')) {
-                asset.tokenName = asset.tokenName.replace('p', '')
-              }
-              asset.tokenName = `${asset.leverageType === LEVERAGE_TYPE.Negative ? 'i' : 's'}${asset.tokenName}`
-              asset.id = asset.assetId
-              asset.value = asset.assetId
-              asset.label = `${asset.tokenName}${asset.times !== 1 ? ` (${asset.times}x)` : ''}`
-              liveAssets.push(asset)
+            if (asset.tokenName.startsWith('p')) {
+              asset.tokenName = asset.tokenName.replace('p', '')
+            }
+            asset.tokenName = `${asset.leverageType === LEVERAGE_TYPE.Negative ? 'i' : 's'}${asset.tokenName}`
+            asset.id = asset.assetId
+            asset.value = asset.assetId
+            asset.label = `${asset.tokenName}${asset.times !== 1 ? ` (${asset.times}x)` : ''}`
+            liveAssets.push(asset)
+          }
+
+          const frozenAssetCount = strReader.readNextLen()
+          const frozenAssets = []
+          for (let i = 0; i < frozenAssetCount; i++) {
+            const asset = {}
+            asset.assetId = strReader.readUint128()
+            asset.tokenId = strReader.readUint128()
+
+            const token = tokens.find((t) => t.id === asset.tokenId)
+            asset.tokenName = token.name
+            asset.decimals = token.decimals
+            asset.leverageType = strReader.readNextByte()
+            asset.times = strReader.readUint128()
+            asset.entryPrice = readBigNumberUint128(strReader)
+            asset.lowLimit = readBigNumberUint128(strReader)
+            asset.highLimit = readBigNumberUint128(strReader)
+            asset.status = strReader.readNextByte()
+            asset.frozenBy = reverseHex(strReader.read(20))
+            asset.frozenTime = strReader.readUint64()
+
+            if (asset.tokenName.startsWith('p')) {
+              asset.tokenName = asset.tokenName.replace('p', '')
+            }
+            asset.tokenName = `${asset.leverageType === LEVERAGE_TYPE.Negative ? 'i' : 's'}${asset.tokenName}`
+            asset.label = `${asset.tokenName}${asset.times !== 1 ? ` (${asset.times}x)` : ''}`
+  
+            frozenAssets.push(asset)
+          }
+
+          const tokenPriceCount = strReader.readNextLen()
+          const tokenPrices = []
+          for (let i = 0; i < tokenPriceCount; i++) {
+            const tokenPrice = {}
+            tokenPrice.tokenId = strReader.readUint128()
+            tokenPrice.price = readBigNumberUint128(strReader)
+  
+            tokenPrices.push(tokenPrice)
+          }
+
+          for (let liveAsset of liveAssets) {
+            const currentPrice = tokenPrices.find((tp) => tp.tokenId === liveAsset.tokenId).price
+            let tokenPrice = currentPrice
+
+            if (liveAsset.lowLimit && new BigNumber(currentPrice).lte(new BigNumber(liveAsset.lowLimit))) {
+              tokenPrice = liveAsset.lowLimit
+            } else if (liveAsset.highLimit && new BigNumber(currentPrice).gte(new BigNumber(liveAsset.highLimit))) {
+              tokenPrice = liveAsset.highLimit
             }
 
-            const frozenAssetCount = strReader.readNextLen()
-            const frozenAssets = []
-            for (let i = 0; i < frozenAssetCount; i++) {
-              const asset = {}
-              asset.assetId = strReader.readUint128()
-              asset.tokenId = strReader.readUint128()
+            liveAsset.tokenPrice = tokenPrice
 
-              const token = tokens.find((t) => t.id === asset.tokenId)
-              asset.tokenName = token.name
-              asset.decimals = token.decimals
-              asset.leverageType = strReader.readNextByte()
-              asset.times = strReader.readUint128()
-              asset.entryPrice = readBigNumberUint128(strReader)
-              asset.lowLimit = readBigNumberUint128(strReader)
-              asset.highLimit = readBigNumberUint128(strReader)
-              asset.status = strReader.readNextByte()
-              asset.frozenBy = reverseHex(strReader.read(20))
-              asset.frozenTime = strReader.readUint64()
-
-              if (asset.tokenName.startsWith('p')) {
-                asset.tokenName = asset.tokenName.replace('p', '')
-              }
-              asset.tokenName = `${asset.leverageType === LEVERAGE_TYPE.Negative ? 'i' : 's'}${asset.tokenName}`
-              asset.label = `${asset.tokenName}${asset.times !== 1 ? ` (${asset.times}x)` : ''}`
-    
-              frozenAssets.push(asset)
+            if (liveAsset.leverageType === LEVERAGE_TYPE.Positive) {
+              liveAsset.price = new BigNumber(liveAsset.entryPrice).plus(new BigNumber(tokenPrice).times(liveAsset.times)).minus(new BigNumber(liveAsset.entryPrice).times(liveAsset.times)).toString()
+            } else {
+              liveAsset.price = new BigNumber(liveAsset.entryPrice).plus(new BigNumber(liveAsset.entryPrice).times(liveAsset.times)).minus(new BigNumber(tokenPrice).times(liveAsset.times)).toString()
             }
 
-            const tokenPriceCount = strReader.readNextLen()
-            const tokenPrices = []
-            for (let i = 0; i < tokenPriceCount; i++) {
-              const tokenPrice = {}
-              tokenPrice.tokenId = strReader.readUint128()
-              tokenPrice.price = readBigNumberUint128(strReader)
-    
-              tokenPrices.push(tokenPrice)
+            if ((liveAsset.lowLimit && new BigNumber(liveAsset.tokenPrice).lte(new BigNumber(liveAsset.lowLimit))) || (liveAsset.highLimit && new BigNumber(liveAsset.tokenPrice).gte(new BigNumber(liveAsset.highLimit)))) {
+              liveAsset.unprocessedFrozen = true
             }
+          }
 
-            for (let liveAsset of liveAssets) {
-              const currentPrice = tokenPrices.find((tp) => tp.tokenId === liveAsset.tokenId).price
-              let tokenPrice = currentPrice
-
-              if (liveAsset.lowLimit && currentPrice <= liveAsset.lowLimit) {
-                tokenPrice = liveAsset.lowLimit
-              } else if (liveAsset.highLimit && currentPrice >= liveAsset.highLimit) {
-                tokenPrice = liveAsset.highLimit
-              }
-
-              liveAsset.tokenPrice = tokenPrice
-
-              if (liveAsset.leverageType === LEVERAGE_TYPE.Positive) {
-                liveAsset.price = new BigNumber(liveAsset.entryPrice).plus(new BigNumber(tokenPrice).times(liveAsset.times)).minus(new BigNumber(liveAsset.entryPrice).times(liveAsset.times)).toString()
-              } else {
-                liveAsset.price = new BigNumber(liveAsset.entryPrice).plus(new BigNumber(liveAsset.entryPrice).times(liveAsset.times)).minus(new BigNumber(tokenPrice).times(liveAsset.times)).toString()
-              }
-
-              if ((liveAsset.lowLimit && liveAsset.tokenPrice <= liveAsset.lowLimit) || (liveAsset.highLimit && liveAsset.tokenPrice >= liveAsset.highLimit)) {
-                liveAsset.unprocessedFrozen = true
-              }
+          for (let frozenAsset of frozenAssets) {
+            frozenAsset.tokenPrice = tokenPrices.find((tp) => tp.tokenId === frozenAsset.tokenId).price
+            if (frozenAsset.status === ASSET_STATUS.HighLimit) {
+              frozenAsset.tokenPrice = frozenAsset.highLimit
+            } else if (frozenAsset.status === ASSET_STATUS.LowLimit) {
+              frozenAsset.tokenPrice = frozenAsset.lowLimit
             }
+          }
 
-            for (let frozenAsset of frozenAssets) {
-              frozenAsset.tokenPrice = tokenPrices.find((tp) => tp.tokenId === frozenAsset.tokenId).price
-              if (frozenAsset.status === ASSET_STATUS.HighLimit) {
-                frozenAsset.tokenPrice = frozenAsset.highLimit
-              } else if (frozenAsset.status === ASSET_STATUS.LowLimit) {
-                frozenAsset.tokenPrice = frozenAsset.lowLimit
-              }
-            }
-
-            setStat({
-              liveAssets,
-              frozenAssets,
-              tokenPrices
-            })
-          }).catch((e) => {
-            console.log('get synth stat', e)
+          setStat({
+            liveAssets,
+            frozenAssets,
+            tokenPrices
           })
         } catch (e) {
           console.log('get synth stat', e)
@@ -256,10 +249,10 @@ const Synth = () => {
   }, [tokens, SYNTH_ADDRESS])
 
   useEffect(() => {
-    function getMarketStat() {
+    async function getMarketStat() {
       if (account && unxToken.id && SYNTH_ADDRESS) {
         try {
-          client.api.smartContract.invokeWasmRead({
+          const statStr = await client.api.smartContract.invokeWasmRead({
             scriptHash: SYNTH_ADDRESS,
             operation: 'market_stat',
             args: [
@@ -273,72 +266,65 @@ const Synth = () => {
               }
             ]
           })
-          .then((statStr) => {
-            const strReader = new StringReader(statStr)
+          const strReader = new StringReader(statStr)
 
-            const marketAssetBalanceCount = strReader.readNextLen()
-            const marketAssetBalances = []
-            let marketAssetValueSum = new BigNumber(0)
-            for (let i = 0; i < marketAssetBalanceCount; i++) {
-              const assetBalance = {}
-              assetBalance.assetId = strReader.readUint128()
-              assetBalance.balance = readBigNumberUint128(strReader)
-              assetBalance.assetPrice = readBigNumberUint128(strReader)
+          const marketAssetBalanceCount = strReader.readNextLen()
+          const marketAssetBalances = []
+          let marketAssetValueSum = new BigNumber(0)
+          for (let i = 0; i < marketAssetBalanceCount; i++) {
+            const assetBalance = {}
+            assetBalance.assetId = strReader.readUint128()
+            assetBalance.balance = readBigNumberUint128(strReader)
+            assetBalance.assetPrice = readBigNumberUint128(strReader)
 
-              const asset = stat.liveAssets ? [...stat.liveAssets, ...stat.frozenAssets].find((la) => la.assetId === assetBalance.assetId) : null
+            const asset = stat.liveAssets ? [...stat.liveAssets, ...stat.frozenAssets].find((la) => la.assetId === assetBalance.assetId) : null
 
-              if (asset) {
-                marketAssetValueSum = marketAssetValueSum.plus(new BigNumber(assetBalance.assetPrice).times(assetBalance.balance).div(10 ** asset.decimals))
-              }
-    
-              marketAssetBalances.push(assetBalance)
+            if (asset) {
+              marketAssetValueSum = marketAssetValueSum.plus(new BigNumber(assetBalance.assetPrice).times(assetBalance.balance).div(10 ** asset.decimals))
             }
+  
+            marketAssetBalances.push(assetBalance)
+          }
 
-            const accountAssetBalanceCount = strReader.readNextLen()
-            const accountAssetBalances = []
-            let accountAssetValueSum = new BigNumber(0)
-            for (let i = 0; i < accountAssetBalanceCount; i++) {
-              const assetBalance = {}
-              assetBalance.assetId = strReader.readUint128()
-              assetBalance.balance = readBigNumberUint128(strReader)
-              assetBalance.assetPrice = readBigNumberUint128(strReader)
+          const accountAssetBalanceCount = strReader.readNextLen()
+          const accountAssetBalances = []
+          let accountAssetValueSum = new BigNumber(0)
+          for (let i = 0; i < accountAssetBalanceCount; i++) {
+            const assetBalance = {}
+            assetBalance.assetId = strReader.readUint128()
+            assetBalance.balance = readBigNumberUint128(strReader)
+            assetBalance.assetPrice = readBigNumberUint128(strReader)
 
-              const asset = stat.liveAssets ? [...stat.liveAssets, ...stat.frozenAssets].find((la) => la.assetId === assetBalance.assetId) : null
+            const asset = stat.liveAssets ? [...stat.liveAssets, ...stat.frozenAssets].find((la) => la.assetId === assetBalance.assetId) : null
 
-              if (asset) {
-                accountAssetValueSum = accountAssetValueSum.plus(new BigNumber(assetBalance.assetPrice).times(assetBalance.balance).div(10 ** asset.decimals))
-              }
-    
-              accountAssetBalances.push(assetBalance)
+            if (asset) {
+              accountAssetValueSum = accountAssetValueSum.plus(new BigNumber(assetBalance.assetPrice).times(assetBalance.balance).div(10 ** asset.decimals))
             }
+  
+            accountAssetBalances.push(assetBalance)
+          }
 
-            const marketStakeValue = readBigNumberUint128(strReader)
-            const accountStakeValue = readBigNumberUint128(strReader)
-            const marketTokenBalance = readBigNumberUint128(strReader)
-            const accountClaimedValue = readBigNumberUint128(strReader)
-            const accountWithdrawedStakeValue = readBigNumberUint128(strReader)
-            const transferable = (marketAssetValueSum.toString() !== '0') ? accountAssetValueSum.div(marketAssetValueSum).times(marketTokenBalance).toString() : '0'
+          const marketStakeValue = readBigNumberUint128(strReader)
+          const accountStakeValue = readBigNumberUint128(strReader)
+          const marketTokenBalance = readBigNumberUint128(strReader)
+          const accountClaimedValue = readBigNumberUint128(strReader)
+          const accountWithdrawedStakeValue = readBigNumberUint128(strReader)
+          const transferable = (marketAssetValueSum.toString() !== '0') ? accountAssetValueSum.div(marketAssetValueSum).times(marketTokenBalance).toString() : '0'
 
-            const parsedMarketStat = {
-              marketAssetBalances,
-              accountAssetBalances,
-              marketAssetValue: marketAssetValueSum.toString(),
-              accountAssetValue: accountAssetValueSum.toString(),
-              transferable,
-              marketStakeValue,
-              accountStakeValue,
-              marketTokenBalance,
-              accountClaimedValue,
-              accountWithdrawedStakeValue
-            }
+          const parsedMarketStat = {
+            marketAssetBalances,
+            accountAssetBalances,
+            marketAssetValue: marketAssetValueSum.toString(),
+            accountAssetValue: accountAssetValueSum.toString(),
+            transferable,
+            marketStakeValue,
+            accountStakeValue,
+            marketTokenBalance,
+            accountClaimedValue,
+            accountWithdrawedStakeValue
+          }
 
-            // setMarketAssetValue(marketAssetValueSum.toString())
-            // setAccountAssetValue(accountAssetValueSum.toString())
-            setMarketStat(parsedMarketStat)
-          })
-          .catch((e) => {
-            console.log('get market stat', e)
-          })
+          setMarketStat(parsedMarketStat)
         } catch (e) {
           console.log(e)
         }
@@ -356,6 +342,8 @@ const Synth = () => {
     setMintAmount(amount)
     if (unxPrice && amount) {
       setUnxNeededForMint(new BigNumber(amount).times(mintAsset.price).div(unxPrice).div(1 - TRANSACTION_FEE_RATE).toFixed(unxToken.decimals))
+    } else if (Number(amount) === 0) {
+      setUnxNeededForMint('')
     }
   }
 
@@ -363,6 +351,8 @@ const Synth = () => {
     setUnxNeededForMint(amount)
     if (unxPrice && amount) {
       setMintAmount(new BigNumber(amount).times(unxPrice).div(mintAsset.price).times(1 - TRANSACTION_FEE_RATE).toFixed(mintAsset.decimals))
+    } else if (Number(amount) === 0) {
+      setMintAmount('')
     }
   }
 
@@ -370,6 +360,8 @@ const Synth = () => {
     setBurnAmount(amount)
     if (unxPrice && amount) {
       setUnxGetForBurn(new BigNumber(amount).times(burnAsset.assetPrice).div(unxPrice).times(1 - TRANSACTION_FEE_RATE).toFixed(unxToken.decimals))
+    } else if (Number(amount) === 0) {
+      setUnxGetForBurn('')
     }
   }
 
@@ -377,6 +369,8 @@ const Synth = () => {
     setUnxGetForBurn(amount)
     if (unxPrice && amount) {
       setBurnAmount(new BigNumber(amount).times(unxPrice).div(burnAsset.assetPrice).div(1 - TRANSACTION_FEE_RATE).toFixed(burnAsset.decimals))
+    } else if (Number(amount) === 0) {
+      setBurnAmount('')
     }
   }
 
@@ -384,6 +378,8 @@ const Synth = () => {
     setExchangeAmount(amount)
     if (amount) {
       setExchangeToAmount(new BigNumber(exchangeAsset.price).div(exchangeToAsset.price).times(amount).times(10 ** exchangeAsset.decimals).div(10 ** exchangeToAsset.decimals).times(1 - TRANSACTION_FEE_RATE).toFixed(exchangeToAsset.decimals))
+    } else if (Number(amount) === 0) {
+      setExchangeToAmount('')
     }
   }
 
@@ -391,6 +387,29 @@ const Synth = () => {
     setExchangeToAmount(amount)
     if (amount) {
       setExchangeAmount(new BigNumber(amount).times(10 ** exchangeToAsset.decimals).div(10 ** exchangeAsset.decimals).times(exchangeToAsset.price).div(exchangeAsset.price).div(1 - TRANSACTION_FEE_RATE).toFixed(exchangeAsset.decimals))
+    } else if (Number(amount) === 0) {
+      setExchangeAmount('')
+    }
+  }
+
+  const maxBurnAmount = () => {
+    if (burnAsset) {
+      handleBurnAmountChange(new BigNumber(burnAsset.balance).div(10 ** burnAsset.decimals).toString())
+    }
+  }
+
+  const maxExchangeAmount = () => {
+    if (exchangeAsset) {
+      handleExchangeAmountChange(new BigNumber(exchangeAsset.balance).div(10 ** exchangeAsset.decimals).toString())
+    }
+  }
+
+  const handleChangeExchangeToAsset = (asset) => {
+    setExchangeToAsset(asset)
+    if (exchangeAmount) {
+      setExchangeToAmount(new BigNumber(exchangeAsset.price).div(asset.price).times(exchangeAmount).times(10 ** exchangeAsset.decimals).div(10 ** asset.decimals).times(1 - TRANSACTION_FEE_RATE).toFixed(asset.decimals))
+    } else if (Number(exchangeAmount) === 0) {
+      setExchangeToAmount('')
     }
   }
 
@@ -707,24 +726,6 @@ const Synth = () => {
     }
   }
 
-  const maxBurnAmount = () => {
-    if (burnAsset) {
-      handleBurnAmountChange(new BigNumber(burnAsset.balance).div(10 ** burnAsset.decimals).toString())
-    }
-  }
-
-  const maxExchangeAmount = () => {
-    if (exchangeAsset) {
-      handleExchangeAmountChange(new BigNumber(exchangeAsset.balance).div(10 ** exchangeAsset.decimals).toString())
-    }
-  }
-
-  const handleChangeExchangeToAsset = (asset) => {
-    setExchangeToAsset(asset)
-    setExchangeAmount('')
-    setExchangeToAmount('')
-  }
-
   const calcEffectiveLeverage = (asset) => {
     if (asset.leverageType === LEVERAGE_TYPE.Positive) {
       return new BigNumber(asset.tokenPrice).times(asset.times)
@@ -737,11 +738,24 @@ const Synth = () => {
     }
   }
 
+  const getPriceDetail = (asset) => {
+    let txt = `Entry Price: ${asset.entryPrice}`
+    if (Number(asset.lowLimit)) {
+      txt += ` Low Limit: ${asset.lowLimit}`
+    }
+    if (Number(asset.highLimit)) {
+      txt += ` High Limit: ${asset.highLimit}`
+    }
+    
+    return txt
+  }
+
   const renderAssetList = () => {
     if (synthType === 'mint') {
       if (stat.liveAssets) {
         return stat.liveAssets.map((la) => {
           const accountAsset = marketStat.accountAssetBalances ? marketStat.accountAssetBalances.find((ab) => ab.assetId === la.assetId) : null
+          const showPriceDetail = la.times === 1 && la.leverageType === LEVERAGE_TYPE.Negative
 
           if (accountAsset) {
             la.holdings = new BigNumber(accountAsset.assetPrice).div(SYNTH_PRICE_DECIMALS).times(accountAsset.balance).div(10 ** la.decimals).toString()
@@ -753,11 +767,15 @@ const Synth = () => {
             <div className={`synth-assets-list-item ${la.unprocessedFrozen ? 'unprocessed-frozen' : ''}`} key={la.assetId}>
               <div className="synth-assets-list-item-name">
                 <div className={`synth-assets-list-item-icon icon-${la.tokenName}`}>
-                  {la.label}
+                  {
+                    showPriceDetail ? (
+                      <Tooltip placement="top" overlay={getPriceDetail(la)}><span>{la.label}</span></Tooltip>
+                    ) : <span>{la.label}</span>
+                  }
                   {
                     la.unprocessedFrozen ? (
                       <Tooltip placement="top" overlay="The first one that freezes an asset will get 1‰ of burning fee from all holders">
-                        <span onClick={() => handleFreezeAsset(la)}></span>
+                        <span className="freeze-asset-btn" onClick={() => handleFreezeAsset(la)}></span>
                       </Tooltip>
                     ) : null
                   }
@@ -789,7 +807,7 @@ const Synth = () => {
 
           if (asset) {
             if (!asset.isFrozen) {
-              if ((asset.lowLimit && asset.tokenPrice <= asset.lowLimit) || (asset.highLimit && asset.tokenPrice >= asset.highLimit)) {
+              if ((asset.lowLimit && new BigNumber(asset.tokenPrice).lte(new BigNumber(asset.lowLimit))) || (asset.highLimit && new BigNumber(asset.tokenPrice).gte(new BigNumber(asset.highLimit)))) {
                 asset.unprocessedFrozen = true
               }
             }
@@ -851,7 +869,7 @@ const Synth = () => {
       <div className="synth-overview-sections">
         <div className="synth-overview-section">
           <div className="synth-overview-sub-section">
-            <p className="synth-overview-section-title">Staking APY</p>
+            <p className="synth-overview-section-title">Mint APY</p>
             <p className="synth-overview-detail">{(marketStat.marketStakeValue && unxToken.id) ? new BigNumber(poolStat.distributionInfo.amount || 0).div(poolStat.distributionInfo.period || 1).times(86400 * 365).times(10 ** unxToken.decimals).times(synthPoolWeightRatio || 0).div(marketStat.marketStakeValue).toFixed(2) : 0}%</p>
           </div>
           <div className="synth-overview-section-group">
@@ -888,6 +906,7 @@ const Synth = () => {
             <div className={`synth-type-item ${synthType === 'mint' ? 'selected' : ''}`} onClick={() => setSynthType('mint')}>Mint</div>
             <div className={`synth-type-item ${synthType === 'burn' ? 'selected' : ''}`} onClick={() => setSynthType('burn')}>Burn</div>
           </div>
+          <div className="market-asset-value">Market Asset Value: &nbsp;&nbsp;<span>${new BigNumber(marketStat.marketAssetValue || 0).div(SYNTH_PRICE_DECIMALS).toFixed(9)}</span></div>
           <div className="synth-assets-panel">
             <div className="synth-assets-panel-header">
               <div className="panel-header-item panel-header-item-asset">Asset</div>
@@ -917,7 +936,7 @@ const Synth = () => {
               <div className="mint-burn-account-info">
                 <div className="mint-burn-account-info-line">Assets($) <span>{new BigNumber(marketStat.accountAssetValue).div(SYNTH_PRICE_DECIMALS).toString()}</span></div>
               </div>
-              <div className="mint-burn-info-note"><span>NOTE</span>: when " Effective Leverage" is lower than 0.5 or higher than 2.0 times of nominal leverage, your asset will be frozen. <span>You have to burn it within 3 days.</span> Otherwise, asset will be burned and the UNX will be donated to staked pool.</div>
+              <div className="mint-burn-info-note"><strong>NOTE</strong>: when "Effective Leverage" is lower than 0.5 or higher than 2.0 times of nominal leverage, your asset will be frozen. <span>You have to burn it within 3 days.</span> Otherwise, your asset will be burned and the UNX will be donated to staked pool.</div>
             </div>
           )
         }
@@ -986,7 +1005,9 @@ const Synth = () => {
               <div className="exchange-wrapper">
                 <div className="exchange-wrapper-title">Exchange {exchangeAsset.label}</div>
                 <div className="form-item">
-                  <div className="input-label">Amount</div>
+                  <div className="input-label">Amount
+                    <span className="hint">Balance: {new BigNumber(exchangeAsset.balance).div(10 ** exchangeAsset.decimals).toString()}</span>
+                  </div>
                   <div className="input-wrapper">
                     <Input placeholder="0.0" value={exchangeAmount} decimals={exchangeAsset.decimals || 0} onChange={(amount) => handleExchangeAmountChange(amount)} />
                     <div className="input-max-btn" onClick={() => maxExchangeAmount()}>MAX</div>
