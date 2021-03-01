@@ -48,8 +48,8 @@ const Swap = () => {
 
   useEffect(() => {
     if (swapTokens.length) {
-      setToken1(swapTokens.find((st) => st.name === 'pDAI'))
-      setToken2(swapTokens.find((st) => st.name === 'UNX'))
+      setToken1(swapTokens.find((st) => st.name === (localStorage.getItem('swap_token1') || 'pDAI')))
+      setToken2(swapTokens.find((st) => st.name === (localStorage.getItem('swap_token2') || 'UNX')))
     }
   }, [swapTokens])
 
@@ -73,6 +73,7 @@ const Swap = () => {
   function onChangeToken1(token) {
     if (token.id !== token1.id) {
       setToken1(token)
+      localStorage.setItem('swap_token1', token.name)
       setToken1Amount('')
       setToken2Amount('')
     }
@@ -81,6 +82,7 @@ const Swap = () => {
   function onChangeToken2(token) {
     if (token.id !== token2.id) {
       setToken2(token)
+      localStorage.setItem('swap_token2', token.name)
       setToken1Amount('')
       setToken2Amount('')
     }
@@ -256,7 +258,7 @@ const Swap = () => {
             tokens={swapTokens}
             value={token1Amount}
             round='up'
-            defaultToken={swapTokens.length && swapTokens.find((st) => st.name === 'pDAI')}
+            defaultToken={swapTokens.length && swapTokens.find((st) => st.name === (localStorage.getItem('swap_token1') || 'pDAI'))}
             onTokenChange={(token) => onChangeToken1(token)}
             onAmountChange={(amount) => onToken1AmountChange(amount)} />
           <div className="icon-arrow-down"></div>
@@ -266,7 +268,7 @@ const Swap = () => {
             tokens={swapTokens}
             value={token2Amount}
             round='down'
-            defaultToken={swapTokens.length && swapTokens.find((st) => st.name === 'UNX')}
+            defaultToken={swapTokens.length && swapTokens.find((st) => st.name === (localStorage.getItem('swap_token2') || 'UNX'))}
             onTokenChange={(token) => onChangeToken2(token)}
             onAmountChange={(amount) => onToken2AmountChange(amount)} />
           { showPrice ? <div className="sw-price-wrapper">Price<span className="sw-price-info">{getPrice()}</span></div> : null }

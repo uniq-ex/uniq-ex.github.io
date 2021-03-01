@@ -49,6 +49,14 @@
   animation: loading 2s linear infinite;
 }
 
+.modal-icon-upgrading {
+  width: 128px;
+  height: 128px;
+  margin: 0 auto;
+  border-radius: 100px;
+  background: #fff url('../../assets/upgrade.svg') center / auto 64px no-repeat;
+}
+
 @-webkit-keyframes loading {
   0% {
     transform: rotate(0);

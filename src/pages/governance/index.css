@@ -15,6 +15,31 @@
   padding: 20px 24px;
 }
 
+.countdown-wrapper {
+  text-align: center;
+  padding: 20px 0;
+  font-size: 20px;
+  background: rgba(0, 0, 0, .03);
+}
+
+.countdown-wrapper .date-item {
+  display: inline-block;
+  width: 56px;
+  padding: 12px;
+  color: white;
+  font-size: 12px;
+  margin-left: 10px;
+  border-radius: 4px;
+  vertical-align: middle;
+  background: #222;
+}
+
+.countdown-wrapper .date-item p {
+  margin: 6px 0 0;
+  font-size: 24px;
+  font-weight: bold;
+}
+
 .overview-sections, .distribution-sections {
   display: flex;
   align-items: center;
@@ -26,8 +51,8 @@
   text-align: center;
 }
 
-.overview-left {
-  border-right: 1px solid #f5f5f5;
+.overview-right {
+  box-shadow: 15px 0 20px -20px inset rgba(0, 0, 0, .1);;
 }
 
 .overview-section-title {

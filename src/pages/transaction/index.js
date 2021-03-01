@@ -4,7 +4,7 @@ import { utils } from 'ontology-ts-sdk'
 import BigNumber from 'bignumber.js'
 import { useAlert } from 'react-alert'
 import { useMappedState, useDispatch } from 'redux-react-hook';
-import { getTokenBalance } from '../../utils/token'
+import { readBigNumberUint128, getTokenBalance } from '../../utils/token'
 import Input from '../../components/input'
 import { handleError } from '../../utils/errorHandle'
 import { getHashString } from '../../utils/common'
@@ -16,44 +16,44 @@ const { StringReader } = utils
 
 const Transaction = () => {
   const [pairNameKeyword, setPairNameKeyword] = useState('')
-  const [pairs, setPairs] = useState([])
-  const [tokenPair, setTokenPair] = useState({})
   const [showPairSelectModal, setShowPairSelectModal] = useState(false)
-  const [tradeType, setTradeType] = useState('buy')
-  const [tokenBalance, setTokenBalance] = useState('-')
-  const [makes, setMakes] = useState([])
-  const [myMakes, setMyMakes] = useState([])
-  const [makeView, setMakeView] = useState('all')
-  const [price, setPrice] = useState('')
-  const [amount, setAmount] = useState('')
-  const [total, setTotal] = useState('')
-  const [pool, setPool] = useState([])
-  const [lastPrice, setLastPrice] = useState(0)
-  const [feeRate, setFeeRate] = useState(0)
-  const [isValid, setIsValid] = useState(false)
-  const { account, stopInterval, tokens, CONTRACT_ADDRESS } = useMappedState((state) => ({
+  const { account, stopInterval, tokens, makes, myMakes, pairs, tradeType, tokenPair, makeView, pool, lastPrice, feeRate, isValid, tokenBalance, price, amount, total, CONTRACT_ADDRESS } = useMappedState((state) => ({
     account: state.wallet.account,
     stopInterval: state.common.stopInterval,
     tokens: state.common.tokens,
+    ...state.trade,
     CONTRACT_ADDRESS: state.gov.poolStat.pools.dex.address
   }))
   const dispatch = useDispatch()
   const setModal = useCallback((modalType, modalDetail) => dispatch({ type: 'SET_MODAL', modalType, modalDetail }), [])
   const setStopInterval = useCallback((stopInterval) => dispatch({ type: 'SET_STOP_INTERVAL', stopInterval }), [])
+  const setMakes = useCallback((makes) => dispatch({ type: 'SET_TRADE_MAKES', makes }), [])
+  const setMyMakes = useCallback((myMakes) => dispatch({ type: 'SET_TRADE_MY_MAKES', myMakes }), [])
+  const setPairs = useCallback((pairs) => dispatch({ type: 'SET_TRADE_PAIRS', pairs }), [])
+  const setTokenPair = useCallback((tokenPair) => dispatch({ type: 'SET_TRADE_TOKEN_PAIR', tokenPair }), [])
+  const setTradeType = useCallback((tradeType) => dispatch({ type: 'SET_TRADE_TYPE', tradeType }), [])
+  const setMakeView = useCallback((makeView) => dispatch({ type: 'SET_TRADE_MAKE_VIEW', makeView }), [])
+  const setPool = useCallback((pool) => dispatch({ type: 'SET_TRADE_POOL', pool }), [])
+  const setLastPrice = useCallback((lastPrice) => dispatch({ type: 'SET_TRADE_LAST_PRICE', lastPrice }), [])
+  const setFeeRate = useCallback((feeRate) => dispatch({ type: 'SET_TRADE_FEE_RATE', feeRate }), [])
+  const setIsValid = useCallback((isValid) => dispatch({ type: 'SET_TRADE_IS_VALID', isValid }), [])
+  const setTokenBalance = useCallback((tokenBalance) => dispatch({ type: 'SET_TRADE_TOKEN_BALANCE', tokenBalance }), [])
+  const setPrice = useCallback((price) => dispatch({ type: 'SET_TRADE_PRICE', price }), [])
+  const setAmount = useCallback((amount) => dispatch({ type: 'SET_TRADE_AMOUNT', amount }), [])
+  const setTotal = useCallback((total) => dispatch({ type: 'SET_TRADE_TOTAL', total }), [])
 
   const Alert = useAlert()
 
-  const urlPairName = decodeURIComponent(getHashString(window.location.hash, 'pair') || '')
+  const urlPairName = decodeURIComponent(getHashString(window.location.hash, 'pair') || '') || (localStorage.getItem('trade_token_pair') || '')
 
   useEffect(() => {
     if (pairs.length && !tokenPair.name) {
-      setTokenPair(pairs.find((p) => p.name === `${urlPairName}`) || pairs.find((p) => p.name === 'pDAI/UNX'))
+      setTokenPair(pairs.find((p) => p.name === `${urlPairName}`) || pairs.find((p) => p.name === 'pDAI/UNX') || pairs.find((p) => p.name === 'UNX/pDAI'))
     }
   }, [pairs])
 
   useEffect(() => {
     if (account && tokenPair.name) {
-      setTokenBalance('-')
       getTokenBalance(account, tradeType === 'buy' ? tokenPair.tokens[1] : tokenPair.tokens[0], (bl) => {
         setTokenBalance(bl)
       })
@@ -184,7 +184,8 @@ const Transaction = () => {
             const token = {}
             token.id = strReader.readUint128()
             const tempToken = tokens.find((t) => t.id === token.id)
-            token.balance = new BigNumber(strReader.readUint128()).div(new BigNumber(10 ** tempToken.decimals)).toString()
+            token.weight = strReader.readUint128()
+            token.balance = new BigNumber(readBigNumberUint128(strReader)).div(new BigNumber(10 ** tempToken.decimals)).toString()
   
             tokenPool.push(Object.assign(tempToken, token))
           }
@@ -193,10 +194,17 @@ const Transaction = () => {
             const tokenPairs = []
             for (let i = 0; i < tokenPool.length; i++) {
               for (let j = i + 1; j < tokenPool.length; j++) {
-                tokenPairs.push({
-                  name: `${tokenPool[i].name}/${tokenPool[j].name}`,
-                  tokens: [tokenPool[i], tokenPool[j]]
-                })
+                if (tokenPool[i].weight > tokenPool[j].weight || (tokenPool[i].weight === tokenPool[j].weight && tokenPool[i].id > tokenPool[j].id)) {
+                  tokenPairs.push({
+                    name: `${tokenPool[j].name}/${tokenPool[i].name}`,
+                    tokens: [tokenPool[j], tokenPool[i]]
+                  })
+                } else {
+                  tokenPairs.push({
+                    name: `${tokenPool[i].name}/${tokenPool[j].name}`,
+                    tokens: [tokenPool[i], tokenPool[j]]
+                  })
+                }
               }
             }
 
@@ -264,8 +272,9 @@ const Transaction = () => {
       const curMakes = (makeView === 'my' ? myMakes : makes)
       if (type === 'sell') {
         return curMakes.filter((m) => m.asset_token_id === tokenPair.tokens[0].id && m.price_token_id === tokenPair.tokens[1].id).map((m) => {
+          const isMine = makeView !== 'my' && !!myMakes.find((mm) => m.make_id === mm.make_id)
           return (
-            <div key={m.make_id} className="my-make-item reverse">
+            <div key={m.make_id} className={`my-make-item reverse ${isMine ? 'mine' : ''}`}>
               <div className="make-item-detail make-sell">{new BigNumber(m.price).div(PRICE_DECIMALS).toString()}</div>
               <div className="make-item-detail">{new BigNumber(m.amount).div((10 ** tokenPair.tokens[0].decimals)).toString()}</div>
               { makeView === 'my' && <div className="unmake-btn" onClick={() => onUnmake(m.make_id)}>Cancel</div> }
@@ -273,10 +282,11 @@ const Transaction = () => {
         })
       } else {
         return curMakes.filter((m) => m.asset_token_id === tokenPair.tokens[1].id && m.price_token_id === tokenPair.tokens[0].id).map((m) => {
+          const isMine = makeView !== 'my' && !!myMakes.find((mm) => m.make_id === mm.make_id)
           return (
-            <div key={m.make_id} className="my-make-item">
-              <div className="make-item-detail make-buy">{new BigNumber(PRICE_DECIMALS).div(m.price).toString()}</div>
-              <div className="make-item-detail">{new BigNumber(m.amount).times(m.price).div(PRICE_DECIMALS).div((10 ** tokenPair.tokens[1].decimals)).toString()}</div>
+            <div key={m.make_id} className={`my-make-item ${isMine ? 'mine' : ''}`}>
+              <div className="make-item-detail make-buy">{new BigNumber(m.price).div(PRICE_DECIMALS).toString()}</div>
+              <div className="make-item-detail">{new BigNumber(m.amount).div(m.price).times(PRICE_DECIMALS).div((10 ** tokenPair.tokens[1].decimals)).toString()}</div>
               { makeView === 'my' && <div className="unmake-btn" onClick={() => onUnmake(m.make_id)}>Cancel</div> }
             </div>)
         })
@@ -304,7 +314,7 @@ const Transaction = () => {
       try {
         const assetToken = tradeType === 'buy' ? tokenPair.tokens[1] : tokenPair.tokens[0]
         const priceToken = tradeType === 'buy' ? tokenPair.tokens[0] : tokenPair.tokens[1]
-        const tradePrice = tradeType === 'buy' ? new BigNumber(1).div(price).toString() : price
+        // const tradePrice = tradeType === 'buy' ? new BigNumber(1).div(price).toString() : price
         const tradeAmount = tradeType === 'buy' ? total : amount
         const args = [
           {
@@ -321,7 +331,7 @@ const Transaction = () => {
           },
           {
             type: 'Long',
-            value: new BigNumber(tradePrice).times(PRICE_DECIMALS).integerValue(BigNumber.ROUND_DOWN).toString()
+            value: new BigNumber(price).times(PRICE_DECIMALS).integerValue(BigNumber.ROUND_DOWN).toString()
           },
           {
             type: 'Long',
@@ -430,7 +440,9 @@ const Transaction = () => {
   }
 
   const handlePairClick = (pair) => {
+    setTokenBalance('-')
     setTokenPair(pair)
+    localStorage.setItem('trade_token_pair', pair.name)
     setShowPairSelectModal(false)
   }
 

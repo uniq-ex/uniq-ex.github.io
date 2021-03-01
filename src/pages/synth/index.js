@@ -740,12 +740,12 @@ const Synth = () => {
   }
 
   const getPriceDetail = (asset) => {
-    let txt = `Entry Price: ${asset.entryPrice}`
+    let txt = `Entry Price: ${new BigNumber(asset.entryPrice).div(SYNTH_PRICE_DECIMALS).toString()}`
     if (Number(asset.lowLimit)) {
-      txt += ` Low Limit: ${asset.lowLimit}`
+      txt += ` Low Limit: ${new BigNumber(asset.lowLimit).div(SYNTH_PRICE_DECIMALS).toString()}`
     }
     if (Number(asset.highLimit)) {
-      txt += ` High Limit: ${asset.highLimit}`
+      txt += ` High Limit: ${new BigNumber(asset.highLimit).div(SYNTH_PRICE_DECIMALS).toString()}`
     }
     
     return txt
@@ -754,9 +754,9 @@ const Synth = () => {
   const renderAssetList = () => {
     if (synthType === 'mint') {
       if (stat.liveAssets) {
-        return stat.liveAssets.map((la) => {
+        const assetList = stat.liveAssets.map((la) => {
           const accountAsset = marketStat.accountAssetBalances ? marketStat.accountAssetBalances.find((ab) => ab.assetId === la.assetId) : null
-          const showPriceDetail = la.times === 1 && la.leverageType === LEVERAGE_TYPE.Negative
+          const showPriceDetail = !(la.times === 1 && la.leverageType === LEVERAGE_TYPE.Positive)
 
           if (accountAsset) {
             la.holdings = new BigNumber(accountAsset.assetPrice).div(SYNTH_PRICE_DECIMALS).times(accountAsset.balance).div(10 ** la.decimals).toString()
@@ -791,8 +791,10 @@ const Synth = () => {
             </div>
           )
         })
+        return assetList.length ? assetList : (<div className="empty-asset-hint">No Assets</div>)
+      } else {
+        return (<div className="asset-loading-hint">Loading...</div>)
       }
-      return null
     } else {
       if (marketStat.accountAssetBalances) {
         const assetList = marketStat.accountAssetBalances.map((ab) => {
@@ -849,7 +851,9 @@ const Synth = () => {
           ) : null
         })
 
-        return assetList
+        return assetList.length ? assetList : (<div className="empty-asset-hint">No Assets</div>)
+      } else {
+        return (<div className="asset-loading-hint">Loading...</div>)
       }
     }
   }
@@ -889,13 +893,14 @@ const Synth = () => {
             <div className="synth-overview-sub-section">
               <p className="synth-overview-section-title">Staked Available</p>
               <p className="synth-overview-detail">{(marketStat.transferable && marketStat.transferable !== '0') ? (new BigNumber(marketStat.transferable)).div(10 ** unxToken.decimals).toFixed(unxToken.decimals) : '0'} <span>UNX</span>
-                { (marketStat.transferable && marketStat.transferable !== '0') ? <div className="synth-overview-action-btn synth-overview-action-btn-burn" onClick={() => onBurnAll()}>Burn All</div> : null }
+                { (marketStat.transferable && marketStat.transferable !== '0') ? <span className="synth-overview-action-btn synth-overview-action-btn-burn" onClick={() => onBurnAll()}>Burn All</span> : null }
               </p>
             </div>
             <div className="synth-overview-sub-section">
               <p className="synth-overview-section-title">Rewards Available</p>
-              <p className="synth-overview-detail">{unxToken.id ? new BigNumber(availableReward).div(10 ** unxToken.decimals).toString() : 0} <span>UNX</span>
-                { (availableReward && availableReward !== '0') ? <div className="synth-overview-action-btn" onClick={() => onClaim()}>Claim</div> : null }
+              <p className="synth-overview-detail">{unxToken.id ? new BigNumber(availableReward).div(10 ** unxToken.decimals).toString() : 0}
+                <span>UNX</span>
+                { (availableReward && availableReward !== '0') ? <span className="synth-overview-action-btn" onClick={() => onClaim()}>Claim</span> : null }
               </p>
             </div>
           </div>
@@ -907,7 +912,7 @@ const Synth = () => {
             <div className={`synth-type-item ${synthType === 'mint' ? 'selected' : ''}`} onClick={() => setSynthType('mint')}>Mint</div>
             <div className={`synth-type-item ${synthType === 'burn' ? 'selected' : ''}`} onClick={() => setSynthType('burn')}>Burn</div>
           </div>
-          <div className="market-asset-value">Market Asset Value: &nbsp;&nbsp;<span>${new BigNumber(marketStat.marketAssetValue || 0).div(SYNTH_PRICE_DECIMALS).toFixed(9)}</span></div>
+          <div className="market-asset-value">Market Asset Value: &nbsp;&nbsp;<span>${new BigNumber(marketStat.marketAssetValue || 0).div(SYNTH_PRICE_DECIMALS).toString()}</span></div>
           <div className="synth-assets-panel">
             <div className="synth-assets-panel-header">
               <div className="panel-header-item panel-header-item-asset">Asset</div>
@@ -963,6 +968,7 @@ const Synth = () => {
                   defaultToken={unxToken}
                   decimals={unxToken.decimals || 0}
                   onAmountChange={(amount) => handleUnxNeededForMintChange(amount)} />
+                <div className="fee-rate">* The fee rate of transaction is 0.1%</div>
                 <div className="mint-btn" onClick={() => onMint()}>Mint</div>
               </div>
             </div>
@@ -992,6 +998,7 @@ const Synth = () => {
                     <Input placeholder="0.0" value={unxGetForBurn} decimals={unxToken.decimals || 0} onChange={(amount) => handleUnxGetForBurnChange(amount)} />
                   </div>
                 </div>
+                <div className="fee-rate">* The fee rate of transaction is 0.1%</div>
                 <div className="burn-btn" onClick={() => onBurn()}>Burn</div>
               </div>
             </div>
@@ -1024,6 +1031,7 @@ const Synth = () => {
                   onTokenChange={(asset) => handleChangeExchangeToAsset(asset)}
                   onAmountChange={(amount) => handleChengeExchangeToAmount(amount)}
                   />
+                <div className="fee-rate">* The fee rate of transaction is 0.1%</div>
                 <div className="exchange-btn" onClick={() => onExchange()}>Exchange</div>
               </div>
             </div>

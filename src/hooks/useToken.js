@@ -13,6 +13,7 @@ export const useFetchTokens = () => {
     tokens: state.common.tokens
   }))
   const dispatch = useDispatch()
+  const setIsUpgrading = useCallback((isUpgrading) => dispatch({ type: 'SET_IS_UPGRADING', isUpgrading }), [])
   const setLoadingToken = useCallback((loadingToken) => dispatch({ type: 'SET_LOADING_TOKEN', loadingToken }), [])
   const setTokens = useCallback((tokens) => dispatch({ type: 'SET_TOKENS', tokens }), [])
   const setStopInterval = useCallback((stopInterval) => dispatch({ type: 'SET_STOP_INTERVAL', stopInterval }), [])
@@ -75,6 +76,10 @@ export const useFetchTokens = () => {
           token.label = token.name
 
           parsedTokens.push(token)
+        }
+
+        if (upgrade) {
+          setIsUpgrading(true)
         }
 
         setLoadingToken(false)
