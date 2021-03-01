@@ -12,25 +12,25 @@ import { bestSwap } from '../../utils/swap'
 import './index.css'
 
 const Swap = () => {
-  const [swapType, setSwapType] = useState('exactin')
-  const [token1, setToken1] = useState({})
-  const [token2, setToken2] = useState({})
-  const [token1Amount, setToken1Amount] = useState('')
-  const [token2Amount, setToken2Amount] = useState('')
-  const [isValidPair, setIsValidPair] = useState(false)
-  const [isValidSwap, setIsValidSwap] = useState(false)
-  const [bestPath, setBestPath] = useState([])
-  const [showPrice, setShowPrice] = useState(false)
   const [balanceChange, setBalanceChange] = useState(0)
-  const { account, slippage, pairs, swapTokens, SWAP_ADDRESS } = useMappedState((state) => ({
+  const { account, slippage, pairs, tokens: swapTokens, swapType, token1, token2, token1Amount, token2Amount, isValidPair, isValidSwap, bestPath, showPrice, SWAP_ADDRESS } = useMappedState((state) => ({
     account: state.wallet.account,
     slippage: state.wallet.slippage,
-    pairs: state.swap.pairs,
-    swapTokens: state.swap.tokens,
+    ...state.swap,
     SWAP_ADDRESS: state.gov.poolStat.pools.swap.address
   }))
   const dispatch = useDispatch()
   const setModal = useCallback((modalType, modalDetail) => dispatch({ type: 'SET_MODAL', modalType, modalDetail }), [])
+  const setSwapType = useCallback((swapType) => dispatch({ type: 'SET_SWAP_TYPE', swapType }), [])
+  const setToken1 = useCallback((token1) => dispatch({ type: 'SET_SWAP_TOKEN1', token1 }), [])
+  const setToken2 = useCallback((token2) => dispatch({ type: 'SET_SWAP_TOKEN2', token2 }), [])
+  const setToken1Amount = useCallback((token1Amount) => dispatch({ type: 'SET_TOKEN1_AMOUNT', token1Amount }), [])
+  const setToken2Amount = useCallback((token2Amount) => dispatch({ type: 'SET_TOKEN2_AMOUNT', token2Amount }), [])
+  const setIsValidPair = useCallback((isValidPair) => dispatch({ type: 'SET_IS_VALID_PAIR', isValidPair }), [])
+  const setIsValidSwap = useCallback((isValidSwap) => dispatch({ type: 'SET_IS_VALID_SWAP', isValidSwap }), [])
+  const setBestPath = useCallback((bestPath) => dispatch({ type: 'SET_SWAP_BEST_PATH', bestPath }), [])
+  const setShowPrice = useCallback((showPrice) => dispatch({ type: 'SET_SWAP_SHOW_RPICE', showPrice }), [])
+
   const Alert = useAlert()
   const history = useHistory()
 
@@ -92,7 +92,7 @@ const Swap = () => {
     if (amount !== token1Amount) {
       setSwapType('exactin')
       setToken1Amount(amount)
-      if (pairs.length && amount) {
+      if (isValidPair && amount) {
         const inputAmount = new BigNumber(amount).times(10 ** token1.decimals).toString()
         const [maxOutput, path] = bestSwap('exactin', inputAmount, pairs, token1.id, token2.id)
 
@@ -108,7 +108,7 @@ const Swap = () => {
     if (amount !== token2Amount) {
       setSwapType('exactout')
       setToken2Amount(amount)
-      if (pairs.length && amount) {
+      if (isValidPair && amount) {
         const outputAmount = amount * (10 ** token2.decimals)
         const [minInput, path] = bestSwap('exactout', outputAmount, pairs, token1.id, token2.id)
 

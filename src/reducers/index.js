@@ -7,6 +7,7 @@ import { swap } from './swap'
 import { staking } from './staking'
 import { synth } from './synth'
 import { trade } from './trade'
+import { pool } from './pool'
 
 const reducers = combineReducers({
   modal,
@@ -16,7 +17,8 @@ const reducers = combineReducers({
   swap,
   staking,
   synth,
-  trade
+  trade,
+  pool
 })
 
 export default reducers

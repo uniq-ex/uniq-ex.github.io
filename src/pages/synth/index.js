@@ -28,12 +28,10 @@ const Synth = () => {
   const [exchangeAmount, setExchangeAmount] = useState('')
   const [exchangeToAssets, setExchangeToAssets] = useState([])
   const [exchangeToAmount, setExchangeToAmount] = useState('')
-  const [unxToken, setUnxToken] = useState({})
-  const [unxPrice, setUnxPrice] = useState(0)
   const [showMintModal, setShowMintModal] = useState(false)
   const [showBurnModal, setShowBurnModal] = useState(false)
   const [showExchangeModal, setShowExchangeModal] = useState(false)
-  const { account, tokens, pairs, poolStat, stat, marketStat, availableReward, synthType, synthPoolWeightRatio, SYNTH_ADDRESS } = useMappedState((state) => ({
+  const { account, tokens, pairs, poolStat, stat, marketStat, availableReward, synthType, synthPoolWeightRatio, unxToken, unxPrice, SYNTH_ADDRESS } = useMappedState((state) => ({
     account: state.wallet.account,
     tokens: state.common.tokens,
     pairs: state.swap.pairs,
@@ -48,6 +46,8 @@ const Synth = () => {
   const setMarketStat = useCallback((marketStat) => dispatch({ type: 'SET_SYNTH_MARKET_STAT', marketStat }), [])
   const setAvailableReward = useCallback((availableReward) => dispatch({ type: 'SET_SYNTH_AVAILABLE_REWARD', availableReward }), [])
   const setSynthType = useCallback((synthType) => dispatch({ type: 'SET_SYNTH_TYPE', synthType }), [])
+  const setUnxToken = useCallback((unxToken) => dispatch({ type: 'SET_SYNTH_UNX_TOKEN', unxToken }), [])
+  const setUnxPrice = useCallback((unxPrice) => dispatch({ type: 'SET_SYNTH_UNX_PRICE', unxPrice }), [])
 
   const Alert = useAlert()
 

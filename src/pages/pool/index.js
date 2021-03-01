@@ -1,7 +1,7 @@
 import { client } from '@ont-dev/ontology-dapi'
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, useCallback } from 'react'
 import { useHistory } from "react-router-dom"
-import { useMappedState } from 'redux-react-hook';
+import { useMappedState, useDispatch } from 'redux-react-hook';
 import { utils } from 'ontology-ts-sdk'
 import BigNumber from 'bignumber.js'
 import { readBigNumberUint128 } from '../../utils/token'
@@ -11,13 +11,15 @@ import './index.css'
 const { StringReader } = utils
 
 const Pool = () => {
-  const [liquidityBalance, setLiquidityBalance] = useState([])
-  const { account, tokens, pairs, SWAP_ADDRESS } = useMappedState((state) => ({
+  const { account, tokens, pairs, liquidityBalance, SWAP_ADDRESS } = useMappedState((state) => ({
     account: state.wallet.account,
     tokens: state.common.tokens,
     pairs: state.swap.pairs,
+    ...state.pool,
     SWAP_ADDRESS: state.gov.poolStat.pools.swap.address
   }))
+  const dispatch = useDispatch()
+  const setLiquidityBalance = useCallback((liquidityBalance) => dispatch({ type: 'SET_POOL_LIQUIDITY_BALANCE', liquidityBalance }), [])
 
   const history = useHistory()
 

@@ -12,7 +12,7 @@ import { TRANSACTION_BASE_URL, TRANSACTION_AFTERFIX } from '../../../config'
 import 'rc-slider/assets/index.css'
 import './index.css'
 
-const { StringReader, reverseHex } = utils
+const { StringReader } = utils
 
 const RemoveLiquidity = () => {
   const [liquidityBalance, setLiquidityBalance] = useState(0)

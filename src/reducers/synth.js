@@ -2,7 +2,9 @@ const initState = {
   stat: {},
   marketStat: {},
   availableReward: 0,
-  synthType: 'mint'
+  synthType: 'mint',
+  unxToken: {},
+  unxPrice: 0
 }
 
 export const synth = (state = initState, action) => {
@@ -15,6 +17,10 @@ export const synth = (state = initState, action) => {
       return { ...state, availableReward: action.availableReward }
     case 'SET_SYNTH_TYPE':
       return { ...state, synthType: action.synthType }
+    case 'SET_SYNTH_UNX_TOKEN':
+      return { ...state, unxToken: action.unxToken }
+    case 'SET_SYNTH_UNX_PRICE':
+      return { ...state, unxPrice: action.unxPrice }
     default:
       return { ...state }
   }
