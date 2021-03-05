@@ -83,3 +83,14 @@
   border-radius: 40px;
   background: RGBA(43, 190, 127, 1.00);
 }
+
+.al-add-btn.disabled {
+  background: #9B9B9B;
+  cursor: not-allowed;
+}
+
+.min-amount-hint {
+  margin: -36px 0 36px 176px;
+  font-size: 16px;
+  color: #888;
+}

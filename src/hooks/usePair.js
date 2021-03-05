@@ -46,6 +46,8 @@ export const useFetchPairs = () => {
           pair.reserve1 = readBigNumberUint128(strReader)
           pair.reserve2 = readBigNumberUint128(strReader)
           pair.lp = readBigNumberUint128(strReader)
+          pair.min1 = readBigNumberUint128(strReader)
+          pair.min2 = readBigNumberUint128(strReader)
 
           parsedPairs.push(pair)
         }

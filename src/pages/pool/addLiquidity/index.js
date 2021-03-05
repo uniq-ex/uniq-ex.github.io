@@ -14,6 +14,9 @@ const AddLiquidity = () => {
   const [token2, setToken2] = useState({})
   const [token1Amount, setToken1Amount] = useState('')
   const [token2Amount, setToken2Amount] = useState('')
+  const [minToken1, setMinToken1] = useState('')
+  const [minToken2, setMinToken2] = useState('')
+  const [enableAdd, setEnableAdd] = useState(false)
   const [isValidPair, setIsValidPair] = useState(true)
   const [isFirstProvider, setIsFirstProvider] = useState(false)
   const [showPriceInfo, setShowPriceInfo] = useState(false)
@@ -33,6 +36,20 @@ const AddLiquidity = () => {
   useFetchPairs()
 
   useEffect(() => {
+    if (token1Amount > 0 && token2Amount > 0) {
+      if (Number(minToken1) && new BigNumber(token1Amount).lt(new BigNumber(minToken1))) {
+        setEnableAdd(false)
+      } else if (Number(minToken2) && new BigNumber(token2Amount).lt(new BigNumber(minToken2))) {
+        setEnableAdd(false)
+      } else {
+        setEnableAdd(true)
+      }
+    } else {
+      setEnableAdd(false)
+    }
+  }, [token1Amount, token2Amount])
+
+  useEffect(() => {
     if (!token1.id || !token2.id || (token1.id === token2.id)) {
       setIsValidPair(false)
     } else {
@@ -42,7 +59,31 @@ const AddLiquidity = () => {
 
   useEffect(() => {
     const pair = getPairByToken()
-    if (token1.id && token2.id && token1.id != token2.id && (!pairs.length || !pair || (pair.reserve1 === 0 && pair.reserve2 === 0))) {
+    if (pair) {
+      if (token1.id === pair.token1 && Number(pair.min1)) {
+        setMinToken1(pair.min1 / (10 ** token1.decimals))
+      } else if (token1.id === pair.token2 && Number(pair.min2)) {
+        setMinToken1(pair.min2 / (10 ** token1.decimals))
+      } else {
+        setMinToken1('')
+      }
+
+      if (token2.id === pair.token1 && Number(pair.min1)) {
+        setMinToken2(pair.min1 / (10 ** token2.decimals))
+      } else if (token2.id === pair.token2 && Number(pair.min2)) {
+        setMinToken2(pair.min2 / (10 ** token2.decimals))
+      } else {
+        setMinToken2('')
+      }
+    } else {
+      setMinToken1('')
+      setMinToken2('')
+    }
+  }, [token1, token2])
+
+  useEffect(() => {
+    const pair = getPairByToken()
+    if (token1.id && token2.id && token1.id !== token2.id && (!pairs.length || !pair || (pair.reserve1 === 0 && pair.reserve2 === 0))) {
       setIsFirstProvider(true)
     } else {
       setIsFirstProvider(false)
@@ -249,6 +290,7 @@ const AddLiquidity = () => {
           defaultToken={swapTokens.length && swapTokens.find((st) => st.name === (localStorage.getItem('swap_token1') || 'pDAI'))}
           onTokenChange={(token) => onChangeToken1(token)}
           onAmountChange={(amount) => onToken1AmountChange(amount)} />
+        { Number(minToken1) ? <div className="min-amount-hint">(Minimum: {minToken1})</div> : null }
         <div className="icon-plus"></div>
         <TokenInput
           balanceChange={balanceChange}
@@ -257,6 +299,7 @@ const AddLiquidity = () => {
           defaultToken={swapTokens.length && swapTokens.find((st) => st.name === (localStorage.getItem('swap_token2') || 'UNX'))}
           onTokenChange={(token) => onChangeToken2(token)}
           onAmountChange={(amount) => onToken2AmountChange(amount)} />
+        { Number(minToken2) ? <div className="min-amount-hint">(Minimum: {minToken2})</div> : null }
         {
           isValidPair && showPriceInfo ? (
             <div className="al-price-wrapper">
@@ -275,7 +318,13 @@ const AddLiquidity = () => {
             </div>
           ) : null
         }
-        <div className="al-add-btn" onClick={() => onAdd()}>Add</div>
+        {
+          enableAdd ? (
+            <div className="al-add-btn" onClick={() => onAdd()}>Add</div>
+          ) : (
+            <div className="al-add-btn disabled">Add</div>
+          )
+        }
       </div>
     </div>
   )

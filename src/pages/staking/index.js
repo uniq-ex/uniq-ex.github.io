@@ -54,7 +54,7 @@ const Staking = () => {
 
   useEffect(() => {
     getStakingTokenPrice()
-    let interval = setInterval(() => getStakingTokenPrice, 3000)
+    let interval = setInterval(getStakingTokenPrice, 3000)
     return () => {
       interval && clearInterval(interval)
     }
@@ -62,7 +62,7 @@ const Staking = () => {
 
   useEffect(() => {
     getStakingTokenBalance()
-    let interval = setInterval(() => getStakingTokenBalance, 3000)
+    let interval = setInterval(getStakingTokenBalance, 3000)
     return () => {
       interval && clearInterval(interval)
     }

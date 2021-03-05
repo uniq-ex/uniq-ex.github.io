@@ -21,7 +21,7 @@ export const useFetchTokens = () => {
 
   useEffect(() => {
     getGovStat()
-    let interval = !stopInterval && !tokens.length && setInterval(() => getGovStat, 1000)
+    let interval = !stopInterval && !tokens.length && setInterval(getGovStat, 1000)
     return () => {
       interval && clearInterval(interval)
     }
