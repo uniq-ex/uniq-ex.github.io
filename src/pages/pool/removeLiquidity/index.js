@@ -6,6 +6,7 @@ import { utils } from 'ontology-ts-sdk'
 import { useAlert } from 'react-alert'
 import BigNumber from 'bignumber.js'
 import Slider from 'rc-slider'
+import { cyanoRequest } from '../../../utils/cyano'
 import { readBigNumberUint128 } from '../../../utils/token'
 import { useFetchPairs } from '../../../hooks/usePair';
 import { TRANSACTION_BASE_URL, TRANSACTION_AFTERFIX } from '../../../config'
@@ -70,7 +71,7 @@ const RemoveLiquidity = () => {
 
   function getLiquidityBalanceByPairId(id) {
     if (SWAP_ADDRESS) {
-      return client.api.smartContract.invokeWasmRead({
+      return cyanoRequest('smartContract.invokeWasmRead', {
         scriptHash: SWAP_ADDRESS,
         operation: 'balanceOf',
         args: [
@@ -139,7 +140,7 @@ const RemoveLiquidity = () => {
           }
         ]
 
-        const addResult = await client.api.smartContract.invokeWasm({
+        const addResult = await cyanoRequest('smartContract.invokeWasm', {
           scriptHash: SWAP_ADDRESS,
           operation: 'remove_liquidity',
           args,

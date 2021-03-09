@@ -7,6 +7,7 @@ import { useMappedState, useDispatch } from 'redux-react-hook'
 import Tooltip from 'rc-tooltip';
 import TokenInput from '../../components/tokenInput';
 import Input from '../../components/input'
+import { cyanoRequest } from '../../utils/cyano'
 import EventRequest from '../../utils/eventRequest'
 import { readBigNumberUint128 } from '../../utils/token'
 import { DAI_PRICE, SYNTH_PRICE_DECIMALS, ASSET_STATUS, LEVERAGE_TYPE, TRANSACTION_FEE_RATE } from '../../utils/constants'
@@ -85,7 +86,7 @@ const Synth = () => {
     async function getAvailableReward() {
       if (account && unxToken.id && SYNTH_ADDRESS) {
         try {
-          const claimStr = await client.api.smartContract.invokeWasmRead({
+          const claimStr = await cyanoRequest('smartContract.invokeWasmRead', {
             scriptHash: SYNTH_ADDRESS,
             operation: 'claim_unx',
             args: [
@@ -111,7 +112,7 @@ const Synth = () => {
     }
 
     getAvailableReward()
-    const interval = setInterval(getAvailableReward, 5000)
+    const interval = setInterval(getAvailableReward, 10000)
     return () => {
       interval && clearInterval(interval)
     }
@@ -121,7 +122,7 @@ const Synth = () => {
     async function getStat() {
       if (tokens.length && SYNTH_ADDRESS) {
         try {
-          const statStr = await client.api.smartContract.invokeWasmRead({
+          const statStr = await cyanoRequest('smartContract.invokeWasmRead', {
             scriptHash: SYNTH_ADDRESS,
             operation: 'stat',
             args: []
@@ -253,7 +254,7 @@ const Synth = () => {
     async function getMarketStat() {
       if (account && unxToken.id && SYNTH_ADDRESS) {
         try {
-          const statStr = await client.api.smartContract.invokeWasmRead({
+          const statStr = await cyanoRequest('smartContract.invokeWasmRead', {
             scriptHash: SYNTH_ADDRESS,
             operation: 'market_stat',
             args: [
@@ -444,7 +445,7 @@ const Synth = () => {
             value: mintAsset.assetId
           }
         ]
-        const mintResult = await client.api.smartContract.invokeWasm({
+        const mintResult = await cyanoRequest('smartContract.invokeWasm', {
           scriptHash: SYNTH_ADDRESS,
           operation: 'mint',
           args,
@@ -518,7 +519,7 @@ const Synth = () => {
             value: new BigNumber(burnAmount).times(new BigNumber(10 ** burnAsset.decimals)).integerValue(BigNumber.ROUND_DOWN).toString()
           }
         ]
-        const burnResult = await client.api.smartContract.invokeWasm({
+        const burnResult = await cyanoRequest('smartContract.invokeWasm', {
           scriptHash: SYNTH_ADDRESS,
           operation: 'burn',
           args,
@@ -560,7 +561,16 @@ const Synth = () => {
             value: account
           }
         ]
-        const burnAllResult = await client.api.smartContract.invokeWasm({
+        // const burnAllResult = await client.api.smartContract.invokeWasm({
+        //   scriptHash: SYNTH_ADDRESS,
+        //   operation: 'burn_all_asset',
+        //   args,
+        //   gasPrice: 2500,
+        //   gasLimit: 60000000,
+        //   requireIdentity: false
+        // })
+
+        const burnAllResult = await cyanoRequest('smartContract.invokeWasm', {
           scriptHash: SYNTH_ADDRESS,
           operation: 'burn_all_asset',
           args,
@@ -611,7 +621,7 @@ const Synth = () => {
             value: exchangeToAsset.assetId
           }
         ]
-        const exchangeResult = await client.api.smartContract.invokeWasm({
+        const exchangeResult = await cyanoRequest('smartContract.invokeWasm', {
           scriptHash: SYNTH_ADDRESS,
           operation: 'asset_swap',
           args,
@@ -673,7 +683,7 @@ const Synth = () => {
             value: account
           }
         ]
-        const claimResult = await client.api.smartContract.invokeWasm({
+        const claimResult = await cyanoRequest('smartContract.invokeWasm', {
           scriptHash: SYNTH_ADDRESS,
           operation: 'claim_unx',
           args,
@@ -709,7 +719,7 @@ const Synth = () => {
             value: asset.assetId
           }
         ]
-        const freezeResult = await client.api.smartContract.invokeWasm({
+        const freezeResult = await cyanoRequest('smartContract.invokeWasm', {
           scriptHash: SYNTH_ADDRESS,
           operation: 'freeze_asset',
           args,

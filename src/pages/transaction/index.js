@@ -6,6 +6,7 @@ import { useAlert } from 'react-alert'
 import { useMappedState, useDispatch } from 'redux-react-hook';
 import { readBigNumberUint128, getTokenBalance } from '../../utils/token'
 import Input from '../../components/input'
+import { cyanoRequest } from '../../utils/cyano'
 import { handleError } from '../../utils/errorHandle'
 import { getHashString } from '../../utils/common'
 import { PRICE_DECIMALS } from '../../utils/constants'
@@ -64,7 +65,7 @@ const Transaction = () => {
     async function getMakesOfPair() {
       if (tokenPair.name && CONTRACT_ADDRESS) {
         try {
-          const makeStr = await client.api.smartContract.invokeWasmRead({
+          const makeStr = await cyanoRequest('smartContract.invokeWasmRead', {
             scriptHash: CONTRACT_ADDRESS,
             operation: 'get_makes_of_pair',
             args: [
@@ -120,7 +121,7 @@ const Transaction = () => {
     async function getUserMakes() {
       if (account && CONTRACT_ADDRESS) {
         try {
-          const makeStr = await client.api.smartContract.invokeWasmRead({
+          const makeStr = await cyanoRequest('smartContract.invokeWasmRead', {
             scriptHash: CONTRACT_ADDRESS,
             operation: 'get_user_makes',
             args: [
@@ -169,7 +170,7 @@ const Transaction = () => {
     async function getStat() {
       if (tokens.length && CONTRACT_ADDRESS) {
         try {
-          const statStr = await client.api.smartContract.invokeWasmRead({
+          const statStr = await cyanoRequest('smartContract.invokeWasmRead', {
             scriptHash: CONTRACT_ADDRESS,
             operation: 'stat',
             args: []
@@ -187,7 +188,7 @@ const Transaction = () => {
             token.weight = strReader.readUint128()
             token.balance = new BigNumber(readBigNumberUint128(strReader)).div(new BigNumber(10 ** tempToken.decimals)).toString()
   
-            tokenPool.push(Object.assign(tempToken, token))
+            tokenPool.push(Object.assign({}, tempToken, token))
           }
 
           if (!pairs.length) {
@@ -338,7 +339,7 @@ const Transaction = () => {
             value: new BigNumber(tradeAmount).times(new BigNumber(10 ** assetToken.decimals)).integerValue(BigNumber.ROUND_DOWN).toString()
           }
         ]
-        const makeResult = await client.api.smartContract.invokeWasm({
+        const makeResult = await cyanoRequest('smartContract.invokeWasm', {
           scriptHash: CONTRACT_ADDRESS,
           operation: 'make',
           args,
@@ -375,7 +376,7 @@ const Transaction = () => {
   async function onUnmake(makeId) {
     if (account && makeId && CONTRACT_ADDRESS) {
       try {
-        const unmakeResult = await client.api.smartContract.invokeWasm({
+        const unmakeResult = await cyanoRequest('smartContract.invokeWasm', {
           scriptHash: CONTRACT_ADDRESS,
           operation: 'unmake',
           args: [

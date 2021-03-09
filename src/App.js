@@ -1,10 +1,10 @@
 import { client } from '@ont-dev/ontology-dapi'
 import React, { useEffect, useCallback } from 'react'
 import {
-  // BrowserRouter as Router,
-  HashRouter as Router,
   Switch,
-  Route
+  Route,
+  useHistory,
+  useLocation
 } from 'react-router-dom'
 import { useAlert } from 'react-alert'
 import { useMappedState, useDispatch } from 'redux-react-hook';
@@ -19,22 +19,35 @@ import Staking from './pages/staking'
 import StakingDetail from './pages/staking/detail'
 import Token from './pages/token'
 import Option from './pages/option'
+import Coming from './pages/coming'
 // import Trade from './pages/trade'
 import Synth from './pages/synth'
-import Overview from './pages/governance'
-import { NETWORK_TYPE, READY_TABS } from './config'
+import Governance from './pages/governance'
+import { NETWORK_TYPE, READY_TABS, COMING_TABS } from './config'
 import { useFetchTokens } from './hooks/useToken'
 import './App.css'
 
 export const App = () => {
   const Alert = useAlert()
-  const { account, isUpgrading, loadingToken } = useMappedState((state) => ({
+  const { account, isUpgrading, loadingToken, poolStat } = useMappedState((state) => ({
     isUpgrading: state.common.isUpgrading,
     loadingToken: state.common.loadingToken,
-    account: state.wallet.account
+    account: state.wallet.account,
+    poolStat: state.gov.poolStat
   }))
   const dispatch = useDispatch()
   const setAccount = useCallback((account) => dispatch({ type: 'SET_ACCOUNT', account }), [])
+  const history = useHistory()
+  const location = useLocation()
+
+  useEffect(() => {
+    const startTimeStamp = poolStat.distributionInfo.startTimeStamp
+    if (startTimeStamp && new Date(startTimeStamp * 1000) > new Date()) {
+      if (location.pathname === '/') {
+        history.replace('/governance')
+      }
+    }
+  }, [poolStat])
 
   useEffect(() => {
     let retryTimes = 3
@@ -112,7 +125,7 @@ export const App = () => {
   }
 
   return (
-    <Router>
+    <React.Fragment>
       {renderLoading()}
       {
         !isUpgrading ? (
@@ -133,67 +146,67 @@ export const App = () => {
                   {
                     READY_TABS.indexOf('/') >= 0 ?
                     <Route exact path="/">
-                      <Staking />
+                      { COMING_TABS.indexOf('/') >= 0 ? <Coming /> : <Staking /> }
                     </Route> : null
                   }
                   {
                     READY_TABS.indexOf('/') >= 0 ?
                     <Route exact path="/staking/:id">
-                      <StakingDetail />
+                      { COMING_TABS.indexOf('/') >= 0 ? <Coming /> : <StakingDetail /> }
                     </Route> : null
                   }
                   {
                     READY_TABS.indexOf('/swap') >= 0 ?
                     <Route exact path="/swap">
-                      <Swap />
+                      { COMING_TABS.indexOf('/swap') >= 0 ? <Coming /> : <Swap /> }
                     </Route> : null
                   }
                   {
                     READY_TABS.indexOf('/swap') >= 0 ?
                     <Route exact path="/pool">
-                      <Pool />
+                      { COMING_TABS.indexOf('swap') >= 0 ? <Coming /> : <Pool /> }
                     </Route> : null
                   }
                   {
                     READY_TABS.indexOf('/swap') >= 0 ?
                     <Route exact path="/pool/add">
-                      <AddLiquidity />
+                      { COMING_TABS.indexOf('/swap') >= 0 ? <Coming /> : <AddLiquidity /> }
                     </Route> : null
                   }
                   {
                     READY_TABS.indexOf('/swap') >= 0 ?
                     <Route exact path="/pool/remove/:id">
-                      <RemoveLiquidity />
+                      { COMING_TABS.indexOf('/swap') >= 0 ? <Coming /> : <RemoveLiquidity /> }
                     </Route> : null
                   }
                   {
                     READY_TABS.indexOf('/trade') >= 0 ?
                     <Route exact path="/trade">
-                      <Transaction />
+                      { COMING_TABS.indexOf('/trade') >= 0 ? <Coming /> : <Transaction /> }
                     </Route> : null
                   }
                   {
                     READY_TABS.indexOf('/governance') >= 0 ?
                     <Route exact path="/governance">
-                      <Overview />
+                      { COMING_TABS.indexOf('/governance') >= 0 ? <Coming /> : <Governance /> }
                     </Route> : null
                   }
                   {
                     READY_TABS.indexOf('/token') >= 0 ?
                     <Route exact path="/token">
-                      <Token />
+                      { COMING_TABS.indexOf('/token') >= 0 ? <Coming showCountdown={false} /> : <Token /> }
                     </Route> : null
                   }
                   {
                     READY_TABS.indexOf('/option') >= 0 ?
                     <Route exact path="/option">
-                      <Option />
+                      { COMING_TABS.indexOf('/option') >= 0 ? <Coming showCountdown={false} /> : <Option /> }
                     </Route> : null
                   }
                   {
                     READY_TABS.indexOf('/synth') >= 0 ?
                     <Route exact path="/synth">
-                      <Synth />
+                      { COMING_TABS.indexOf('/synth') >= 0 ? <Coming /> : <Synth /> }
                     </Route> : null
                   }
                 </Switch>
@@ -202,7 +215,6 @@ export const App = () => {
           </div>
         ) : renderUpgrading()
       }
-      
-    </Router>
+    </React.Fragment>
   )
 }

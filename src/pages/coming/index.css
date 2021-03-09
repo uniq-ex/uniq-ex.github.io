@@ -1,0 +1,15 @@
+.coming-soon-placeholder {
+  height: 400px;
+  background: url('../../assets/coming.jpg') center / auto 100% no-repeat;
+}
+
+.coming-soon-placeholder.show-countdown {
+  background-image: url('../../assets/coming2.jpg');
+}
+
+.coming-soon-wrapper .countdown-wrapper {
+  position: absolute;
+  left: 140px;
+  top: 240px;
+  width: 360px;
+}

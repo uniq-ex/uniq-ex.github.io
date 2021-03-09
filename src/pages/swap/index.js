@@ -7,6 +7,7 @@ import BigNumber from 'bignumber.js'
 import TokenInput from '../../components/tokenInput'
 import { TRANSACTION_BASE_URL, TRANSACTION_AFTERFIX } from '../../config'
 import { useFetchPairs } from '../../hooks/usePair'
+import { cyanoRequest } from '../../utils/cyano'
 import { toLocaleFixed } from '../../utils/common'
 import { bestSwap } from '../../utils/swap'
 import './index.css'
@@ -166,7 +167,7 @@ const Swap = () => {
             value: account
           }
         ]
-        const swapResult = await client.api.smartContract.invokeWasm({
+        const swapResult = await cyanoRequest('smartContract.invokeWasm', {
           scriptHash: SWAP_ADDRESS,
           operation: swapType === 'exactin' ? 'swap_exact_tokens_for_tokens' : 'swap_tokens_for_exact_tokens',
           args,

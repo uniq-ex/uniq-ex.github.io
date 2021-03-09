@@ -2,6 +2,7 @@ import { useEffect, useCallback } from 'react'
 import { client } from '@ont-dev/ontology-dapi'
 import { utils } from 'ontology-ts-sdk'
 import { useMappedState, useDispatch } from 'redux-react-hook'
+import { cyanoRequest } from '../utils/cyano'
 import { readBigNumberUint128 } from '../utils/token'
 
 const { StringReader, reverseHex } = utils
@@ -19,7 +20,7 @@ export const useFetchPairs = () => {
 
   useEffect(() => {
     getSwapStat()
-    let interval = setInterval(getSwapStat, 3000)
+    let interval = setInterval(getSwapStat, 5000)
     return () => {
       interval && clearInterval(interval)
     }
@@ -28,7 +29,7 @@ export const useFetchPairs = () => {
   async function getSwapStat() {
     if (SWAP_ADDRESS) {
       try {
-        const pairStr = await client.api.smartContract.invokeWasmRead({
+        const pairStr = await cyanoRequest('smartContract.invokeWasmRead', {
           scriptHash: SWAP_ADDRESS,
           operation: 'stat',
           args: []

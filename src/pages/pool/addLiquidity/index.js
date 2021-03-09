@@ -1,10 +1,10 @@
-import { client } from '@ont-dev/ontology-dapi'
 import React, { useState, useEffect, useCallback } from 'react'
 import { useHistory } from "react-router-dom"
 import { useMappedState, useDispatch } from 'redux-react-hook';
 import { useAlert } from 'react-alert'
 import BigNumber from 'bignumber.js'
 import TokenInput from '../../../components/tokenInput'
+import { cyanoRequest } from '../../../utils/cyano'
 import { useFetchPairs } from '../../../hooks/usePair';
 import { TRANSACTION_BASE_URL, TRANSACTION_AFTERFIX } from '../../../config'
 import './index.css'
@@ -235,7 +235,7 @@ const AddLiquidity = () => {
             value: account
           }
         ]
-        const addResult = await client.api.smartContract.invokeWasm({
+        const addResult = await cyanoRequest('smartContract.invokeWasm', {
           scriptHash: SWAP_ADDRESS,
           operation: 'add_liquidity',
           args,

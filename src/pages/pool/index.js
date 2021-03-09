@@ -1,9 +1,9 @@
-import { client } from '@ont-dev/ontology-dapi'
 import React, { useEffect, useCallback } from 'react'
 import { useHistory } from "react-router-dom"
 import { useMappedState, useDispatch } from 'redux-react-hook';
 import { utils } from 'ontology-ts-sdk'
 import BigNumber from 'bignumber.js'
+import { cyanoRequest } from '../../utils/cyano'
 import { readBigNumberUint128 } from '../../utils/token'
 import { useFetchPairs } from '../../hooks/usePair'
 import './index.css'
@@ -28,7 +28,7 @@ const Pool = () => {
   useEffect(() => {
     if (account && pairs.length && SWAP_ADDRESS) {
       const getLiquidityBalanceByPairId = (id) => {
-        return client.api.smartContract.invokeWasmRead({
+        return cyanoRequest('smartContract.invokeWasmRead', {
           scriptHash: SWAP_ADDRESS,
           operation: 'balanceOf',
           args: [

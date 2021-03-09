@@ -1,5 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import {
+  HashRouter as Router
+} from 'react-router-dom'
 import { App } from './App';
 import * as Ontology from '@ont-dev/ontology-dapi';
 import { positions, Provider } from "react-alert";
@@ -26,7 +29,9 @@ const options = {
 ReactDOM.render(
   <Provider template={AlertTemplate} {...options}>
     <StoreContext.Provider value={store}>
-      <App />
+      <Router>
+        <App />
+      </Router>
     </StoreContext.Provider>
   </Provider>,
   document.getElementById('root')

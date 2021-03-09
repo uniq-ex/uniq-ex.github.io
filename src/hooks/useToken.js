@@ -1,7 +1,7 @@
 import { useEffect, useCallback } from 'react'
-import { client } from '@ont-dev/ontology-dapi'
 import { utils } from 'ontology-ts-sdk'
 import { GOVERNANCE_ADDRESS } from '../config'
+import { cyanoRequest } from '../utils/cyano'
 import { handleError } from '../utils/errorHandle'
 import { useMappedState, useDispatch } from 'redux-react-hook'
 
@@ -30,7 +30,7 @@ export const useFetchTokens = () => {
   async function getGovStat() {
     if (!tokens.length) {
       try {
-        const statStr = await client.api.smartContract.invokeWasmRead({
+        const statStr = await cyanoRequest('smartContract.invokeWasmRead', {
           scriptHash: GOVERNANCE_ADDRESS,
           operation: 'stat',
           args: []

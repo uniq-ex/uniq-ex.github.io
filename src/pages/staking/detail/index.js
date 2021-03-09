@@ -1,4 +1,3 @@
-import { client } from '@ont-dev/ontology-dapi'
 import React, { useState, useEffect, useCallback } from 'react'
 import { useHistory, useLocation } from "react-router-dom"
 import { utils } from 'ontology-ts-sdk'
@@ -7,6 +6,7 @@ import { useAlert } from 'react-alert'
 import { useMappedState, useDispatch } from 'redux-react-hook';
 import Tooltip from 'rc-tooltip';
 import Input from '../../../components/input'
+import { cyanoRequest } from '../../../utils/cyano'
 import { readBigNumberUint128, getTokenBalance, getTokenIconDom } from '../../../utils/token'
 import { GOVERNANCE_ADDRESS, TRANSACTION_BASE_URL, TRANSACTION_AFTERFIX } from '../../../config'
 
@@ -57,7 +57,7 @@ const StakingDetail = (props) => {
     const getClaimableWing = async () => {
       if (account && stakeToken.ty === 2) {
         try {
-          const resp = await client.api.smartContract.invokeWasmRead({
+          const resp = await cyanoRequest('smartContract.invokeWasmRead', {
             scriptHash: GOVERNANCE_ADDRESS,
             operation: 'claimable_wing',
             args: [
@@ -105,7 +105,7 @@ const StakingDetail = (props) => {
   }, [account])
 
   function getAccountStakeByTokenId(id) {
-    return client.api.smartContract.invokeWasmRead({
+    return cyanoRequest('smartContract.invokeWasmRead', {
       scriptHash: STAKING_ADDRESS,
       operation: 'account_stake_info',
       args: [
@@ -185,7 +185,7 @@ const StakingDetail = (props) => {
           requireIdentity: false
         }
 
-        const stakeResult = await client.api.smartContract.invokeWasm(param)
+        const stakeResult = await cyanoRequest('smartContract.invokeWasm', param)
 
         if (stakeResult.transaction) {
           setShowStakingModal(false)
@@ -238,7 +238,7 @@ const StakingDetail = (props) => {
           requireIdentity: false
         }
 
-        const harvestResult = await client.api.smartContract.invokeWasm(param)
+        const harvestResult = await cyanoRequest('smartContract.invokeWasm', param)
 
         if (harvestResult.transaction) {
           setShowStakingModal(false)

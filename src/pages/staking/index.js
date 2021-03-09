@@ -1,4 +1,3 @@
-import { client } from '@ont-dev/ontology-dapi'
 import React, { useState, useEffect, useCallback } from 'react'
 import { useHistory } from "react-router-dom"
 import { utils } from 'ontology-ts-sdk'
@@ -6,6 +5,7 @@ import BigNumber from 'bignumber.js'
 import Tooltip from 'rc-tooltip'
 import { useAlert } from 'react-alert'
 import { useMappedState, useDispatch } from 'redux-react-hook'
+import { cyanoRequest } from '../../utils/cyano'
 import { DAI_PRICE } from '../../utils/constants'
 import { GOVERNANCE_ADDRESS } from '../../config'
 import { useFetchPairs } from '../../hooks/usePair'
@@ -103,7 +103,7 @@ const Staking = () => {
             value: tokenIds.map((id) => ({ type: 'Long', value: id }))
           }
         ]
-        const tokenPriceStr = await client.api.smartContract.invokeWasmRead({
+        const tokenPriceStr = await cyanoRequest('smartContract.invokeWasmRead', {
           scriptHash: GOVERNANCE_ADDRESS,
           operation: 'token_prices',
           args
@@ -152,7 +152,7 @@ const Staking = () => {
   async function getStakingTokenBalance() {
     if (tokens.length && STAKING_ADDRESS) {
       try {
-        const statStr = await client.api.smartContract.invokeWasmRead({
+        const statStr = await cyanoRequest('smartContract.invokeWasmRead', {
           scriptHash: STAKING_ADDRESS,
           operation: 'stat',
           args: []
@@ -167,7 +167,7 @@ const Staking = () => {
           token.weight = strReader.readUint128()
           token.balance = readBigNumberUint128(strReader)
 
-          parsedTokens.push(Object.assign(tempToken, token))
+          parsedTokens.push(Object.assign({}, tempToken, token))
         }
 
         const totalWeight = parsedTokens.filter((t) => t.balance).reduce((a, b) => a + b.weight, 0)
