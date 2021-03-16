@@ -1,4 +1,12 @@
+html, body, #root {
+  height: 100%;
+}
+
 .app {
+  position: relative;
+  min-height: 100%;
+  padding-bottom: 64px;
+  box-sizing: border-box;
   font-family: DINPro, Avenir;
 }
 
@@ -57,4 +65,22 @@
 
 .intro-line a {
   color: #2c2c2c;
+}
+
+.footer {
+  position: absolute;
+  height: 64px;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+.footer .telegram {
+  width: 280px;
+  line-height: 64px;
+  margin: 0 auto;
+  padding-left: 36px;
+  text-align: center;
+  color: #222;
+  background: url('./assets/telegram.svg') 20px center / 28px auto no-repeat;
 }

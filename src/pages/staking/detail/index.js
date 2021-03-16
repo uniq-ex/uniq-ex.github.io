@@ -4,6 +4,8 @@ import { utils } from 'ontology-ts-sdk'
 import BigNumber from 'bignumber.js'
 import { useAlert } from 'react-alert'
 import { useMappedState, useDispatch } from 'redux-react-hook';
+import i18next from 'i18next'
+import { useTranslation } from 'react-i18next'
 import Tooltip from 'rc-tooltip';
 import Input from '../../../components/input'
 import { cyanoRequest } from '../../../utils/cyano'
@@ -32,6 +34,8 @@ const StakingDetail = (props) => {
   const dispatch = useDispatch()
   const setModal = useCallback((modalType, modalDetail) => dispatch({ type: 'SET_MODAL', modalType, modalDetail }), [])
 
+  const [t] = useTranslation()
+  const isEnLanguage = i18next.language === 'en'
   const Alert = useAlert()
   const location = useLocation()
   const history = useHistory()
@@ -140,7 +144,7 @@ const StakingDetail = (props) => {
 
   function handleStakeClick(action) {
     if (!account) {
-      Alert.show('Please Connect Wallet First')
+      Alert.show(t('connect_wallet_first'))
       return
     }
     setStakeType(action)
@@ -149,16 +153,16 @@ const StakingDetail = (props) => {
 
   async function onStake() {
     if (!account) {
-      Alert.show('Please Connect Wallet First')
+      Alert.show(t('connect_wallet_first'))
       return
     }
     if (stakeToken.id && STAKING_ADDRESS) {
       if (amount <= 0) {
-        Alert.error('Amount should be greater than 0')
+        Alert.error(t('amount_gt_0'))
         return
       }
       if (stakeType === 'unstake' && new BigNumber(amount).gt(new BigNumber(myStake.balance))) {
-        Alert.error('Amount should be less than your balance')
+        Alert.error(t('amount_lte_balance'))
         return
       }
       try {
@@ -192,7 +196,7 @@ const StakingDetail = (props) => {
           setModal('infoModal', {
             show: true,
             type: 'success',
-            text: 'Transaction Successful',
+            text:  t('transaction_successful'),
             extraText: 'View Transaction',
             extraLink: `${TRANSACTION_BASE_URL}${stakeResult.transaction}${TRANSACTION_AFTERFIX}`
           })
@@ -202,7 +206,7 @@ const StakingDetail = (props) => {
         setModal('infoModal', {
           show: true,
           type: 'error',
-          text: 'Transaction Failed',
+          text: t('transaction_failed'),
           // extraText: `${e}`,
           extraText: '',
           extraLink: ''
@@ -213,7 +217,7 @@ const StakingDetail = (props) => {
 
   async function onHarvest() {
     if (!account) {
-      Alert.show('Please Connect Wallet First')
+      Alert.show(t('connect_wallet_first'))
       return
     }
 
@@ -245,7 +249,7 @@ const StakingDetail = (props) => {
           setModal('infoModal', {
             show: true,
             type: 'success',
-            text: 'Transaction Successful',
+            text: t('transaction_successful'),
             extraText: 'View Transaction',
             extraLink: `${TRANSACTION_BASE_URL}${harvestResult.transaction}${TRANSACTION_AFTERFIX}`
           })
@@ -254,7 +258,7 @@ const StakingDetail = (props) => {
         setModal('infoModal', {
           show: true,
           type: 'error',
-          text: 'Transaction Failed',
+          text: t('transaction_failed'),
           // extraText: `${e}`,
           extraText: '',
           extraLink: ''
@@ -279,37 +283,49 @@ const StakingDetail = (props) => {
     <div className="stake-container">
       <div className="stake-title">
         <div className="back-icon" onClick={() => onNavigateToStaking()} />
-        Earn <span className="icon-UNX">UNX</span> by
-        {getTokenIconDom(stakeToken, 'inline-token-wrapper')}
-        {stakeToken.name || ''}
+        {
+          isEnLanguage ? (
+            <React.Fragment>
+              {t('earn')} <span className="icon-UNX">UNX</span> {t('by')}
+              {getTokenIconDom(stakeToken, 'inline-token-wrapper')}
+              {stakeToken.name || ''}
+            </React.Fragment>
+          ) : (
+            <React.Fragment>
+              {t('by')} {getTokenIconDom(stakeToken, 'inline-token-wrapper')}
+              {stakeToken.name || ''} {t('earn')}
+              <span className="icon-UNX">UNX</span>
+            </React.Fragment>
+          )
+        }
       </div>
       <div className="stake-token-detail">
         <div className="stake-token-amount">
           {getTokenIconDom(stakeToken, 'stake-token-wrapper')}
           <div className="stake-token-amount-detail">
-            <div className="stake-token-amount-label">Current Staked</div>
+            <div className="stake-token-amount-label">{t('current_staked')}</div>
             <div className="stake-token-amount-info">{myStake.balance} {stakeToken.name}</div>
           </div>
         </div>
         <div className="stake-token-actions">
-          { tokenWeight ? <div className="stake-token-action" onClick={() => handleStakeClick('stake')}>Stake</div> : null }
-          <div className="stake-token-action" onClick={() => handleStakeClick('unstake')}>Unstake</div>
+          { tokenWeight ? <div className="stake-token-action" onClick={() => handleStakeClick('stake')}>{t('stake')}</div> : null }
+          <div className="stake-token-action" onClick={() => handleStakeClick('unstake')}>{t('unstake')}</div>
         </div>
       </div>
       <div className="harvest-token-detail">
         <div className="harvest-token-amount icon-UNX">
-          <div className="harvest-token-amount-label">Rewards Available</div>
+          <div className="harvest-token-amount-label">{t('rewards_available')}</div>
           <div className="harvest-token-amount-info">{new BigNumber(myStake.interest || 0).div(10 ** 9).toString()} UNX</div>
         </div>
         <div className="harvest-token-actions">
-          <div className="harvest-token-action" onClick={() => onHarvest() }>Harvest</div>
+          <div className="harvest-token-action" onClick={() => onHarvest() }>{t('harvest')}</div>
         </div>
       </div>
       {
         stakeToken.ty === 2 ? (
           <div className="claimable-wing-detail">
             <div className="claimable-wing-amount icon-WING">{new BigNumber(claimableWing || 0).div(10 ** 9).toString()}
-              <div className="claimable-wing-label">WING Earned
+              <div className="claimable-wing-label">{t('wing_earned')}
                 <Tooltip placement="top" overlay="WING earned by ftoken will be transferred to your account when you stake or unstake">
                   <span>?</span>
                 </Tooltip>
@@ -326,21 +342,21 @@ const StakingDetail = (props) => {
               {/* <div className={`icon-${stakeToken.name} token-placeholder`}></div> */}
               {getTokenIconDom(stakeToken, 'token-placeholder')}
               <div className="form-item">
-                <div className="input-label">Amount
+                <div className="input-label">{t('amount')}
                   {
                     stakeType === 'stake' ? (
-                      <span className="hint">Balance: {tokenBalance}</span>
+                      <span className="hint">{t('balance')}: {tokenBalance}</span>
                     ) : (
-                      <span className="hint">Staked: {myStake.balance}</span>
+                      <span className="hint">{t('staked')}: {myStake.balance}</span>
                     )
                   }
                 </div>
                 <div className="input-wrapper">
                   <Input placeholder="0.0" value={amount} decimals={stakeToken.decimals || 0} onChange={(amount) => setAmount(amount)} />
-                  <div className="input-max-btn" onClick={() => maxInput()}>MAX</div>
+                  <div className="input-max-btn" onClick={() => maxInput()}>{t('max')}</div>
                 </div>
               </div>
-              <div className="stake-btn" onClick={() => onStake()}>{ stakeType === 'stake' ? 'Stake' : 'Unstake'}</div>
+              <div className="stake-btn" onClick={() => onStake()}>{ stakeType === 'stake' ? t('stake') : t('unstake')}</div>
             </div>
           </div>
         </div>

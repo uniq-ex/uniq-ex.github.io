@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useMappedState } from 'redux-react-hook';
 import Select, { components } from 'react-select'
+import { useTranslation } from 'react-i18next'
 import Input from '../input'
 import { getTokenBalance } from '../../utils/token'
 
@@ -13,6 +14,7 @@ const TokenInput = (props) => {
   const { account } = useMappedState((state) => ({
     account: state.wallet.account
   }))
+  const [t] = useTranslation()
 
   useEffect(() => {
     if (account && showBalance && token.id) {
@@ -88,13 +90,13 @@ const TokenInput = (props) => {
 
   return (
     <div className="token-input-wrapper">
-      <div className="input-label">{props.label || 'Input'}
-        { showBalance ? <span className="hint">Balance: {balance}</span> : null }
+      <div className="input-label">{props.label || t('input')}
+        { showBalance ? <span className="hint">{t('balance')}: {balance}</span> : null }
       </div>
       <div className="input-wrapper">
         { renderTokenSeletion(defaultToken) }
         <Input decimals={token.decimals} disabled={inputDisabled} value={value} round={round} onChange={(value) => onAmountChange(value)} />
-        { withMax && <div className="input-max-btn" onClick={() => maxInput()}>MAX</div> }
+        { withMax && <div className="input-max-btn" onClick={() => maxInput()}>{t('max')}</div> }
       </div>
     </div>
   )

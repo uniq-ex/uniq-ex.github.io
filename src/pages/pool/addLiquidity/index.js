@@ -3,6 +3,7 @@ import { useHistory } from "react-router-dom"
 import { useMappedState, useDispatch } from 'redux-react-hook';
 import { useAlert } from 'react-alert'
 import BigNumber from 'bignumber.js'
+import { useTranslation } from 'react-i18next'
 import TokenInput from '../../../components/tokenInput'
 import { cyanoRequest } from '../../../utils/cyano'
 import { useFetchPairs } from '../../../hooks/usePair';
@@ -32,6 +33,7 @@ const AddLiquidity = () => {
   const setModal = useCallback((modalType, modalDetail) => dispatch({ type: 'SET_MODAL', modalType, modalDetail }), [])
   const Alert = useAlert()
   const history = useHistory()
+  const [t] = useTranslation()
 
   useFetchPairs()
 
@@ -187,15 +189,15 @@ const AddLiquidity = () => {
 
   async function onAdd() {
     if (!account) {
-      Alert.show('Please Connect Wallet First')
+      Alert.show(t('connect_wallet_first'))
       return
     }
     if (token1Amount <= 0 || token2Amount <= 0) {
-      Alert.error('Amount should be greater than 0')
+      Alert.error(t('amount_gt_0'))
       return
     }
     if (token1.id && token1.id === token2.id) {
-      Alert.error('Input should be different')
+      Alert.error(t('input_should_be_different'))
       return
     }
 
@@ -252,8 +254,8 @@ const AddLiquidity = () => {
           setModal('infoModal', {
             show: true,
             type: 'success',
-            text: 'Transaction Successful',
-            extraText: 'View Transaction',
+            text: t('transaction_successful'),
+            extraText: t('view_transaction'),
             extraLink: `${TRANSACTION_BASE_URL}${addResult.transaction}${TRANSACTION_AFTERFIX}`
           })
         }
@@ -261,7 +263,7 @@ const AddLiquidity = () => {
         setModal('infoModal', {
           show: true,
           type: 'error',
-          text: 'Transaction Failed',
+          text: t('transaction_failed'),
           // extraText: `${e}`,
           extraText: '',
           extraLink: ''
@@ -272,14 +274,14 @@ const AddLiquidity = () => {
 
   return (
     <div className="add-liquidity-wrapper">
-      <div className="al-header">Add Liquidity
+      <div className="al-header">{t('add_liquidity')}
         <div className="back-icon" onClick={() => onNavigateToPool()}></div>
       </div>
       <div className="al-wrapper">
         {
           isValidPair && isFirstProvider ? (
             <div className="first-provider-hint">
-              <div><strong>You are the first liquidity provider.</strong><br /><br />The ratio of tokens you add will set the price of this pool.</div>
+              <div><strong>{t('first_liquidity_provider')}</strong><br /><br />{t('ratio_setter')}</div>
             </div>
           ) : null
         }
@@ -290,7 +292,7 @@ const AddLiquidity = () => {
           defaultToken={swapTokens.length && swapTokens.find((st) => st.name === (localStorage.getItem('swap_token1') || 'pDAI'))}
           onTokenChange={(token) => onChangeToken1(token)}
           onAmountChange={(amount) => onToken1AmountChange(amount)} />
-        { Number(minToken1) ? <div className="min-amount-hint">(Minimum: {minToken1})</div> : null }
+        { Number(minToken1) ? <div className="min-amount-hint">({t('minimum')}: {minToken1})</div> : null }
         <div className="icon-plus"></div>
         <TokenInput
           balanceChange={balanceChange}
@@ -299,7 +301,7 @@ const AddLiquidity = () => {
           defaultToken={swapTokens.length && swapTokens.find((st) => st.name === (localStorage.getItem('swap_token2') || 'UNX'))}
           onTokenChange={(token) => onChangeToken2(token)}
           onAmountChange={(amount) => onToken2AmountChange(amount)} />
-        { Number(minToken2) ? <div className="min-amount-hint">(Minimum: {minToken2})</div> : null }
+        { Number(minToken2) ? <div className="min-amount-hint">({t('minimum')}: {minToken2})</div> : null }
         {
           isValidPair && showPriceInfo ? (
             <div className="al-price-wrapper">
@@ -313,16 +315,16 @@ const AddLiquidity = () => {
               </div>
               <div className="al-price-item">
                 <div className="price-item-detail">{getShareOfPool()}</div>
-                <div className="price-item-label">Share of Pool</div>
+                <div className="price-item-label">{t('share_of_pool')}</div>
               </div>
             </div>
           ) : null
         }
         {
           enableAdd ? (
-            <div className="al-add-btn" onClick={() => onAdd()}>Add</div>
+            <div className="al-add-btn" onClick={() => onAdd()}>{t('add')}</div>
           ) : (
-            <div className="al-add-btn disabled">Add</div>
+            <div className="al-add-btn disabled">{t('add')}</div>
           )
         }
       </div>

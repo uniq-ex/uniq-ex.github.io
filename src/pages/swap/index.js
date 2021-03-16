@@ -1,9 +1,9 @@
-import { client } from '@ont-dev/ontology-dapi'
 import React, { useState, useEffect, useCallback } from 'react'
 import { useHistory } from "react-router-dom"
 import { useMappedState, useDispatch } from 'redux-react-hook'
 import { useAlert } from 'react-alert'
 import BigNumber from 'bignumber.js'
+import { useTranslation } from 'react-i18next'
 import TokenInput from '../../components/tokenInput'
 import { TRANSACTION_BASE_URL, TRANSACTION_AFTERFIX } from '../../config'
 import { useFetchPairs } from '../../hooks/usePair'
@@ -34,6 +34,7 @@ const Swap = () => {
 
   const Alert = useAlert()
   const history = useHistory()
+  const [t] = useTranslation()
 
   useFetchPairs()
 
@@ -131,15 +132,15 @@ const Swap = () => {
 
   async function handleSwap() {
     if (!account) {
-      Alert.show('Please Connect Wallet First')
+      Alert.show(t('connect_wallet_first'))
       return
     }
     if (token1Amount <= 0 || token2Amount <= 0) {
-      Alert.error('Amount should be greater than 0')
+      Alert.error(t('amount_gt_0'))
       return
     }
     if (token1.id && token1.id === token2.id) {
-      Alert.error('Input should be different')
+      Alert.error(t('input_should_be_different'))
       return
     }
 
@@ -183,8 +184,8 @@ const Swap = () => {
           setModal('infoModal', {
             show: true,
             type: 'success',
-            text: 'Transaction Successful',
-            extraText: 'View Transaction',
+            text: t('transaction_successful'),
+            extraText: t('view_transaction'),
             extraLink: `${TRANSACTION_BASE_URL}${swapResult.transaction}${TRANSACTION_AFTERFIX}`
           })
         }
@@ -192,7 +193,7 @@ const Swap = () => {
         setModal('infoModal', {
           show: true,
           type: 'error',
-          text: 'Transaction Failed',
+          text: t('transaction_failed'),
           // extraText: `${e}`,
           extraText: '',
           extraLink: ''
@@ -207,9 +208,9 @@ const Swap = () => {
 
   function getMinReceiveOrMaxSold() {
     if (swapType === 'exactin') {
-      return <p>Minimum Received:<span>{toLocaleFixed(token2Amount * (1 - slippage / 100), 6)} {token2.name}</span></p>
+      return <p>{t('minimum_received')}:<span>{toLocaleFixed(token2Amount * (1 - slippage / 100), 6)} {token2.name}</span></p>
     } else {
-      return <p>Maximum Sold:<span>{toLocaleFixed(token1Amount * (1 + slippage / 100), 6)} {token1.name}</span></p>
+      return <p>{t('maximum_sold')}:<span>{toLocaleFixed(token1Amount * (1 + slippage / 100), 6)} {token1.name}</span></p>
     }
   }
 
@@ -227,7 +228,7 @@ const Swap = () => {
       }
     }
 
-    return <p>Price Impact:<span>{Math.abs((token2Amount / token1Amount - price) / price * 100).toFixed(2)}%</span></p>
+    return <p>{t('price_impact')}:<span>{Math.abs((token2Amount / token1Amount - price) / price * 100).toFixed(2)}%</span></p>
   }
 
   function getBestPath() {
@@ -249,13 +250,13 @@ const Swap = () => {
     <div className="sw-wrapper">
       <div className="sw-container">
         <div className="sw-tabs">
-          <div className="sw-tab active">Swap</div>
-          <div className="sw-tab" onClick={() => onNavigateToPool()}>Pool</div>
+          <div className="sw-tab active">{t('swap')}</div>
+          <div className="sw-tab" onClick={() => onNavigateToPool()}>{t('pool')}</div>
         </div>
         <div className="sw-content">
           <TokenInput
             balanceChange={balanceChange}
-            label="From"
+            label={t('from')}
             tokens={swapTokens}
             value={token1Amount}
             round='up'
@@ -265,7 +266,7 @@ const Swap = () => {
           <div className="icon-arrow-down"></div>
           <TokenInput
             balanceChange={balanceChange}
-            label="To"
+            label={t('to')}
             tokens={swapTokens}
             value={token2Amount}
             round='down'
@@ -273,8 +274,8 @@ const Swap = () => {
             onTokenChange={(token) => onChangeToken2(token)}
             onAmountChange={(amount) => onToken2AmountChange(amount)} />
           { showPrice ? <div className="sw-price-wrapper">Price<span className="sw-price-info">{getPrice()}</span></div> : null }
-          { isValidPair ? null : <div className="add-liquidity-hint">Add liquidity to enable swaps for this pair.</div> }
-          { isValidPair ? ( isValidSwap ? <div className="sw-swap-btn" onClick={() => handleSwap()}>Swap</div> : <div className="sw-swap-btn disabled">Swap</div> ) : <div className="sw-swap-btn disabled">Invalid Liquidity</div> }
+          { isValidPair ? null : <div className="add-liquidity-hint">{t('add_liquidity_enable_swap')}</div> }
+          { isValidPair ? ( isValidSwap ? <div className="sw-swap-btn" onClick={() => handleSwap()}>{t('swap')}</div> : <div className="sw-swap-btn disabled">{t('swap')}</div> ) : <div className="sw-swap-btn disabled">{t('invalide_liquidity')}</div> }
         </div>
         {
           isValidPair && isValidSwap ? (
@@ -282,7 +283,7 @@ const Swap = () => {
               <div className="sw-input-output">{getMinReceiveOrMaxSold()}</div>
               <div className="sw-price-impact">{getPriceImpact()}</div>
               <div className="sw-best-path">
-                <p>Route:</p>
+                <p>{t('route')}:</p>
                 <div className="sw-best-path-list">
                   {getBestPath()}
                 </div>

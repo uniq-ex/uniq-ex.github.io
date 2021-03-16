@@ -4,6 +4,7 @@ import { utils } from 'ontology-ts-sdk'
 import BigNumber from 'bignumber.js'
 import { useAlert } from 'react-alert'
 import { useMappedState, useDispatch } from 'redux-react-hook';
+import { useTranslation } from 'react-i18next'
 import { readBigNumberUint128, getTokenBalance } from '../../utils/token'
 import Input from '../../components/input'
 import { cyanoRequest } from '../../utils/cyano'
@@ -44,6 +45,7 @@ const Transaction = () => {
   const setTotal = useCallback((total) => dispatch({ type: 'SET_TRADE_TOTAL', total }), [])
 
   const Alert = useAlert()
+  const [t] = useTranslation()
 
   const urlPairName = decodeURIComponent(getHashString(window.location.hash, 'pair') || '') || (localStorage.getItem('trade_token_pair') || '')
 
@@ -264,7 +266,7 @@ const Transaction = () => {
     if (account) {
       setMakeView('my')
     } else {
-      Alert.show('Please Connect Wallet First')
+      Alert.show(t('connect_wallet_first'))
     }
   }
 
@@ -278,7 +280,7 @@ const Transaction = () => {
             <div key={m.make_id} className={`my-make-item reverse ${isMine ? 'mine' : ''}`}>
               <div className="make-item-detail make-sell">{new BigNumber(m.price).div(PRICE_DECIMALS).toString()}</div>
               <div className="make-item-detail">{new BigNumber(m.amount).div((10 ** tokenPair.tokens[0].decimals)).toString()}</div>
-              { makeView === 'my' && <div className="unmake-btn" onClick={() => onUnmake(m.make_id)}>Cancel</div> }
+              { makeView === 'my' && <div className="unmake-btn" onClick={() => onUnmake(m.make_id)}>{t('cancel')}</div> }
             </div>)
         })
       } else {
@@ -288,7 +290,7 @@ const Transaction = () => {
             <div key={m.make_id} className={`my-make-item ${isMine ? 'mine' : ''}`}>
               <div className="make-item-detail make-buy">{new BigNumber(m.price).div(PRICE_DECIMALS).toString()}</div>
               <div className="make-item-detail">{new BigNumber(m.amount).div(m.price).times(PRICE_DECIMALS).div((10 ** tokenPair.tokens[1].decimals)).toString()}</div>
-              { makeView === 'my' && <div className="unmake-btn" onClick={() => onUnmake(m.make_id)}>Cancel</div> }
+              { makeView === 'my' && <div className="unmake-btn" onClick={() => onUnmake(m.make_id)}>{t('cancel')}</div> }
             </div>)
         })
       }
@@ -300,16 +302,16 @@ const Transaction = () => {
 
   async function onMake() {
     if (!account) {
-      Alert.show('Please Connect Wallet First')
+      Alert.show(t('connect_wallet_first'))
       return
     }
     if (tokenPair.name && CONTRACT_ADDRESS) {
       if (price <= 0) {
-        Alert.error('Price should be greater than 0')
+        Alert.error(t('price_gt_0'))
         return
       }
       if (amount <= 0) {
-        Alert.error('Amount should be greater than 0')
+        Alert.error(t('amount_gt_0'))
         return
       }
       try {
@@ -355,8 +357,8 @@ const Transaction = () => {
           setModal('infoModal', {
             show: true,
             type: 'success',
-            text: 'Transaction Successful',
-            extraText: 'View Transaction',
+            text: t('transaction_successful'),
+            extraText: t('view_transaction'),
             extraLink: `${TRANSACTION_BASE_URL}${makeResult.transaction}${TRANSACTION_AFTERFIX}`
           })
         }
@@ -364,7 +366,7 @@ const Transaction = () => {
         setModal('infoModal', {
           show: true,
           type: 'error',
-          text: 'Transaction Failed',
+          text: t('transaction_failed'),
           // extraText: `${e}`,
           extraText: '',
           extraLink: ''
@@ -397,8 +399,8 @@ const Transaction = () => {
           setModal('infoModal', {
             show: true,
             type: 'success',
-            text: 'Transaction Successful',
-            extraText: 'View Transaction',
+            text: t('transaction_successful'),
+            extraText: t('view_transaction'),
             extraLink: `${TRANSACTION_BASE_URL}${unmakeResult.transaction}${TRANSACTION_AFTERFIX}`
           })
         }
@@ -406,7 +408,7 @@ const Transaction = () => {
         setModal('infoModal', {
           show: true,
           type: 'error',
-          text: 'Transaction Failed',
+          text: t('transaction_failed'),
           // extraText: `${e}`,
           extraText: '',
           extraLink: ''
@@ -451,7 +453,7 @@ const Transaction = () => {
     <div className="swap-wrapper">
       <div className="trade-container">
         <div className="make-wrapper">
-          <div className="container-header">Trade
+          <div className="container-header">{t('trade')}
             {
               tokenPair.name ? (
                 <div className="token-pair-select" onClick={() => setShowPairSelectModal(true)}>
@@ -461,11 +463,11 @@ const Transaction = () => {
             }
           </div>
           <div className="trade-type-switch">
-            <div className={`trade-type-item ${tradeType === 'buy' ? 'trade-buy' : ''}`} onClick={() => setTradeType('buy')}>Buy</div>
-            <div className={`trade-type-item ${tradeType === 'sell' ? 'trade-sell' : ''}`} onClick={() => setTradeType('sell')}>Sell</div>
+            <div className={`trade-type-item ${tradeType === 'buy' ? 'trade-buy' : ''}`} onClick={() => setTradeType('buy')}>{t('buy')}</div>
+            <div className={`trade-type-item ${tradeType === 'sell' ? 'trade-sell' : ''}`} onClick={() => setTradeType('sell')}>{t('sell')}</div>
           </div>
           <div className="form-item">
-            <div className="item-title">Price
+            <div className="item-title">{t('price')}
               <span className="hint">{getPriceHint()}</span>
             </div>
             <div className="input-wrapper">
@@ -473,7 +475,7 @@ const Transaction = () => {
             </div>
           </div>
           <div className="form-item">
-            <div className="item-title">Amount
+            <div className="item-title">{t('amount')}
               <span className="hint">{getAmountHint()}</span>
             </div>
             <div className="input-wrapper">
@@ -481,48 +483,48 @@ const Transaction = () => {
             </div>
           </div>
           <div className="form-item">
-            <div className="item-title">Total {tradeType === 'buy' ? 'Need' : 'Receive'}
+            <div className="item-title">{t('total')} {tradeType === 'buy' ? t('need') : t('receive')}
               <span className="hint">{getPriceHint()}</span>
             </div>
             <div className="input-wrapper">
               <Input placeholder="0.0" value={total} decimals="9" onChange={(amount) => setTotal(amount)} />
             </div>
           </div>
-          { tokenPair.name ? <div className="balance-line">Balance: <span>{tokenBalance} {tradeType === 'buy' ? tokenPair.tokens[1].name : tokenPair.tokens[0].name}</span></div> : null }
-          { feeRate ? <p className="fee-rate">* The fee rate of transaction is {feeRate / 100}%</p> : null }
-          { isValid ? <div className={`make-btn make-btn-${tradeType}`} onClick={() => onMake()}>{tradeType.toUpperCase()} {tokenPair.tokens[0].name}</div> : <div className="make-btn disabled">{tradeType.toUpperCase()} {tokenPair.tokens ? tokenPair.tokens[0].name : ''}</div> }
+          { tokenPair.name ? <div className="balance-line">{t('balance')}: <span>{tokenBalance} {tradeType === 'buy' ? tokenPair.tokens[1].name : tokenPair.tokens[0].name}</span></div> : null }
+          { feeRate ? <p className="fee-rate">* {t('fee_rate')} {feeRate / 100}%</p> : null }
+          { isValid ? <div className={`make-btn make-btn-${tradeType}`} onClick={() => onMake()}>{tradeType.toUpperCase()} {tokenPair.tokens[0].name}</div> : <div className="make-btn disabled">{t(tradeType).toUpperCase()} {tokenPair.tokens ? tokenPair.tokens[0].name : ''}</div> }
         </div>
         <div className="trade-panel">
           <div className="panel-header">
-            <div className="panel-title">Order Book</div>
+            <div className="panel-title">{t('order_book')}</div>
             <div className="tabs">
-              <div className={makeView === 'all' ? "tab-wrapper selected" : "tab-wrapper"} onClick={() => setMakeView('all')}>All</div>
-              <div className={makeView === 'my' ? "tab-wrapper selected" : "tab-wrapper"} onClick={() => onChangeToUserMakeView()}>My</div>
+              <div className={makeView === 'all' ? "tab-wrapper selected" : "tab-wrapper"} onClick={() => setMakeView('all')}>{t('all')}</div>
+              <div className={makeView === 'my' ? "tab-wrapper selected" : "tab-wrapper"} onClick={() => onChangeToUserMakeView()}>{t('my')}</div>
             </div>
           </div>
           <div className="list-title">
             <div className="blank-placeholder"></div>
             <div className="title-items">
-              <div className="item-text">Price ({getPriceHint()})</div>
-              <div className="item-text">Amount ({getAmountHint()})</div>
+              <div className="item-text">{t('price')} ({getPriceHint()})</div>
+              <div className="item-text">{t('amount')} ({getAmountHint()})</div>
               { makeView === 'my' && <div className="item-placeholder"></div> }
             </div>
           </div>
           <div className="sell-section">
-            <div className="section-title">Sell</div>
+            <div className="section-title">{t('sell')}</div>
             <div className="make-list reverse">
             {getMakes('sell')}
             </div>
           </div>
           {
             (makeView === 'all' && Number(lastPrice) !== 0) ? <div className="last-price-wrapper">
-              <div className="last-price-label">Last Price</div>
+              <div className="last-price-label">{t('last_price')}</div>
               <div className="last-price">{lastPrice}</div>
               <div className="last-price-placeholder"></div>
             </div> : null
           }
           <div className="buy-section">
-            <div className="section-title">Buy</div>
+            <div className="section-title">{t('buy')}</div>
             <div className="make-list">
             {getMakes('buy')}
             </div>
@@ -532,7 +534,7 @@ const Transaction = () => {
       {
         pool.filter((tp) => Number(tp.balance) !== 0).length ? (
           <div className="token-pool">
-            <div className="container-header">Token Balance</div>
+            <div className="container-header">{t('token_balance')}</div>
             <div className="pool-items">
             {generateTokenPool()}
             </div>
@@ -545,7 +547,7 @@ const Transaction = () => {
             <div className="modal-wrapper">
               <div className="close-btn" onClick={() => setShowPairSelectModal(false)}></div>
               <div className="pair-select-modal-wrapper">
-                <div className="pair-select-modal-title">Select</div>
+                <div className="pair-select-modal-title">{t('select')}</div>
                 <input type="text" className="pair-select-modal-input" value={pairNameKeyword} onInput={(e) => setPairNameKeyword(e.target.value)} />
                 <div className="pair-select-modal-list">
                   {

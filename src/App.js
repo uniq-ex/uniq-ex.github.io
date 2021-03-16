@@ -8,6 +8,7 @@ import {
 } from 'react-router-dom'
 import { useAlert } from 'react-alert'
 import { useMappedState, useDispatch } from 'redux-react-hook';
+import { useTranslation } from 'react-i18next'
 import Header from './components/header'
 import Modal from './components/modal'
 import Transaction from './pages/transaction'
@@ -39,6 +40,7 @@ export const App = () => {
   const setAccount = useCallback((account) => dispatch({ type: 'SET_ACCOUNT', account }), [])
   const history = useHistory()
   const location = useLocation()
+  const [t] = useTranslation()
 
   useEffect(() => {
     const startTimeStamp = poolStat.distributionInfo.startTimeStamp
@@ -103,7 +105,7 @@ export const App = () => {
         <div className="modal-overlay">
           <div className="modal-wrapper transparent-bg">
             <div className="modal-icon-loading modal-icon"></div>
-            <div className="modal-text light">Loading...</div>
+            <div className="modal-text light">{t('loading')}</div>
           </div>
         </div>
       )
@@ -117,7 +119,7 @@ export const App = () => {
         <div className="modal-overlay">
           <div className="modal-wrapper transparent-bg">
             <div className="modal-icon-upgrading modal-icon"></div>
-            <div className="modal-text light">UNIQ-EX is upgrading...</div>
+            <div className="modal-text light">UNIQ-EX {t('upgrading')}</div>
           </div>
         </div>
       )
@@ -134,8 +136,8 @@ export const App = () => {
               {
                 (account === null) && <div className="connect-wallet-overlay">
                   <div className="connect-wrapper">
-                    <p className="connect-title">Connect Wallet</p>
-                    <div className="wallet-item" onClick={() => onConnectWallet()}>Cyano Wallet</div>
+                    <p className="connect-title">{t('connect_wallet')}</p>
+                    <div className="wallet-item" onClick={() => onConnectWallet()}>Cyano {t('wallet')}</div>
                   </div>
                 </div>
               }
@@ -210,6 +212,9 @@ export const App = () => {
                     </Route> : null
                   }
                 </Switch>
+              </div>
+              <div className="footer">
+                <div className="telegram">Telegram: <a target="_blank" href="https://t.me/UNIQ_EX">https://t.me/UNIQ_EX</a></div>
               </div>
             </React.Fragment>
           </div>

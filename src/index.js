@@ -11,6 +11,7 @@ import { StoreContext } from 'redux-react-hook';
 import AlertTemplate from "react-alert-template-basic";
 import reducers from './reducers';
 import reportWebVitals from './reportWebVitals';
+import './i18n'
 
 import 'rc-tooltip/assets/bootstrap.css'
 import './styles/font.css';

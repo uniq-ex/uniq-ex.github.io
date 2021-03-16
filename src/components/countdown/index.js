@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useMappedState } from 'redux-react-hook'
+import { useTranslation } from 'react-i18next'
 import './index.css'
 
 const Countdown = (props) => {
@@ -9,6 +10,7 @@ const Countdown = (props) => {
   const { poolStat } = useMappedState((state) => ({
     poolStat: state.gov.poolStat
   }))
+  const [t] = useTranslation()
 
   const getLeftTime = (t) => {
     const time = parseInt((new Date(t * 1000) - new Date()) / 1000, 10)
@@ -45,10 +47,10 @@ const Countdown = (props) => {
 
   return !hasBegan ? (
     <div className="countdown-wrapper">{text}
-      { Number(leftTime.day) ? <div className="date-item">DAYS<p>{leftTime.day}</p></div> : null }
-      { leftTime.hour ? <div className="date-item">HOURS<p>{leftTime.hour}</p></div> : null }
-      { leftTime.minute ? <div className="date-item">MINUTES<p>{leftTime.minute}</p></div> : null }
-      { leftTime.second ? <div className="date-item">SECONDS<p>{leftTime.second}</p></div> : null }
+      { Number(leftTime.day) ? <div className="date-item">{t('days')}<p>{leftTime.day}</p></div> : null }
+      { leftTime.hour ? <div className="date-item">{t('hours')}<p>{leftTime.hour}</p></div> : null }
+      { leftTime.minute ? <div className="date-item">{t('minutes')}<p>{leftTime.minute}</p></div> : null }
+      { leftTime.second ? <div className="date-item">{t('seconds')}<p>{leftTime.second}</p></div> : null }
     </div>
   ) : null
 }

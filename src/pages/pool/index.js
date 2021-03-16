@@ -3,6 +3,7 @@ import { useHistory } from "react-router-dom"
 import { useMappedState, useDispatch } from 'redux-react-hook';
 import { utils } from 'ontology-ts-sdk'
 import BigNumber from 'bignumber.js'
+import { useTranslation } from 'react-i18next'
 import { cyanoRequest } from '../../utils/cyano'
 import { readBigNumberUint128 } from '../../utils/token'
 import { useFetchPairs } from '../../hooks/usePair'
@@ -22,6 +23,7 @@ const Pool = () => {
   const setLiquidityBalance = useCallback((liquidityBalance) => dispatch({ type: 'SET_POOL_LIQUIDITY_BALANCE', liquidityBalance }), [])
 
   const history = useHistory()
+  const [t] = useTranslation()
 
   useFetchPairs()
 
@@ -85,15 +87,15 @@ const Pool = () => {
               <div className={`token-icon icon-${token1.name}`}></div>
               <div className={`token-icon icon-${token2.name}`}></div>
               <div className="token-pair"><strong>{token1.name}/{token2.name}</strong></div>
-              <div className="pair-position"><strong>Pooled</strong>: {token1Amount} / {token2Amount}</div>
-              <div className="pool-tokens"><strong>Pool Tokens</strong>: {balance.div(10 ** 18).toString()}</div>
+              <div className="pair-position"><strong>{t('pooled')}</strong>: {token1Amount} / {token2Amount}</div>
+              <div className="pool-tokens"><strong>{t('lp_tokens')}</strong>: {balance.div(10 ** 18).toString()}</div>
             </div>
-            <div className="remove-liquidity-btn" onClick={() => onRemoveLiquidity(pairId)}>Remove</div>
+            <div className="remove-liquidity-btn" onClick={() => onRemoveLiquidity(pairId)}>{t('remove')}</div>
           </div>
         )
       })
     } else {
-      return <div className="pool-empty-lp">No Liquidities</div>
+      return <div className="pool-empty-lp">{t('no_liquidities')}</div>
     }
   }
 
@@ -101,13 +103,13 @@ const Pool = () => {
     <div className="pool-wrapper">
       <div className="pool-container">
         <div className="sw-tabs">
-          <div className="sw-tab" onClick={() => onNavigateToSwap()}>Swap</div>
-          <div className="sw-tab active">Pool</div>
+          <div className="sw-tab" onClick={() => onNavigateToSwap()}>{t('swap')}</div>
+          <div className="sw-tab active">{t('pool')}</div>
         </div>
         <div className="pool-content">
-          <div className="pool-add-liquidity-btn" onClick={() => onNavigateToAddLiquidity()}>Add Liquidity</div>
+          <div className="pool-add-liquidity-btn" onClick={() => onNavigateToAddLiquidity()}>{t('add_liquidity')}</div>
           <div className="pool-liquidity-list">
-            <div className="my-liquidity">Your Liquidity</div>
+            <div className="my-liquidity">{t('your_liquidity')}</div>
             {generateLiquidityList()}
           </div>
         </div>

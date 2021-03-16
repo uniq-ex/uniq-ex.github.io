@@ -4,6 +4,7 @@ import { utils } from 'ontology-ts-sdk'
 import BigNumber from 'bignumber.js'
 import { useAlert } from 'react-alert'
 import { useMappedState, useDispatch } from 'redux-react-hook'
+import { useTranslation } from 'react-i18next'
 import Tooltip from 'rc-tooltip';
 import TokenInput from '../../components/tokenInput';
 import Input from '../../components/input'
@@ -51,6 +52,7 @@ const Synth = () => {
   const setUnxPrice = useCallback((unxPrice) => dispatch({ type: 'SET_SYNTH_UNX_PRICE', unxPrice }), [])
 
   const Alert = useAlert()
+  const [t] = useTranslation()
 
   useFetchPairs()
 
@@ -417,13 +419,13 @@ const Synth = () => {
 
   async function onMint() {
     if (!account) {
-      Alert.show('Please Connect Wallet First')
+      Alert.show(t('connect_wallet_first'))
       return
     }
 
     if (unxToken.id && mintAsset.assetId && SYNTH_ADDRESS) {
       if (mintAmount <= 0) {
-        Alert.error('Amount should be greater than 0')
+        Alert.error(t('amount_gt_0'))
         return
       }
       try {
@@ -470,7 +472,7 @@ const Synth = () => {
                 const eventStates = resp.Result.Notify.find((notify) => notify.States[0] === 'mint').States
 
                 if (eventStates[5] === '0') {
-                  detail = `Your last transaction successfully freezed the ${mintAsset.label} asset, you'll get 1‰ of the redeemed UNX when burnt.`
+                  detail = t('freeze_asset', {asset: mintAsset.label})
                 }
               } catch (e) {}
 
@@ -491,13 +493,13 @@ const Synth = () => {
 
   async function onBurn() {
     if (!account) {
-      Alert.show('Please Connect Wallet First')
+      Alert.show(t('connect_wallet_first'))
       return
     }
 
     if (unxToken.id && burnAsset.assetId && SYNTH_ADDRESS) {
       if (burnAmount <= 0) {
-        Alert.error('Amount should be greater than 0')
+        Alert.error(t('amount_gt_0'))
         return
       }
       try {
@@ -545,7 +547,7 @@ const Synth = () => {
 
   async function onBurnAll() {
     if (!account) {
-      Alert.show('Please Connect Wallet First')
+      Alert.show(t('connect_wallet_first'))
       return
     }
 
@@ -590,13 +592,13 @@ const Synth = () => {
 
   async function onExchange() {
     if (!account) {
-      Alert.show('Please Connect Wallet First')
+      Alert.show(t('connect_wallet_first'))
       return
     }
 
     if (unxToken.id && exchangeAsset.assetId && SYNTH_ADDRESS) {
       if (exchangeAmount <= 0) {
-        Alert.error('Amount should be greater than 0')
+        Alert.error(t('amount_gt_0'))
         return
       }
       try {
@@ -646,7 +648,7 @@ const Synth = () => {
                 const eventStates = resp.Result.Notify.find((notify) => notify.States[0] === 'asset_swap').States
 
                 if (eventStates[4] === '0') {
-                  detail = `Your last transaction successfully freezed the ${exchangeAsset.label} asset, you'll get 1‰ of the redeemed UNX when burnt.`
+                  detail = t('freeze_asset', {asset: exchangeAsset.label})
                 }
               } catch (e) {}
 
@@ -667,7 +669,7 @@ const Synth = () => {
 
   async function onClaim() {
     if (!account) {
-      Alert.show('Please Connect Wallet First')
+      Alert.show(t('connect_wallet_first'))
       return
     }
 
@@ -703,7 +705,7 @@ const Synth = () => {
 
   const handleFreezeAsset = async (asset) => {
     if (!account) {
-      Alert.show('Please Connect Wallet First')
+      Alert.show(t('connect_wallet_first'))
       return
     }
 
@@ -785,7 +787,7 @@ const Synth = () => {
                   }
                   {
                     la.unprocessedFrozen ? (
-                      <Tooltip placement="top" overlay="The first one that freezes an asset will get 1‰ of burning fee from all holders">
+                      <Tooltip placement="top" overlay={t('first_freeze_hint')}>
                         <span className="freeze-asset-btn" onClick={() => handleFreezeAsset(la)}></span>
                       </Tooltip>
                     ) : null
@@ -796,14 +798,14 @@ const Synth = () => {
               <div className="synth-assets-list-item-holding">{la.holdings || 0}</div>
               <div className="synth-assets-list-item-leverage">{la.effectiveLeverage}</div>
               <div className="synth-assets-list-item-action">
-                <div className="synth-assets-list-item-action-mint" onClick={() => { setShowMintModal(true); setMintAsset(la); }}>Mint</div>
+                <div className="synth-assets-list-item-action-mint" onClick={() => { setShowMintModal(true); setMintAsset(la); }}>{t('mint')}</div>
               </div>
             </div>
           )
         })
-        return assetList.length ? assetList : (<div className="empty-asset-hint">No Assets</div>)
+        return assetList.length ? assetList : (<div className="empty-asset-hint">{t('no_assets')}</div>)
       } else {
-        return (<div className="asset-loading-hint">Loading...</div>)
+        return (<div className="asset-loading-hint">{t('loading')}</div>)
       }
     } else {
       if (marketStat.accountAssetBalances) {
@@ -835,7 +837,7 @@ const Synth = () => {
                   {asset.label}
                   {
                     asset.unprocessedFrozen ? (
-                      <Tooltip placement="top" overlay="The first one that freezes an asset will get 1‰ of burning fee from all holders">
+                      <Tooltip placement="top" overlay={t('first_freeze_hint')}>
                         <span onClick={() => handleFreezeAsset(asset)}></span>
                       </Tooltip>
                     ) : null
@@ -846,7 +848,7 @@ const Synth = () => {
               <div className="synth-assets-list-item-holding">{new BigNumber(ab.assetPrice).div(SYNTH_PRICE_DECIMALS).times(ab.balance).div(10 ** asset.decimals).toString()}</div>
               <div className="synth-assets-list-item-leverage">{asset.effectiveLeverage}</div>
               <div className="synth-assets-list-item-action">
-                <div className="synth-assets-list-item-action-burn" onClick={() => { setShowBurnModal(true); setBurnAsset(asset); }}>Burn</div>
+                <div className="synth-assets-list-item-action-burn" onClick={() => { setShowBurnModal(true); setBurnAsset(asset); }}>{t('burn')}</div>
                 <div className="synth-assets-list-item-action-exchange"
                   onClick={() => {
                     setShowExchangeModal(true)
@@ -855,15 +857,15 @@ const Synth = () => {
                     setExchangeToAssets(toAssets)
                     setExchangeToAsset(toAssets[0])
                   }}
-                >Exchange</div>
+                >{t('exchange')}</div>
               </div>
             </div>
           ) : null
         })
 
-        return assetList.length ? assetList : (<div className="empty-asset-hint">No Assets</div>)
+        return assetList.length ? assetList : (<div className="empty-asset-hint">{t('no_assets')}</div>)
       } else {
-        return (<div className="asset-loading-hint">Loading...</div>)
+        return (<div className="asset-loading-hint">{t('loading')}</div>)
       }
     }
   }
@@ -872,9 +874,9 @@ const Synth = () => {
     setModal('infoModal', {
       show: true,
       type,
-      text: type === 'success' ? 'Transaction Successful' : 'Transaction Failed',
+      text: type === 'success' ? t('transaction_successful') : t('transaction_failed'),
       detail,
-      extraText: type === 'success' ? 'View Transaction' : '',
+      extraText: type === 'success' ? t('view_transaction') : '',
       extraLink: type === 'success' ? `${TRANSACTION_BASE_URL}${transaction}${TRANSACTION_AFTERFIX}` : ''
     })
   }
@@ -884,33 +886,33 @@ const Synth = () => {
       <div className="synth-overview-sections">
         <div className="synth-overview-section">
           <div className="synth-overview-sub-section">
-            <p className="synth-overview-section-title">Mint APY</p>
+            <p className="synth-overview-section-title">{t('mint_apy')}</p>
             <p className="synth-overview-detail">{(marketStat.marketStakeValue && unxToken.id) ? new BigNumber(poolStat.distributionInfo.amount || 0).div(poolStat.distributionInfo.period || 1).times(86400 * 365).times(10 ** unxToken.decimals).times(synthPoolWeightRatio || 0).div(marketStat.marketStakeValue).toFixed(2) : 0}%</p>
           </div>
           <div className="synth-overview-section-group">
             <div className="synth-overview-sub-section">
-              <p className="synth-overview-section-title">Market Balance</p>
+              <p className="synth-overview-section-title">{t('market_balance')}</p>
               <p className="synth-overview-detail">{marketStat.marketTokenBalance ? new BigNumber(marketStat.marketTokenBalance).div(10 ** unxToken.decimals).toFixed(unxToken.decimals) : '0'} <span>UNX</span></p>
             </div>
           </div>
         </div>
         <div className="synth-overview-section-right">
           <div className="synth-overview-sub-section">
-            <p className="synth-overview-section-title">Transferable</p>
+            <p className="synth-overview-section-title">{t('transferable')}</p>
             <p className="synth-overview-detail">{(marketStat.transferable && marketStat.transferable !== '0') ? new BigNumber(marketStat.transferable).plus(availableReward).div(10 ** unxToken.decimals).toFixed(unxToken.decimals) : '0'} <span>UNX</span></p>
           </div>
           <div className="synth-overview-section-group">
             <div className="synth-overview-sub-section">
-              <p className="synth-overview-section-title">Staked Available</p>
+              <p className="synth-overview-section-title">{t('staked')}</p>
               <p className="synth-overview-detail">{(marketStat.transferable && marketStat.transferable !== '0') ? (new BigNumber(marketStat.transferable)).div(10 ** unxToken.decimals).toFixed(unxToken.decimals) : '0'} <span>UNX</span>
-                { (marketStat.transferable && marketStat.transferable !== '0') ? <span className="synth-overview-action-btn synth-overview-action-btn-burn" onClick={() => onBurnAll()}>Burn All</span> : null }
+                { (marketStat.transferable && marketStat.transferable !== '0') ? <span className="synth-overview-action-btn synth-overview-action-btn-burn" onClick={() => onBurnAll()}>{t('burn_all')}</span> : null }
               </p>
             </div>
             <div className="synth-overview-sub-section">
-              <p className="synth-overview-section-title">Rewards Available</p>
+              <p className="synth-overview-section-title">{t('rewards_available')}</p>
               <p className="synth-overview-detail">{unxToken.id ? new BigNumber(availableReward).div(10 ** unxToken.decimals).toString() : 0}
                 <span>UNX</span>
-                { (availableReward && availableReward !== '0') ? <span className="synth-overview-action-btn" onClick={() => onClaim()}>Claim</span> : null }
+                { (availableReward && availableReward !== '0') ? <span className="synth-overview-action-btn" onClick={() => onClaim()}>{t('claim')}</span> : null }
               </p>
             </div>
           </div>
@@ -919,16 +921,16 @@ const Synth = () => {
       <div className="mint-burn-wrapper">
         <div className="mint-burn-main">
           <div className="synth-type-switch">
-            <div className={`synth-type-item ${synthType === 'mint' ? 'selected' : ''}`} onClick={() => setSynthType('mint')}>Mint</div>
-            <div className={`synth-type-item ${synthType === 'burn' ? 'selected' : ''}`} onClick={() => setSynthType('burn')}>Burn</div>
+            <div className={`synth-type-item ${synthType === 'mint' ? 'selected' : ''}`} onClick={() => setSynthType('mint')}>{t('mint')}</div>
+            <div className={`synth-type-item ${synthType === 'burn' ? 'selected' : ''}`} onClick={() => setSynthType('burn')}>{t('burn')}</div>
           </div>
-          <div className="market-asset-value">Market Asset Value: &nbsp;&nbsp;<span>${new BigNumber(marketStat.marketAssetValue || 0).div(SYNTH_PRICE_DECIMALS).toString()}</span></div>
+          <div className="market-asset-value">{t('market_asset_value')}: &nbsp;&nbsp;<span>${new BigNumber(marketStat.marketAssetValue || 0).div(SYNTH_PRICE_DECIMALS).toString()}</span></div>
           <div className="synth-assets-panel">
             <div className="synth-assets-panel-header">
-              <div className="panel-header-item panel-header-item-asset">Asset</div>
-              <div className="panel-header-item">Price($)</div>
-              <div className="panel-header-item">Holdings($)</div>
-              <div className="panel-header-item">Effective Leverage</div>
+              <div className="panel-header-item panel-header-item-asset">{t('asset')}</div>
+              <div className="panel-header-item">{t('price')}($)</div>
+              <div className="panel-header-item">{t('holdings')}($)</div>
+              <div className="panel-header-item">{t('effective_leverage')}</div>
               <div className="panel-header-item panel-header-item-action"></div>
             </div>
             <div className="synth-assets-list">
@@ -939,20 +941,20 @@ const Synth = () => {
         {
           synthType === 'mint' ? (
             <div className="mint-burn-info">
-              <div className="mint-burn-info-title">Mint Synthetics by staking UNX</div>
-              <div className="mint-burn-info-desc">UNX stakers earn staking rewards once minted.</div>
+              <div className="mint-burn-info-title">{t('mint_synthetics_by_staking_unx')}</div>
+              <div className="mint-burn-info-desc">{t('earn_staking_rewards_once_minted')}</div>
               <div className="mint-burn-account-info">
-                <div className="mint-burn-account-info-line">Minted With <span>{new BigNumber(marketStat.accountStakeValue || 0).div(10 ** unxToken.decimals).toString() || '0'} UNX</span></div>
+                <div className="mint-burn-account-info-line">{t('minted_with')} <span>{new BigNumber(marketStat.accountStakeValue || 0).div(10 ** unxToken.decimals).toString() || '0'} UNX</span></div>
               </div>
             </div>
           ) : (
             <div className="mint-burn-info">
-              <div className="mint-burn-info-title">Burn Synthetics to unstake UNX</div>
-              <div className="mint-burn-info-desc">Burn your synthetics to withdraw UNX.</div>
+              <div className="mint-burn-info-title">{t('burn_synthetics_to_unstake_unx')}</div>
+              <div className="mint-burn-info-desc">{t('burn_synthetics_to_withdraw_unx')}</div>
               <div className="mint-burn-account-info">
-                <div className="mint-burn-account-info-line">Assets($) <span>{new BigNumber(marketStat.accountAssetValue).div(SYNTH_PRICE_DECIMALS).toString()}</span></div>
+                <div className="mint-burn-account-info-line">{t('assets')}($) <span>{new BigNumber(marketStat.accountAssetValue).div(SYNTH_PRICE_DECIMALS).toString()}</span></div>
               </div>
-              <div className="mint-burn-info-note"><strong>NOTE</strong>: when "Effective Leverage" is lower than 0.5 or higher than 2.0 times of nominal leverage, your asset will be frozen. <span>You have to burn it within 3 days.</span> Otherwise, your asset will be burned and the UNX will be donated to staked pool.</div>
+              <div className="mint-burn-info-note"><strong>{t('note')}</strong>: {t('effective_leverage_exceed')} <span>{t('have_to_burn')}</span> {t('unx_be_donated')}</div>
             </div>
           )
         }
@@ -964,22 +966,22 @@ const Synth = () => {
             <div className="modal-wrapper">
               <div className="close-btn" onClick={() => {setShowMintModal(false);setMintAmount('');setUnxNeededForMint('');}}></div>
               <div className="mint-wrapper">
-                <div className="mint-wrapper-title">Mint {mintAsset.label}</div>
-                <div className="mint-wrapper-info">Price($)<span>{new BigNumber(mintAsset.price).div(SYNTH_PRICE_DECIMALS).toString()}</span></div>
+                <div className="mint-wrapper-title">{t('mint')} {mintAsset.label}</div>
+                <div className="mint-wrapper-info">{t('price')}($)<span>{new BigNumber(mintAsset.price).div(SYNTH_PRICE_DECIMALS).toString()}</span></div>
                 <div className="form-item">
-                  <div className="input-label">Amount</div>
+                  <div className="input-label">{t('amount')}</div>
                   <div className="input-wrapper">
                     <Input placeholder="0.0" value={mintAmount} decimals={mintAsset.decimals || 0} onChange={(amount) => handleMintAmountChange(amount)} />
                   </div>
                 </div>
                 <TokenInput
-                  label="You need to pay (UNX)"
+                  label={`${t('you_need_to_pay')} (UNX)`}
                   value={unxNeededForMint}
                   defaultToken={unxToken}
                   decimals={unxToken.decimals || 0}
                   onAmountChange={(amount) => handleUnxNeededForMintChange(amount)} />
-                <div className="fee-rate">* The fee rate of transaction is 0.1%</div>
-                <div className="mint-btn" onClick={() => onMint()}>Mint</div>
+                <div className="fee-rate">* {t('fee_rate')} 0.1%</div>
+                <div className="mint-btn" onClick={() => onMint()}>{t('mint')}</div>
               </div>
             </div>
           </div>
@@ -991,25 +993,25 @@ const Synth = () => {
             <div className="modal-wrapper">
               <div className="close-btn" onClick={() => {setShowBurnModal(false);setBurnAmount('');setUnxGetForBurn('');}}></div>
               <div className="burn-wrapper">
-                <div className="burn-wrapper-title">Burn {burnAsset.label}</div>
-                <div className="burn-wrapper-info">Price($)<span>{new BigNumber(burnAsset.assetPrice).div(SYNTH_PRICE_DECIMALS).toString()}</span></div>
+                <div className="burn-wrapper-title">{t('burn')} {burnAsset.label}</div>
+                <div className="burn-wrapper-info">{t('price')}($)<span>{new BigNumber(burnAsset.assetPrice).div(SYNTH_PRICE_DECIMALS).toString()}</span></div>
                 <div className="form-item">
-                  <div className="input-label">Amount
-                    <span className="hint">Balance: {new BigNumber(burnAsset.balance).div(10 ** burnAsset.decimals).toString()}</span>
+                  <div className="input-label">{t('amount')}
+                    <span className="hint">{t('balance')}: {new BigNumber(burnAsset.balance).div(10 ** burnAsset.decimals).toString()}</span>
                   </div>
                   <div className="input-wrapper">
                     <Input placeholder="0.0" value={burnAmount} decimals={burnAsset.decimals || 0} onChange={(amount) => handleBurnAmountChange(amount)} />
-                    <div className="input-max-btn" onClick={() => maxBurnAmount()}>MAX</div>
+                    <div className="input-max-btn" onClick={() => maxBurnAmount()}>{t('max')}</div>
                   </div>
                 </div>
                 <div className="form-item">
-                  <div className="input-label">You will get (UNX)</div>
+                  <div className="input-label">{t('you_will_get')} (UNX)</div>
                   <div className="input-wrapper">
                     <Input placeholder="0.0" value={unxGetForBurn} decimals={unxToken.decimals || 0} onChange={(amount) => handleUnxGetForBurnChange(amount)} />
                   </div>
                 </div>
-                <div className="fee-rate">* The fee rate of transaction is 0.1%</div>
-                <div className="burn-btn" onClick={() => onBurn()}>Burn</div>
+                <div className="fee-rate">* {t('fee_rate')} 0.1%</div>
+                <div className="burn-btn" onClick={() => onBurn()}>{t('burn')}</div>
               </div>
             </div>
           </div>
@@ -1021,19 +1023,19 @@ const Synth = () => {
             <div className="modal-wrapper">
               <div className="close-btn" onClick={() => {setShowExchangeModal(false);setExchangeAmount('');setExchangeToAmount('');}}></div>
               <div className="exchange-wrapper">
-                <div className="exchange-wrapper-title">Exchange {exchangeAsset.label}</div>
+                <div className="exchange-wrapper-title">{t('exchange')} {exchangeAsset.label}</div>
                 <div className="form-item">
-                  <div className="input-label">Amount
-                    <span className="hint">Balance: {new BigNumber(exchangeAsset.balance).div(10 ** exchangeAsset.decimals).toString()}</span>
+                  <div className="input-label">{t('amount')}
+                    <span className="hint">{t('balance')}: {new BigNumber(exchangeAsset.balance).div(10 ** exchangeAsset.decimals).toString()}</span>
                   </div>
                   <div className="input-wrapper">
                     <Input placeholder="0.0" value={exchangeAmount} decimals={exchangeAsset.decimals || 0} onChange={(amount) => handleExchangeAmountChange(amount)} />
-                    <div className="input-max-btn" onClick={() => maxExchangeAmount()}>MAX</div>
+                    <div className="input-max-btn" onClick={() => maxExchangeAmount()}>{t('max')}</div>
                   </div>
                 </div>
                 <TokenInput
                   cls="asset-select"
-                  label="Exchange to"
+                  label={t('exchange_to')}
                   value={exchangeToAmount}
                   tokens={exchangeToAssets}
                   showBalance={false}
@@ -1041,8 +1043,8 @@ const Synth = () => {
                   onTokenChange={(asset) => handleChangeExchangeToAsset(asset)}
                   onAmountChange={(amount) => handleChengeExchangeToAmount(amount)}
                   />
-                <div className="fee-rate">* The fee rate of transaction is 0.1%</div>
-                <div className="exchange-btn" onClick={() => onExchange()}>Exchange</div>
+                <div className="fee-rate">* {t('fee_rate')} 0.1%</div>
+                <div className="exchange-btn" onClick={() => onExchange()}>{t('exchange')}</div>
               </div>
             </div>
           </div>

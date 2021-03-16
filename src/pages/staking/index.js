@@ -5,6 +5,7 @@ import BigNumber from 'bignumber.js'
 import Tooltip from 'rc-tooltip'
 import { useAlert } from 'react-alert'
 import { useMappedState, useDispatch } from 'redux-react-hook'
+import { useTranslation } from 'react-i18next'
 import { cyanoRequest } from '../../utils/cyano'
 import { DAI_PRICE } from '../../utils/constants'
 import { GOVERNANCE_ADDRESS } from '../../config'
@@ -33,6 +34,7 @@ const Staking = () => {
   const setStakingTokens = useCallback((tokens) => dispatch({ type: 'SET_STAKING_TOKENS', tokens }), [])
   const history = useHistory()
   const Alert = useAlert()
+  const [t] = useTranslation()
 
   useFetchPairs()
 
@@ -188,14 +190,14 @@ const Staking = () => {
 
   function onSelectToken(token) {
     if (!account) {
-      Alert.show('Please Connect Wallet First')
+      Alert.show(t('connect_wallet_first'))
       return
     }
     history.push(`/staking/${token.id}`)
   }
 
   function getTip(token) {
-    return `${token.name} is the hidden receipt for WING ${token.name.replace('f', '')} suppliers`
+    return t('hidden_receipt', { token: token.name, subtoken: token.name.replace('f', '')})
   }
 
   function generateStakingPool() {
@@ -209,14 +211,14 @@ const Staking = () => {
           .times(86400 * 365)
           .times(stakingPoolWeightRatio || 0)
           .times(token.weight)
-        const tokenAPY = tokenPrices[token.id] ? unxAmount
+        const tokenAPY = tokenPrices[token.id] ? (Number(token.balance) ? unxAmount
           .times(unxPrice)
           .times(10 ** 12)
           .div(tokenPrices[token.id])
           .div(token.balance)
           .times(10 ** token.decimals)
           .times(100)
-          .toFixed(2) : 0
+          .toFixed(2) : '-') : 0
 
         return (
           <div className={`pool-list-item ${!showClosed ? '' : 'pool-list-item-disabled'}`} key={token.name}>
@@ -226,11 +228,11 @@ const Staking = () => {
                 <div className="staking-token">
                   {
                     token.ty === 3 ? (
-                      <div className="staking-text">Deposit
+                      <div className="staking-text">{t('deposit')}
                         {getTokenIconDom(token, 'stake-lp-token')}
                       </div>
                     ) : (
-                      <div className={`staking-text icon-${token.name}`}>Deposit</div>
+                      <div className={`staking-text icon-${token.name}`}>{t('deposit')}</div>
                     )
                   }
                   {
@@ -241,10 +243,10 @@ const Staking = () => {
                     ) : <div className="staking-token-name">{token.name}</div>
                   }
                 </div>
-                <div className="earn-line">Earn<span>UNX</span></div>
-                <div className="earn-line">APY<span>{tokenAPY}%</span></div>
-                <div className="total-staking">Total Staking<span>{new BigNumber(token.balance || 0).div(10 ** token.decimals).toString()}</span></div>
-                <div className="select-btn" onClick={() => onSelectToken(token)}>{ showClosed ? 'Unstake' : 'Stake' }</div>
+                <div className="earn-line">{t('earn')}<span>UNX</span></div>
+                <div className="earn-line">{t('apy')}<span>{tokenAPY}%</span></div>
+                <div className="total-staking">{t('total_staking')}<span>{new BigNumber(token.balance || 0).div(10 ** token.decimals).toString()}</span></div>
+                <div className="select-btn" onClick={() => onSelectToken(token)}>{ showClosed ? t('unstake') : t('stake') }</div>
               </div>
             </div>
           </div>
@@ -256,19 +258,19 @@ const Staking = () => {
   return (
     <div className="stake-container">
       <div className="stake-pool">
-        { !stakingTokens.length ? <div className="title">Loading...</div> : null }
+        { !stakingTokens.length ? <div className="title">{t('loading')}</div> : null }
         {
           showClosed ? (
             <div className="unstake-pool-title">
               <div className="back-icon" onClick={() => setShowClosed(false)}></div>
-              Unstake from Closed Pool
+              {t('unstake_from_closed_pool')}
             </div>
           ) : null
         }
         <div className="pool-list">
           {generateStakingPool()}
         </div>
-        { showClosedEntry ? <div className="closed-pool-entrance" onClick={() => setShowClosed(true)}>Unstake from Closed Pool</div> : null }
+        { showClosedEntry ? <div className="closed-pool-entrance" onClick={() => setShowClosed(true)}>{t('unstake_from_closed_pool')}</div> : null }
       </div>
     </div>
   )

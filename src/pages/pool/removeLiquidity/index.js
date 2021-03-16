@@ -5,6 +5,7 @@ import { useMappedState, useDispatch } from 'redux-react-hook'
 import { utils } from 'ontology-ts-sdk'
 import { useAlert } from 'react-alert'
 import BigNumber from 'bignumber.js'
+import { useTranslation } from 'react-i18next'
 import Slider from 'rc-slider'
 import { cyanoRequest } from '../../../utils/cyano'
 import { readBigNumberUint128 } from '../../../utils/token'
@@ -36,6 +37,7 @@ const RemoveLiquidity = () => {
   const Alert = useAlert()
   const history = useHistory()
   const location = useLocation()
+  const [t] = useTranslation()
   const pairId = location.pathname.match(/\/([^/]+)$/)[1]
 
   useFetchPairs()
@@ -103,7 +105,7 @@ const RemoveLiquidity = () => {
 
   async function onRemove() {
     if (!account) {
-      Alert.show('Please Connect Wallet First')
+      Alert.show(t('connect_wallet_first'))
       return
     }
 
@@ -154,8 +156,8 @@ const RemoveLiquidity = () => {
           setModal('infoModal', {
             show: true,
             type: 'success',
-            text: 'Transaction Successful',
-            extraText: 'View Transaction',
+            text: t('transaction_successful'),
+            extraText: t('view_transaction'),
             extraLink: `${TRANSACTION_BASE_URL}${addResult.transaction}${TRANSACTION_AFTERFIX}`
           })
         }
@@ -163,7 +165,7 @@ const RemoveLiquidity = () => {
         setModal('infoModal', {
           show: true,
           type: 'error',
-          text: 'Transaction Failed',
+          text: t('transaction_failed'),
           // extraText: `${e}`,
           extraText: '',
           extraLink: ''
@@ -174,12 +176,12 @@ const RemoveLiquidity = () => {
 
   return (
     <div className="remove-liquidity-wrapper">
-      <div className="rl-header">Remove Liquidity
+      <div className="rl-header">{t('remove_liquidity')}
         <div className="back-icon" onClick={() => onNavigateToPool()}></div>
       </div>
       <div className="rl-wrapper">
         <div className="rl-amount">
-          <div className="rl-amount-label">Amount<span>{amount}%</span></div>
+          <div className="rl-amount-label">{t('amount')}<span>{amount}%</span></div>
           <Slider value={amount} onChange={(e) => setAmount(e)} />
           <div className="quick-items">
             <div className="quick-item" onClick={() => setAmount(25)}>25%</div>
@@ -202,13 +204,13 @@ const RemoveLiquidity = () => {
         {
           showPrice ? (
             <div className="rl-price-wrapper">
-              <div className="price-wrapper-lable">Price</div>
+              <div className="price-wrapper-lable">{t('price')}</div>
               <div className="price">1 {token1.name} = {getPairPrice()} {token2.name}</div>
               <div className="price-reverse">1 {token2.name} = {new BigNumber(1).div(getPairPrice()).toString()} {token1.name}</div>
             </div>
           ) : null
         }
-        { amount ? <div className="rl-remove-btn" onClick={() => onRemove()}>Remove</div> : <div className="rl-remove-btn disabled">Remove</div> }
+        { amount ? <div className="rl-remove-btn" onClick={() => onRemove()}>{t('remove')}</div> : <div className="rl-remove-btn disabled">{t('remove')}</div> }
       </div>
     </div>
   )

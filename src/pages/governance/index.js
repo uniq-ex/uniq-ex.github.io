@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useMappedState } from 'redux-react-hook';
+import { useTranslation } from 'react-i18next'
 import Countdown from '../../components/countdown'
 import { toLocaleFixed } from '../../utils/common'
 import './index.css'
@@ -8,25 +9,26 @@ const Governance = (props) => {
   const { poolStat } = useMappedState((state) => ({
     poolStat: state.gov.poolStat
   }))
+  const [t] = useTranslation()
 
   return (
     <div className="governance-wrapper">
       <div className="overview-wrapper">
-        <div className="overview-title">Overview</div>
-        <div className="overview-countdown"><Countdown text="Distribution will begin in" /></div>
+        <div className="overview-title">{t('overview')}</div>
+        <div className="overview-countdown"><Countdown text={t('distribution_will_begin_in')} /></div>
         <div className="overview-sections">
           <div className="overview-left">
-            <p className="overview-section-title">Total UNX</p>
+            <p className="overview-section-title">{t('total_unx')}</p>
             <p className="overview-detail">{toLocaleFixed(poolStat.distributionInfo.amount || 0)}</p>
           </div>
           <div className="overview-right">
-            <p className="overview-section-title">Daily Distribution</p>
+            <p className="overview-section-title">{t('daily_distribution')}</p>
             <p className="overview-detail">{toLocaleFixed(((poolStat.distributionInfo.amount || 0) / (poolStat.distributionInfo.period || 1) * 86400).toFixed(9))} <span>UNX</span></p>
           </div>
         </div>
       </div>
       <div className="distribution-wrapper">
-        <div className="overview-title">Distribution</div>
+        <div className="overview-title">{t('distribution')}</div>
         <div className="distribution-sections">
           <div className="pie-svg">
             <svg className="donut" width="240px" height="240px" viewBox="0 0 42 42" role="img">
@@ -45,27 +47,27 @@ const Governance = (props) => {
           <div className="pie-desc">
             <div className="d-item">
               <div className="d-item-color" style={ { background: '#2BBE7F' } }></div>
-              <div className="d-item-name">Community</div>
+              <div className="d-item-name">{t('community')}</div>
               <div className="d-item-ratio">80%</div>
             </div>
             <div className="d-item">
               <div className="d-item-color" style={ { background: '#FE332F' } }></div>
-              <div className="d-item-name">Developer</div>
+              <div className="d-item-name">{t('developer')}</div>
               <div className="d-item-ratio">8%</div>
             </div>
             <div className="d-item">
               <div className="d-item-color" style={ { background: '#F4BA5E' } }></div>
-              <div className="d-item-name">Foundation</div>
+              <div className="d-item-name">{t('foundation')}</div>
               <div className="d-item-ratio">8%</div>
             </div>
             <div className="d-item">
               <div className="d-item-color" style={ { background: '#2B3962' } }></div>
-              <div className="d-item-name">Resoucse Extension</div>
+              <div className="d-item-name">{t('resource_extension')}</div>
               <div className="d-item-ratio">3%</div>
             </div>
             <div className="d-item">
               <div className="d-item-color" style={ { background: '#F18DA5' } }></div>
-              <div className="d-item-name">Volunteer</div>
+              <div className="d-item-name">{t('volunteer')}</div>
               <div className="d-item-ratio">1%</div>
             </div>
           </div>
